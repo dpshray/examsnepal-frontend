@@ -1,0 +1,20 @@
+
+@layer base {
+    .custom-overlay {
+        background: linear-gradient(0deg, #D9D9D9, #D9D9D9),
+        linear-gradient(0deg, rgba(72, 145, 180, 0.46), rgba(72, 145, 180, 0.46)),
+        linear-gradient(0deg, rgba(2, 134, 67, 0.23), rgba(2, 134, 67, 0.23));
+        position: absolute;
+        inset: 0;
+        mix-blend-mode: multiply;
+    }
+
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}

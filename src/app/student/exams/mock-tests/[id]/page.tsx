@@ -1,0 +1,230 @@
+'use client';
+
+import {use, useCallback, useEffect, useState} from 'react';
+import {QuestionCard, QuestionCardSkeleton} from '@/components/Exams/QuestionCard';
+import Image from 'next/image';
+import {Button} from '@/components/ui/button';
+import {Checkbox} from '@/components/ui/checkbox';
+import mockTestService from '@/services/ExamService/MockTest';
+import {toast} from 'react-hot-toast';
+import {StudentBannerHeader} from "@/components/banner/header";
+
+export default function GetMockTestById({params}: { params: Promise<{ id: number }> }) {
+    const {id} = use(params);
+    const idNumber = Number(id);
+    const [quiz, setQuiz] = useState<any[]>([]);
+    const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
+    const [showResult, setShowResult] = useState(false);
+    const [score, setScore] = useState(0);
+    const [timeLeft, setTimeLeft] = useState(3 * 60 * 60);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isAgreedToTerms, setIsAgreedToTerms] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [token, setToken] = useState<string | null>(null);
+    const [totalPages, setTotalPages] = useState(0);
+    const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+    const [totalQuestions, setTotalQuestions] = useState<number>(0);
+
+    const fetchMockTest = useCallback(async (currentPage: number) => {
+        setLoading(true);
+        try {
+            const response = await mockTestService.getMockTestById({id: idNumber, page: currentPage, token});
+            setQuiz(response?.data?.data || []);
+            setTotalQuestions(response?.data?.total || 0);
+            console.log(`Mock Test  `, response?.data?.data);
+            if (response?.data?.token) setToken(response.data.token);
+            const total = response?.data?.total || 0;
+            setTotalPages(Math.ceil(total / 10));
+        } catch (err) {
+        } finally {
+            setLoading(false);
+        }
+    }, [idNumber, token]);
+
+    useEffect(() => {
+        fetchMockTest(currentPage);
+    }, [currentPage]);
+
+    const handleSelect = (qid: number) => (value: string) => {
+        setSelectedAnswers(prev => ({...prev, [qid]: value}));
+    };
+
+    const formatTime = (seconds: number) => {
+        const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        return `${h}:${m}:${s}`;
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) setCurrentPage(prev => prev - 1);
+
+    };
+
+
+    const handleViewDetails = () => {
+        setCurrentPage(1);
+        setShowResult(true);
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    };
+
+
+    const handleSubmit = useCallback(async () => {
+        if (isSubmitted) return;
+
+        const exam_id = idNumber;
+        const totalQuestionId: number[] = [];
+        const selectedOptionId: number[] = [];
+        const selectedQuestionId: number[] = [];
+
+        const answers = Object.entries(selectedAnswers).map(([questionId, optionId]) => ({
+            question_id: questionId,
+            option_id: optionId,
+        }));
+
+        answers.forEach((answer: any) => {
+            selectedOptionId.push(answer.option_id);
+            selectedQuestionId.push(answer.question_id);
+        });
+
+        quiz.forEach((q: any) => {
+            totalQuestionId.push(q.id);
+        });
+
+        const payload = {
+            'exam_id': exam_id,
+            'question_ids': totalQuestionId,
+            'question_id': selectedQuestionId,
+            'option_id': selectedOptionId
+        };
+
+        try {
+            const res = await mockTestService.submitExam(payload);
+            console.log('Mock Quiz submitted:', res?.data);
+            toast.success('Mock Quiz submitted successfully');
+            setIsSubmitted(true);
+            setCorrectAnswers(res?.data?.correct_answered || 0);
+        } catch (err) {
+            console.error('Error submitting exam:', err);
+        }
+
+        let total = 0;
+        quiz.forEach(q => {
+            const selected = selectedAnswers[q.id];
+            const correctOptions = q.options.filter((o: any) => o.isCorrect).map((o: any) => o.value);
+            if (correctOptions.length === 1 && selected === correctOptions[0]) total += 1;
+        });
+
+        setScore(total);
+        setIsSubmitted(true);
+        setTimeLeft(0);
+
+        toast.success('Exam submitted!');
+    }, [quiz, selectedAnswers, isSubmitted, idNumber]);
+
+    useEffect(() => {
+        if (timeLeft <= 0) {
+            handleSubmit();
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setTimeLeft(prev => prev - 1);
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [timeLeft, handleSubmit]);
+
+    useEffect(() => {
+        if (isSubmitted) toast.success(`Your Score: ${score} / ${quiz.length}`);
+    }, [isSubmitted, score, quiz.length]);
+
+    return (
+        <section className="w-full min-h-screen">
+            <StudentBannerHeader
+                title="Mock Test"
+                subtitle="Take your mock test and get ready for the real exam."
+                imageSrc="/book.png"
+                className={'bg-gradient-to-r from-teal-400 to-teal-600  text-black'}
+                textClassName={'text-black'}
+            />
+            <div className="max-w-4xl mx-auto my-6 md:my-10">
+                <div className="w-full bg-white rounded-lg shadow p-6 md:p-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-6">
+                        <div className="flex items-center gap-4">
+                            <Image src="/book.svg" alt="Exam book icon" width={48} height={48}/>
+                            <p className="text-sm text-muted-foreground">Question <span
+                                className="font-semibold">{quiz.length}</span> Total</p>
+                        </div>
+                        <div className="text-center">
+                            <p className="text-sm text-muted-foreground">Time Left:</p>
+                            <div className="flex items-center justify-center gap-1 font-medium text-xl">
+                                <span>{formatTime(timeLeft)}</span>
+                            </div>
+                        </div>
+                        <Image src="/exam.png" alt="Exam visual" width={48} height={48}/>
+                    </div>
+                    <div className="space-y-6">
+                        {loading ? (
+                            <div className="flex flex-col gap-4">
+                                {[...Array(10)].map((_, index) => <QuestionCardSkeleton key={index}/>)}
+                            </div>
+                        ) : (
+                            quiz.map((q: any, index: number) => (
+                                <QuestionCard
+                                    key={q.id}
+                                    questionNumber={(currentPage - 1) * 10 + index + 1}
+                                    questionText={q.question}
+                                    options={q.options.map((opt: any) => ({
+                                        label: opt.option,
+                                        value: opt.id,
+                                        isCorrect: opt.value === 1
+                                    }))}
+                                    onSelect={handleSelect(q.id)}
+                                    selectedValue={selectedAnswers[q.id]}
+                                    showFeedback={showResult}
+                                    correctAnswers={q.options.filter((opt: any) => opt.value === 1).map((opt: any) => opt.id)}
+                                    explanation={q.explanation}
+                                />
+                            ))
+                        )}
+                        <div className="flex justify-between mt-4">
+                            <Button disabled={currentPage === 1} onClick={handlePrevPage} variant="destructive"
+                                    className="w-full sm:w-auto">Previous</Button>
+                            <Button onClick={handleNextPage} variant="outline" className="w-full sm:w-auto primary-btn"
+                                    disabled={currentPage === totalPages}>Next</Button>
+                        </div>
+                        {currentPage === totalPages && !isSubmitted && (
+                            <>
+                                <div className="mt-4 flex items-center">
+                                    <Checkbox checked={isAgreedToTerms}
+                                              onCheckedChange={(e: boolean) => setIsAgreedToTerms(e)} className="mr-2"/>
+                                    <span className="text-sm">I agree to the <a href="#" target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="text-green-600 capitalize">terms and conditions</a></span>
+                                </div>
+                                <Button className="w-full mt-4 sm:w-auto primary-btn" onClick={handleSubmit}
+                                        disabled={!isAgreedToTerms}>Submit Exam</Button>
+                            </>
+                        )}
+                        {isSubmitted && (
+                            <div className="mt-6 text-center">
+                                <h3 className="text-lg font-semibold">
+                                    {correctAnswers} out of {totalQuestions} questions answered correctly!
+                                </h3>
+                                <Button className="mt-4 primary-btn" onClick={handleViewDetails}>View Details</Button>
+
+                            </div>
+                        )}
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
