@@ -14,6 +14,7 @@ import {
   FileText,
   AlertCircle,
 } from "lucide-react"
+import Link from "next/link"
 
 export default function PrivacyPolicyPage() {
   const [activeSection, setActiveSection] = useState<string>("")
@@ -33,7 +34,7 @@ export default function PrivacyPolicyPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="container max-w-7xl mx-auto px-6 py-12">
+      <div className="container max-w-7xl mx-auto py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
@@ -61,7 +62,7 @@ export default function PrivacyPolicyPage() {
                   {sections.map((section) => {
                     const Icon = section.icon
                     return (
-                      <a
+                      <Link
                         key={section.id}
                         href={`#${section.id}`}
                         onClick={() => setActiveSection(section.id)}
@@ -73,7 +74,7 @@ export default function PrivacyPolicyPage() {
                       >
                         <Icon className="w-4 h-4 flex-shrink-0" />
                         <span className="line-clamp-2">{section.title}</span>
-                      </a>
+                      </Link>
                     )
                   })}
                 </nav>
@@ -129,7 +130,7 @@ export default function PrivacyPolicyPage() {
                     {
                       term: "Company",
                       definition:
-                        '(referred to as either "the Company", "We", "Us" or "Our" in this Agreement) refers to Exams Nepal Pvt. Ltd, Kathmandu 44600.',
+                        '(referred to as either "the Company", "We", "Us" or "Our" in this Agreement) refers to Exams Nepal Pvt. Ltd, New Baneshwor, Kathmandu, Nepal.',
                     },
                     {
                       term: "Cookies",
@@ -156,7 +157,23 @@ export default function PrivacyPolicyPage() {
                   ].map((item, index) => (
                     <div key={index} className="bg-slate-50 rounded-lg p-4 border-l-4 border-blue-500">
                       <dt className="font-semibold text-slate-900 mb-1">{item.term}</dt>
-                      <dd className="text-slate-700">{item.definition}</dd>
+                      <dd className="text-slate-700">
+                        {item.term === "Website" ? (
+                            <>
+                            refers to examsnepal, accessible from{" "}
+                            <Link
+                                href="https://examsnepal.com/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline font-medium"
+                            >
+                                https://examsnepal.com/
+                            </Link>
+                            </>
+                        ) : (
+                            item.definition
+                        )}
+                        </dd>
                     </div>
                   ))}
                 </div>
@@ -205,7 +222,7 @@ export default function PrivacyPolicyPage() {
                   <h4 className="font-semibold text-green-900 mb-3">Usage Data</h4>
                   <p className="text-green-800 mb-4">
                     Usage Data is collected automatically when using the Service and may include information such as
-                    Your Device's Internet Protocol address, browser type, browser version, the pages of our Service
+                    Your Device&apos;s Internet Protocol address, browser type, browser version, the pages of our Service
                     that You visit, the time and date of Your visit, and other diagnostic data.
                   </p>
                 </div>
@@ -266,7 +283,7 @@ export default function PrivacyPolicyPage() {
               <section id="children" className="mb-12">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Users className="w-6 h-6 text-blue-600" />
-                  Children's Privacy
+                  Children&apos;s Privacy
                 </h2>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                   <p className="text-red-800 mb-4">
@@ -296,33 +313,33 @@ export default function PrivacyPolicyPage() {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
                     <Mail className="w-8 h-8 text-blue-600 mx-auto mb-3" />
                     <h4 className="font-semibold text-blue-900 mb-2">Email</h4>
-                    <a
+                    <Link
                       href="mailto:info@examsnepal.com"
                       className="text-blue-700 hover:text-blue-800 transition-colors"
                     >
                       info@examsnepal.com
-                    </a>
+                    </Link>
                   </div>
 
                   <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
                     <Phone className="w-8 h-8 text-green-600 mx-auto mb-3" />
                     <h4 className="font-semibold text-green-900 mb-2">Phone</h4>
-                    <a href="tel:9802334171" className="text-green-700 hover:text-green-800 transition-colors">
+                    <Link href="tel:9802334171" className="text-green-700 hover:text-green-800 transition-colors">
                       9802334171
-                    </a>
+                    </Link>
                   </div>
 
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-6 text-center">
                     <ExternalLink className="w-8 h-8 text-purple-600 mx-auto mb-3" />
                     <h4 className="font-semibold text-purple-900 mb-2">Website</h4>
-                    <a
-                      href="https://examsnepal.com/contact"
+                    <Link
+                      href="https://examsnepal.com/contact-us"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-purple-700 hover:text-purple-800 transition-colors"
                     >
                       Contact Page
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </section>
