@@ -134,9 +134,27 @@ const Footer = () => {
 
                 {/* Footer Bottom */}
                 <hr className="border-gray-600 my-6"/>
-                <p className="text-center text-sm text-gray-300">
-                    &copy; {new Date().getFullYear()} Exams Nepal. All rights reserved.
-                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 sm:gap-4 text-center">
+                    <p className="text-center text-sm text-gray-300">
+                        &copy; {new Date().getFullYear()} Exams Nepal. All rights reserved.
+                    </p>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/privacy-policy"
+                            className="text-sm text-gray-300 hover:text-white transition"
+                        >
+                            Privacy Policy
+                        </Link>
+                        <span className="text-gray-500">|</span>
+                        <Link
+                            href="/terms-and-conditions"
+                            className="text-sm text-gray-300 hover:text-white transition"
+                        >
+                            Terms & Conditions
+                        </Link>
+                    </div>
+                </div>
             </div>
         </footer>
     );
