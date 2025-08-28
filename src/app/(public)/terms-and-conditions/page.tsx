@@ -29,8 +29,6 @@ export default function TermsAndConditionsPage() {
     { id: "disclaimer", title: "Disclaimer", icon: AlertCircle },
     { id: "governing-law", title: "Governing Law", icon: Scale },
     { id: "disputes", title: "Disputes Resolution", icon: Users },
-    { id: "severability", title: "Severability and Waiver", icon: Shield },
-    { id: "translation", title: "Translation Interpretation", icon: Globe },
     { id: "changes", title: "Changes to These Terms", icon: Calendar },
     { id: "contact", title: "Contact Us", icon: Mail },
   ]
@@ -112,7 +110,7 @@ export default function TermsAndConditionsPage() {
               </div>
 
               {/* Interpretation and Definitions */}
-              <section id="interpretation" className="mb-12">
+              <section id="interpretation" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <FileText className="w-6 h-6 text-green-600" />
                   Interpretation and Definitions
@@ -198,7 +196,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Acknowledgment */}
-              <section id="acknowledgment" className="mb-12">
+              <section id="acknowledgment" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <BookOpen className="w-6 h-6 text-green-600" />
                   Acknowledgment
@@ -222,7 +220,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Links to Other Websites */}
-              <section id="links" className="mb-12">
+              <section id="links" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <ExternalLink className="w-6 h-6 text-green-600" />
                   Links to Other Websites
@@ -247,7 +245,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Termination */}
-              <section id="termination" className="mb-12">
+              <section id="termination" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Ban className="w-6 h-6 text-green-600" />
                   Termination
@@ -264,7 +262,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Disclaimer */}
-              <section id="disclaimer" className="mb-12">
+              <section id="disclaimer" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <AlertCircle className="w-6 h-6 text-green-600" />
                   Disclaimer
@@ -292,7 +290,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Governing Law */}
-              <section id="governing-law" className="mb-12">
+              <section id="governing-law" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Scale className="w-6 h-6 text-green-600" />
                   Governing Law
@@ -307,7 +305,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Disputes Resolution */}
-              <section id="disputes" className="mb-12">
+              <section id="disputes" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Users className="w-6 h-6 text-green-600" />
                   Disputes Resolution
@@ -321,7 +319,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Changes to Terms */}
-              <section id="changes" className="mb-12">
+              <section id="changes" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Calendar className="w-6 h-6 text-green-600" />
                   Changes to These Terms and Conditions
@@ -340,7 +338,7 @@ export default function TermsAndConditionsPage() {
               </section>
 
               {/* Contact Information */}
-              <section id="contact" className="mb-12">
+              <section id="contact" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Mail className="w-6 h-6 text-green-600" />
                   Contact Us
