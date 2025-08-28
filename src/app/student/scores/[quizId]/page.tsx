@@ -3,7 +3,7 @@
 import {useSelector} from 'react-redux';
 import {useParams, useRouter} from 'next/navigation';
 import ScoreCard from "@/components/card/ScoreCard";
-import {RootState} from "@/redux/Srore";
+import {RootState} from "@/redux/Store";
 import {Button} from "@/components/ui/button";
 
 

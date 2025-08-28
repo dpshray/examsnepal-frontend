@@ -145,7 +145,7 @@ export default function MockTestPage() {
                                 <QuizCardList
                                     quizzes={pendingQuizzes}
                                     selectedTab={QUIZ_TYPES.PENDING}
-                                    onViewAllScoresAction={handleViewAllScoresAction}
+                                    onViewAllScoresAction={handleViewAllScoresAction as any}
                                     onTakeTestAction={handleTakeTestAction}
                                     onViewSolutionAction={(quizId: number) =>
                                         router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
@@ -174,7 +174,7 @@ export default function MockTestPage() {
                                 <QuizCardList
                                     quizzes={completedQuizzes}
                                     selectedTab={QUIZ_TYPES.COMPLETED}
-                                    onViewAllScoresAction={handleViewAllScoresAction}
+                                    onViewAllScoresAction={handleViewAllScoresAction as any}
                                     onTakeTestAction={handleTakeTestAction}
                                     onViewSolutionAction={(quizId: number) =>
                                         router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
