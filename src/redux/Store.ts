@@ -1,14 +1,15 @@
 import {configureStore} from '@reduxjs/toolkit';
 import playersReducer from './slices/playerSlice';
 
-import storage from 'redux-persist/lib/storage';
+// import storage from 'redux-persist/lib/storage';
 
 
-const persistConfig = {
-    key: 'root',
-    storage,
-    whitelist: ['players'],
-};
+// const persistConfig = {
+//     key: 'root',
+//     storage,
+//     whitelist: ['players'],
+// };
+
 export const store = configureStore({
     reducer: {
         players: playersReducer,

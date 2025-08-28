@@ -12,7 +12,7 @@ import QuizCardList from '@/components/Exams/Quiz';
 import Pagination from '@/components/Pagination';
 import {CheckCheckIcon, ClockIcon} from 'lucide-react';
 import {useDispatch} from 'react-redux';
-import {AppDispatch} from "@/redux/Srore";
+import {AppDispatch} from "@/redux/Store";
 
 interface Quiz {
     id: number;
