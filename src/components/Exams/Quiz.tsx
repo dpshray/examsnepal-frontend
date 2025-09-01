@@ -1,9 +1,9 @@
 'use client';
 
-import {FC} from 'react';
-import {QuizType} from '@/lib/Constan';
-import {QuizCompletedCard, QuizPendingCard} from "@/components/Exams/exam-card";
-import {QuizResponse} from "@/types/types";
+import { FC } from 'react';
+import { QuizType } from '@/lib/Constan';
+import { QuizCompletedCard, QuizPendingCard } from "@/components/Exams/exam-card";
+import { QuizResponse } from "@/types/types";
 
 interface QuizListProps {
     quizType: QuizType;
@@ -14,18 +14,18 @@ interface QuizListProps {
 interface QuizCardListProps {
     quizzes: any[];
     selectedTab: string;
-    onViewAllScoresAction: (quizId: number) => void;
+    onViewAllScoresAction: (quizId: number | any) => void;
     onTakeTestAction: (quizId: number) => void;
     onViewSolutionAction: (quizId: number) => void;
 }
 
 const QuizCardList: FC<QuizCardListProps> = ({
-                                                 quizzes,
-                                                 selectedTab,
-                                                 onViewAllScoresAction,
-                                                 onTakeTestAction,
-                                                 onViewSolutionAction,
-                                             }) => {
+    quizzes,
+    selectedTab,
+    onViewAllScoresAction,
+    onTakeTestAction,
+    onViewSolutionAction,
+}) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
             {quizzes.map((quiz) =>
