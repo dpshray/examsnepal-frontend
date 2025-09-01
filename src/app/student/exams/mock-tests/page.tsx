@@ -1,16 +1,16 @@
 'use client';
 
-import {useEffect, useState} from "react";
-import {useRouter, useSearchParams} from "next/navigation";
-import {StudentBannerHeader} from "@/components/banner/header";
-import {QuizTestCardSkeleton} from "@/components/Exams/exam-card";
-import {QUIZ_TYPES, QuizType} from "@/lib/Constan";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { StudentBannerHeader } from "@/components/banner/header";
+import { QuizTestCardSkeleton } from "@/components/Exams/exam-card";
+import { QUIZ_TYPES, QuizType } from "@/lib/Constan";
 import mockTestService from "@/services/ExamService/MockTest";
 import QuizCardList from "@/components/Exams/Quiz";
 import Pagination from "@/components/Pagination";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-import {CheckCheckIcon, ClockIcon} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { CheckCheckIcon, ClockIcon } from "lucide-react";
 
 interface MetaData {
     totalPages: number;
@@ -33,8 +33,8 @@ export default function MockTestPage() {
     const [completedQuizzes, setCompletedQuizzes] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const [pendingMeta, setPendingMeta] = useState<MetaData>({totalPages: 1, currentPage: 1});
-    const [completedMeta, setCompletedMeta] = useState<MetaData>({totalPages: 1, currentPage: 1});
+    const [pendingMeta, setPendingMeta] = useState<MetaData>({ totalPages: 1, currentPage: 1 });
+    const [completedMeta, setCompletedMeta] = useState<MetaData>({ totalPages: 1, currentPage: 1 });
 
     const fetchPendingQuizzes = async (page: number) => {
         try {
@@ -42,7 +42,7 @@ export default function MockTestPage() {
             const totalPages = Math.ceil(response?.data?.total / 10);
             setPendingQuizzes(response.data.data);
             console.log(`Pending Quizzes`, response.data);
-            setPendingMeta({totalPages, currentPage: page});
+            setPendingMeta({ totalPages, currentPage: page });
         } catch (error) {
             console.error('Error fetching pending quizzes:', error);
         }
@@ -54,7 +54,7 @@ export default function MockTestPage() {
             const totalPages = Math.ceil(response?.data?.total / 10);
             setCompletedQuizzes(response.data.data);
             console.log(`Completed Quizzes`, response);
-            setCompletedMeta({totalPages, currentPage: page});
+            setCompletedMeta({ totalPages, currentPage: page });
         } catch (error) {
             console.error('Error fetching completed quizzes:', error);
         }
@@ -86,9 +86,9 @@ export default function MockTestPage() {
 
     const handlePageChange = (page: number) => {
         if (selectedTab === QUIZ_TYPES.PENDING) {
-            setPendingMeta(prev => ({...prev, currentPage: page}));
+            setPendingMeta(prev => ({ ...prev, currentPage: page }));
         } else {
-            setCompletedMeta(prev => ({...prev, currentPage: page}));
+            setCompletedMeta(prev => ({ ...prev, currentPage: page }));
         }
     };
 
@@ -119,25 +119,25 @@ export default function MockTestPage() {
                                 value={QUIZ_TYPES.PENDING}
                                 className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
                             >
-                                <ClockIcon size={16} className="me-2 opacity-60"/>
+                                <ClockIcon size={16} className="me-2 opacity-60" />
                                 Pending Mock Test
                             </TabsTrigger>
                             <TabsTrigger
                                 value={QUIZ_TYPES.COMPLETED}
                                 className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:bg-green-600 data-[state=active]:text-white"
                             >
-                                <CheckCheckIcon size={16} className="me-2 opacity-60"/>
+                                <CheckCheckIcon size={16} className="me-2 opacity-60" />
                                 Completed Mock Test
                             </TabsTrigger>
                         </TabsList>
-                        <ScrollBar orientation="horizontal"/>
+                        <ScrollBar orientation="horizontal" />
                     </ScrollArea>
 
                     <TabsContent value={QUIZ_TYPES.PENDING}>
                         {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {Array.from({length: 6}).map((_, index) => (
-                                    <QuizTestCardSkeleton key={index}/>
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <QuizTestCardSkeleton key={index} />
                                 ))}
                             </div>
                         ) : (
@@ -165,8 +165,8 @@ export default function MockTestPage() {
                     <TabsContent value={QUIZ_TYPES.COMPLETED}>
                         {loading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {Array.from({length: 6}).map((_, index) => (
-                                    <QuizTestCardSkeleton key={index}/>
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <QuizTestCardSkeleton key={index} />
                                 ))}
                             </div>
                         ) : (
