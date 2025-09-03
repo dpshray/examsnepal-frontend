@@ -1,8 +1,5 @@
-import { CheckCircle, ArrowRight, Download, Home } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import Link from "next/link"
+import {CheckCircle} from "lucide-react"
+import {Card, CardContent} from "@/components/ui/card"
 
 
 export default function PaymentSuccessPage() {
@@ -16,7 +13,7 @@ export default function PaymentSuccessPage() {
                                 className="w-16 h-16 text-green-500 animate-bounce"
                                 aria-hidden="true"
                             />
-                            <div className="absolute inset-0 w-16 h-16 bg-green-500/20 rounded-full animate-ping" />
+                            <div className="absolute inset-0 w-16 h-16 bg-green-500/20 rounded-full animate-ping"/>
                         </div>
                     </div>
 

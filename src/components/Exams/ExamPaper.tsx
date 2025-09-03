@@ -1,12 +1,12 @@
 'use client';
 
 import {useCallback, useEffect, useState} from 'react';
-import {QuestionCard, QuestionCardSkeleton,} from '@/components/Exams/QuestionCard';
+import {QuestionCard, QuestionCardSkeleton} from '@/components/Exams/QuestionCard';
 import {Button} from '@/components/ui/button';
 import {Checkbox} from '@/components/ui/checkbox';
 import {toast} from 'react-hot-toast';
 import Image from 'next/image';
-import {FormatExamTime} from "@/lib/utils";
+import {cn, FormatExamTime} from "@/lib/utils";
 
 interface Option {
     label: string;
@@ -34,6 +34,7 @@ interface QuizEngineProps {
     totalQuestions?: number;
     correctAnswers?: number;
     setCurrentPageAction: (page: number) => void;
+    className?: string;
 }
 
 export default function QuizEngine({
@@ -49,17 +50,16 @@ export default function QuizEngine({
                                        totalQuestions = 0,
                                        correctAnswers = 0,
                                        setCurrentPageAction,
+                                       className,
                                    }: QuizEngineProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showResult, setShowResult] = useState(false);
-
     const [timeLeft, setTimeLeft] = useState(duration);
     const [isAgreedToTerms, setIsAgreedToTerms] = useState(false);
 
-
     const handleSelect = (qid: number) => (value: string) => {
-        setSelectedAnswers((prev) => ({...prev, [qid]: value}));
+        setSelectedAnswers(prev => ({...prev, [qid]: value}));
     };
 
     const handleSubmit = useCallback(async () => {
@@ -67,8 +67,8 @@ export default function QuizEngine({
 
         const payload = {
             exam_id: examId,
-            question_ids: quiz.map((q) => q.id),
-            question_id: Object.keys(selectedAnswers),
+            question_ids: quiz.map(q => q.id),
+            question_id: Object.keys(selectedAnswers).map(id => Number(id)),
             option_id: Object.values(selectedAnswers),
         };
 
@@ -77,11 +77,9 @@ export default function QuizEngine({
             setIsSubmitted(true);
             setTimeLeft(0);
             toast.success('Exam submitted!');
-        } catch (error: any) {
-            console.error('Submission error:', error);
+        } catch {
             toast.error('Failed to submit exam. Please try again.');
         }
-
     }, [isSubmitted, examId, quiz, selectedAnswers, onSubmitAction]);
 
     useEffect(() => {
@@ -89,12 +87,11 @@ export default function QuizEngine({
             handleSubmit();
         } else {
             const timer = setInterval(() => {
-                setTimeLeft((prev) => prev - 1);
+                setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
             }, 1000);
             return () => clearInterval(timer);
         }
     }, [timeLeft, handleSubmit, isSubmitted]);
-
 
     const handleViewDetails = () => {
         setCurrentPageAction(1);
@@ -102,62 +99,50 @@ export default function QuizEngine({
         window.scrollTo({top: 0, behavior: 'smooth'});
     };
 
-
     return (
-        <section className="max-w-5xl mx-auto my-6 md:my-10">
+        <section className={cn('w-full mx-auto my-6 md:my-10', className)}>
             <div className="bg-white shadow rounded-lg p-6 space-y-6">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-6">
                     <div className="flex items-center gap-4">
-                        <Image src="/book.svg" alt="Exam book icon" width={48} height={48}/>
+                        <Image src="/book.svg" alt="Exam book icon" width={48} height={48} />
                         <article>
                             <span className="text-lg font-semibold">10 Questions Per Page</span>
                             <p className="text-sm text-muted-foreground">
-                                {/* Show selected question number out of total */}
-                                Question {currentPage * 10 - 9} - {currentPage * 10} of {totalPages * 10}
+                                Question {currentPage * 10 - 9} - {Math.min(currentPage * 10, totalPages * 10)} of {totalPages * 10}
                             </p>
                         </article>
-
                     </div>
                     <div className="text-center flex-1">
                         <p className="text-sm text-muted-foreground">Time Left:</p>
-                        {
-                            timeLeft > 0 ? (
-                                <p className="text-lg font-semibold text-red-500">
-                                    {FormatExamTime(timeLeft)}
-                                </p>
-                            ) : (
-                                <p className="text-lg font-semibold text-red-500">Time&#39;s up!</p>
-                            )
-                        }
+                        {timeLeft > 0 ? (
+                            <p className="text-lg font-semibold text-red-500">{FormatExamTime(timeLeft)}</p>
+                        ) : (
+                            <p className="text-lg font-semibold text-red-500">Time&#39;s up!</p>
+                        )}
                     </div>
-                    <Image src="/exam.png" alt="Exam visual" width={48} height={48}/>
+                    <Image src="/exam.png" alt="Exam visual" width={48} height={48} />
                 </div>
 
-                {/* Quiz Questions */}
-                {loading ? (
-                    [...Array(10)].map((_, index) => <QuestionCardSkeleton key={index}/>)
-                ) : (
-                    quiz.map((q: any, index: number) => (
+                {loading
+                    ? [...Array(10)].map((_, i) => <QuestionCardSkeleton key={i} />)
+                    : quiz.map((q, index) => (
                         <QuestionCard
                             key={q.id}
                             questionNumber={(currentPage - 1) * 10 + index + 1}
                             questionText={q.question}
-                            options={q.options.map((opt: any) => ({
-                                label: opt.option,
-                                value: opt.id,
-                                isCorrect: opt.value === 1
+                            options={q.options.map(opt => ({
+                                label: opt.label,
+                                value: opt.value,
+                                isCorrect: opt.isCorrect,
                             }))}
-                            onSelect={handleSelect(q.id )}
+                            onSelect={handleSelect(q.id)}
                             selectedValue={selectedAnswers[q.id]}
                             showFeedback={showResult}
-                            correctAnswers={q.options.filter((opt: any) => opt.value === 1).map((opt: any) => opt.id)}
+                            correctAnswers={q.options.filter(o => o.isCorrect).map(o => o.value)}
                             explanation={q.explanation}
                         />
-                    ))
-                )}
+                    ))}
 
-                {/* Navigation & Submit */}
                 <div className="flex justify-between mt-4">
                     <Button onClick={onPrevAction} disabled={currentPage === 1} variant="destructive">
                         Previous
@@ -167,31 +152,28 @@ export default function QuizEngine({
                     </Button>
                 </div>
 
-                {/* Submit Area */}
                 {currentPage === totalPages && !isSubmitted && (
                     <>
                         <div className="mt-4 flex items-center">
-                            <Checkbox checked={isAgreedToTerms} onCheckedChange={() => setIsAgreedToTerms((v) => !v)}
-                                      className="mr-2"/>
+                            <Checkbox checked={isAgreedToTerms} onCheckedChange={() => setIsAgreedToTerms(v => !v)} className="mr-2" />
                             <span className="text-sm">
                                 I agree to the <a href="#" className="text-green-600">terms and conditions</a>
-                              </span>
+                            </span>
                         </div>
-                        <Button type={'submit'} onClick={handleSubmit} className="mt-4 primary-btn"
-                                disabled={!isAgreedToTerms}>
+                        <Button type="submit" onClick={handleSubmit} className="mt-4 primary-btn" disabled={!isAgreedToTerms}>
                             Submit Exam
                         </Button>
                     </>
                 )}
 
-                {/* Result */}
                 {isSubmitted && (
                     <div className="mt-6 text-center">
                         <h3 className="text-lg font-semibold">
                             Your Score: {correctAnswers} / {totalQuestions}
                         </h3>
-                        <Button className="mt-4 primary-btn" onClick={handleViewDetails}>View Details</Button>
-
+                        <Button className="mt-4 primary-btn" onClick={handleViewDetails}>
+                            View Details
+                        </Button>
                     </div>
                 )}
             </div>

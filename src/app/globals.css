@@ -141,12 +141,21 @@
 
     }
 
-
 }
-
 
 @layer utilities {
     .primary-btn {
         @apply bg-green-600 !text-white hover:bg-green-700;
+    }
+}
+
+/*---break--- */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
     }
 }

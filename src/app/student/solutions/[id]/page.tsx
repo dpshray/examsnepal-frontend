@@ -72,7 +72,7 @@ export default function ViewSolution({params}: { params: Promise<{ id: number }>
                     className={'bg-gradient-to-r from-teal-200 to-teal-400 text-white'}
                     textClassName={'text-white'}
                 />
-                <div className={'max-w-5xl mx-auto my-6 md:my-10 container space-y-2 shadow-md p-3'}>
+                <div className={'w-full mx-auto my-6 md:my-10 container space-y-2 shadow-md p-3'}>
                     <div className={' flex flex-col items-center justify-center'}>
                         <h1 className={' text-2xl font-bold text-gray-900 mb-2'}>
                             Total Questions: {solution?.length}

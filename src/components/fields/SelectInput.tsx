@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react";
 import {
     Select,
     SelectContent,
@@ -8,27 +8,28 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
-type SelectValueType = string | number
+type SelectValueType = string | number;
 
 interface Option {
-    value: SelectValueType
-    label: string
+    value: SelectValueType;
+    label: string;
 }
 
 interface SelectInputProps {
-    label?: string
-    placeholder: string
-    name?: string
-    required?: boolean
-    options: Option[]
-    className?: string
-    error?: string
-    value?: SelectValueType
-    onChangeAction: (value: SelectValueType) => void
+    label?: string;
+    placeholder: string;
+    name?: string;
+    required?: boolean;
+    options: Option[];
+    className?: string;
+    error?: string;
+    value?: SelectValueType;
+    onChangeAction: (value: SelectValueType) => void;
+    [key: string]: any;
 }
 
 export default function SelectInputField({
@@ -41,24 +42,26 @@ export default function SelectInputField({
                                              error,
                                              value,
                                              onChangeAction,
+                                             ...props
                                          }: SelectInputProps) {
-    // Ensure value is correctly initialized
-    const stringValue = value !== undefined ? String(value) : undefined
-    const [selectedValue, setSelectedValue] = useState<string | undefined>(stringValue)
+    const stringValue = value !== undefined && value !== null ? String(value) : undefined;
+    const [selectedValue, setSelectedValue] = useState<string | undefined>(stringValue);
 
-    // Sync selected value when the value prop changes
     useEffect(() => {
-        setSelectedValue(stringValue)
-    }, [stringValue])
+        setSelectedValue(stringValue);
+    }, [stringValue]);
 
-    // Handle the value change, calling the parent onChangeAction callback
-    const handleValueChange = (val: string | number) => {
-        setSelectedValue(val as string)
-        const matched = options.find(opt => String(opt.value) === String(val))
-        onChangeAction(matched?.value ?? val) // Ensure we pass the correct value
-    }
+    const handleValueChange = (val: string) => {
+        setSelectedValue(val);
+        const matched = options.find((opt) => String(opt.value) === val);
+        if (matched) {
+            onChangeAction(matched.value);
+        } else {
+            onChangeAction(val);
+        }
+    };
 
-    const errorId = error && name ? `${name}-error` : undefined
+    const errorId = error && name ? `${name}-error` : undefined;
 
     return (
         <div className="space-y-2">
@@ -71,8 +74,7 @@ export default function SelectInputField({
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </Label>
             )}
-
-            <Select value={selectedValue} onValueChange={handleValueChange}>
+            <Select value={selectedValue} onValueChange={handleValueChange} {...props}>
                 <SelectTrigger
                     id={name}
                     aria-label={label}
@@ -87,23 +89,21 @@ export default function SelectInputField({
                 >
                     <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
-
-                <SelectContent className="border border-input">
+                <SelectContent className="border border-input max-w-[380px]">
                     <SelectGroup>
-                        {options.map(({ value: optionValue, label }) => (
-                            <SelectItem key={String(optionValue)} value={String(optionValue)}>
-                                {label}
+                        {options.map(({ value: optionValue, label: optionLabel }) => (
+                            <SelectItem key={String(optionValue)} value={String(optionValue)} className="whitespace-normal break-words text-sm leading-snug">
+                                {optionLabel}
                             </SelectItem>
                         ))}
                     </SelectGroup>
                 </SelectContent>
             </Select>
-
             {error && (
                 <p id={errorId} className="text-sm text-red-500 mt-1">
                     {error}
                 </p>
             )}
         </div>
-    )
+    );
 }

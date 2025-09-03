@@ -9,7 +9,7 @@ import freeQuizServices from '@/services/ExamService/FreeQuiz';
 export default function GetFreeQuizById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
-    const router = useRouter();
+
 
     const [quiz, setQuiz] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -29,6 +29,7 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
                     page: page,
                     token: tokenToUse as string,
                 });
+                console.log(' Response form freequiz',response)
                 setQuiz(response?.data?.data);
                 setTotalPages(Math.ceil(response?.data?.total / 10));
                 setTotalQuestions(response?.data?.total || 0);

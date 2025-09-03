@@ -179,6 +179,7 @@ interface RepliesCardProps {
     onDeleteAction: (id: number) => void
     onEditAction: (id: number, question: string) => void
     replyId: number
+    isSolved?: boolean;
 
 
 }
@@ -190,7 +191,8 @@ export function RepliesCard({
                                 studentId,
                                 replyId,
                                 onDeleteAction,
-                                onEditAction
+                                onEditAction,
+                                isSolved
                             }: RepliesCardProps) {
     const [loggedInId, setLoggedInId] = useState<number | null>(null);
 

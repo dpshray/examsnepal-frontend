@@ -1,5 +1,6 @@
-'use client'
+'use client';
 
+import React from 'react';
 import BannerHeader from "@/components/banner/header";
 import TextInputField from "@/components/fields/TextInputField";
 import SelectInputField from "@/components/fields/SelectInput";
@@ -8,9 +9,9 @@ import { MdOutlinePhoneInTalk } from "react-icons/md";
 import { IoIosMailOpen } from "react-icons/io";
 import { FaWhatsapp } from "react-icons/fa6";
 import { cn } from "@/lib/utils";
-import React from "react";
-
-
+import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 export function ContactCard({
                                 icon: Icon,
@@ -38,27 +39,37 @@ export function ContactCard({
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-base text-primary  break-words"
+                    className="font-semibold text-base text-primary break-words"
                     aria-label={title}
                 >
                     {title}
                 </a>
                 {details && (
-                    <p className="text-xs hover:scale-110 cursor-pointer  hover:underline text-gray-700 mt-0.5 break-words">{details}</p>
+                    <p className="text-xs hover:scale-110 cursor-pointer hover:underline text-gray-700 mt-0.5 break-words">
+                        {details}
+                    </p>
                 )}
             </div>
         </div>
     );
 }
 
+const contactSchema = yup.object({
+    name: yup.string().required("Name is required"),
+    email: yup.string().email("Email must be a valid email").required("Email is required"),
+    phone: yup.string().required("Phone number is required"),
+    howDidYouFindUs: yup.string().required("This field is required"),
+    message: yup.string().required("Message is required"),
+});
 
+type FormData = yup.InferType<typeof contactSchema>;
 
-export default function ContactPage() {
+export default function ContactClient() {
     const options = [
         { value: "Google", label: "Google" },
         { value: "Facebook", label: "Facebook" },
         { value: "Instagram", label: "Instagram" },
-        { value: "Other", label: "Other" }
+        { value: "Other", label: "Other" },
     ];
 
     const contactDetails = [
@@ -66,25 +77,38 @@ export default function ContactPage() {
             title: "Phone",
             icon: MdOutlinePhoneInTalk,
             details: "9802334171",
-            href: "tel:9802334171"
+            href: "tel:9802334171",
         },
         {
             title: "Email",
             icon: IoIosMailOpen,
             details: "ExamNepal@gmail.com",
-            href: "mailto:info@examsnepal.com"
+            href: "mailto:info@examsnepal.com",
         },
         {
             title: "Whatsapp",
             icon: FaWhatsapp,
             details: "9802334171",
-            href: "https://wa.me/9779802334171"
-        }
+            href: "https://wa.me/9779802334171",
+        },
     ];
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        formState: { errors },
+    } = useForm<FormData>({
+        resolver: yupResolver(contactSchema),
+        mode: "onBlur",
+    });
+
+    const onSubmit = (data: FormData) => {
+        console.log(data);
+    };
 
     return (
         <section id="contact-us" className="bg-white">
-            {/* SEO-friendly Banner */}
             <BannerHeader
                 title="Contact Us"
                 subtitle="Have a Question? Let's Chat!"
@@ -92,41 +116,59 @@ export default function ContactPage() {
             />
 
             <div className="container max-w-7xl mx-auto my-6 md:my-12 px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 shadow ">
-                    {/* Contact Form */}
-                    <div className="bg-[#E0E0E066] p-6 sm:p-8 ">
+                <div className="grid grid-cols-1 md:grid-cols-2 shadow">
+                    <div className="bg-[#E0E0E066] p-6 sm:p-8">
                         <h1 className="text-4xl md:text-5xl font-bold font-montserrat text-gray-900 mb-4">
                             Get in <span className="text-primaryGreen">Touch</span>
                         </h1>
                         <p className="text-sm text-gray-700 font-poppins mb-6">
-                            Got a question, facing a problem, or have a brilliant idea to share? We&#39;re always just a
-                            message away. Drop us a line, and our friendly team will get back to you as quickly as
-                            possible.
+                            Got a question, facing a problem, or have a brilliant idea to share? We&#39;re always just a message
+                            away. Drop us a line, and our friendly team will get back to you as quickly as possible.
                         </p>
 
-                        <form className="space-y-5 w-full" aria-label="Contact Form">
+                        <form
+                            onSubmit={handleSubmit(onSubmit)}
+                            className="space-y-5 w-full"
+                            aria-label="Contact Form"
+                            noValidate
+                        >
                             <TextInputField
+                                {...register("name")}
                                 name="name"
                                 placeholder="Your Name"
                                 className="bg-white"
+                                error={errors.name?.message}
                             />
                             <TextInputField
+                                {...register("email")}
                                 name="email"
                                 type="email"
                                 placeholder="Your Email"
                                 className="bg-white"
+                                error={errors.email?.message}
                             />
                             <TextInputField
+                                {...register("phone")}
                                 name="phone"
                                 type="tel"
                                 placeholder="Phone Number"
                                 className="bg-white"
+                                error={errors.phone?.message}
                             />
                             <SelectInputField
                                 placeholder="How did you find us?"
                                 className="bg-white"
                                 options={options}
-                                onChangeAction={() => {}}
+                                onChangeAction={(value: string | number) => setValue("howDidYouFindUs", String(value))}
+                                error={errors.howDidYouFindUs?.message}
+                            />
+                            <TextInputField
+                                {...register("message")}
+                                name="message"
+                                placeholder="Your Message"
+                                className="bg-white"
+                                textarea
+                                error={errors.message?.message}
                             />
                             <Button
                                 type="submit"
@@ -144,23 +186,22 @@ export default function ContactPage() {
                                     title={item.title}
                                     details={item.details}
                                     href={item.href}
-                                    className={'bg-white'}
+                                    className="bg-white"
                                 />
                             ))}
                         </div>
                     </div>
 
-                    {/* Google Maps */}
                     <div className="w-full h-auto relative shadow-none cursor-grab">
                         <iframe
                             title="Company Location"
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3533.0710843557645!2d85.32929367518048!3d27.684197776195838!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb198f4a438ac1%3A0x8e8381151404aa9!2sZillicom%20Real%20Estate!5e0!3m2!1sen!2snp!4v1745575352126!5m2!1sen!2snp"
+                            src={process.env.NEXT_PUBLIC_GOOGLE_MAP_LOCATION}
                             loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade"
-                            className="w-full h-full  "
+                            className="w-full h-full min-h-[400px]"
                             style={{ border: 0 }}
                             allowFullScreen
-                        ></iframe>
+                        />
                     </div>
                 </div>
             </div>
