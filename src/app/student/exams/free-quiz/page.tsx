@@ -13,6 +13,7 @@ import Pagination from '@/components/Pagination';
 import {CheckCheckIcon, ClockIcon} from 'lucide-react';
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from "@/redux/Store";
+import CustomPagination from "@/components/Pagination";
 
 interface Quiz {
     id: number;
@@ -166,10 +167,10 @@ export default function FreeQuiz() {
                                 <div className="flex justify-center mt-4">
                                     {
                                         pendingTotalPages > 1 &&
-                                        <Pagination
+                                        <CustomPagination
                                             totalPages={pendingTotalPages}
                                             currentPage={pendingPage}
-                                            onPageChange={(page) => setPendingPage(page)}
+                                            onPageChangeAction={(page) => setPendingPage(page)}
                                         />
                                     }
                                 </div>
@@ -198,14 +199,13 @@ export default function FreeQuiz() {
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
-                                    {
-                                        completedTotalPages > 1 &&
-                                        <Pagination
+
+                                        <CustomPagination
                                             totalPages={completedTotalPages}
                                             currentPage={completedPage}
-                                            onPageChange={(page) => setCompletedPage(page)}
-                                        />
-                                    }
+                                            onPageChangeAction={(page) => setCompletedPage(page)} // ✅ correct
+                                            />
+
                                 </div>
                             </>
                         )}

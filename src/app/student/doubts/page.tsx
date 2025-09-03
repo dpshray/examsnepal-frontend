@@ -232,8 +232,8 @@ export default function Doubts() {
                                             doubt={doubt.doubt}
                                             created_at={doubt.created_at}
                                             updated_at={doubt.updated_at}
-                                            status={doubt.status}
-                                            remark={doubt.remark}
+                                            status={doubt.status as any}
+                                            remark={doubt.remark ?? null}
                                             question={doubt.question}
                                             question_id={doubt.question_id || 0}
                                         />

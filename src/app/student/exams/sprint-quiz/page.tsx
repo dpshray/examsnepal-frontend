@@ -12,6 +12,7 @@ import sprintQuizServices from '@/services/ExamService/SprintQuiz';
 import Pagination from '@/components/Pagination';
 import {QUIZ_TYPES, QuizType} from '@/lib/Constan';
 import {toast} from 'react-hot-toast';
+import CustomPagination from "@/components/Pagination";
 
 export default function SprintQuiz() {
     const router = useRouter();
@@ -149,10 +150,10 @@ export default function SprintQuiz() {
                 <div className="p-4">
                     {
                         completedTotalPages > 1 || pendingTotalPages > 1 ? (
-                            <Pagination
+                            <CustomPagination
                                 totalPages={selectedTab === QUIZ_TYPES.PENDING ? pendingTotalPages : completedTotalPages}
                                 currentPage={selectedTab === QUIZ_TYPES.PENDING ? pendingPage : completedPage}
-                                onPageChange={(page: number) => {
+                                onPageChangeAction={(page: number) => {
                                     if (selectedTab === QUIZ_TYPES.PENDING) {
                                         setPendingPage(page);
                                         fetchPending(page);

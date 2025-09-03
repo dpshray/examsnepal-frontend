@@ -11,6 +11,7 @@ import Pagination from "@/components/Pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { CheckCheckIcon, ClockIcon } from "lucide-react";
+import CustomPagination from "@/components/Pagination";
 
 interface MetaData {
     totalPages: number;
@@ -152,10 +153,10 @@ export default function MockTestPage() {
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
-                                    <Pagination
+                                    <CustomPagination
                                         totalPages={pendingMeta.totalPages}
                                         currentPage={pendingMeta.currentPage}
-                                        onPageChange={handlePageChange}
+                                        onPageChangeAction={handlePageChange}
                                     />
                                 </div>
                             </>
@@ -181,10 +182,10 @@ export default function MockTestPage() {
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
-                                    <Pagination
+                                    <CustomPagination
                                         totalPages={completedMeta.totalPages}
                                         currentPage={completedMeta.currentPage}
-                                        onPageChange={handlePageChange}
+                                        onPageChangeAction={handlePageChange}
                                     />
                                 </div>
                             </>

@@ -62,7 +62,7 @@ const LoadingSkeleton = () => (
     </div>
 );
 
-export default function PinsClient(): JSX.Element {
+export default function PinsClient() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
