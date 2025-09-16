@@ -57,7 +57,7 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
     }) => {
         try {
             const res = await mockTestService.submitExam(payload);
-            setCorrectAnswers(res?.data?.correct_answer || 0);
+            setCorrectAnswers(res?.data?.correct_answered || 0);
         } catch (err) {
             console.error('Error submitting sprint quiz:', err);
         }

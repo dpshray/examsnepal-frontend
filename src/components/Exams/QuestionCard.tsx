@@ -62,6 +62,9 @@ export const QuestionCard = ({
         setExplanationVisible(!explanationVisible);
     };
 
+    console.log('selectedValue', selectedValue);
+    console.log('correctAnswers', correctAnswers);
+
     return (
         <article
             aria-labelledby={`${questionId}-title`}
