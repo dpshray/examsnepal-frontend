@@ -29,7 +29,7 @@ export const registrationSchema = Yup.object().shape({
         .string()
         .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Password confirmation is required'),
-    exam_type: Yup.string()
+    exam_type_id: Yup.string()
         .required('Please select an exam type'),
 
 });

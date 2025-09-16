@@ -56,7 +56,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: numb
         fetchQuiz();
     }, [fetchQuiz]);
 
-console.log(correctAnswers)
+    console.log("correct", correctAnswers)
 
     return (
         <div className={'w-full'}>

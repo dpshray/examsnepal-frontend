@@ -9,7 +9,9 @@ import Image from 'next/image';
 import {cn, FormatExamTime} from "@/lib/utils";
 
 interface Option {
+    id: number;
     label: string;
+    option:string
     value: string;
     isCorrect: boolean;
 }
@@ -125,23 +127,32 @@ export default function QuizEngine({
 
                 {loading
                     ? [...Array(10)].map((_, i) => <QuestionCardSkeleton key={i} />)
-                    : quiz.map((q, index) => (
-                        <QuestionCard
-                            key={q.id}
-                            questionNumber={(currentPage - 1) * 10 + index + 1}
-                            questionText={q.question}
-                            options={q.options.map(opt => ({
-                                label: opt.label,
-                                value: opt.value,
-                                isCorrect: opt.isCorrect,
-                            }))}
-                            onSelect={handleSelect(q.id)}
-                            selectedValue={selectedAnswers[q.id]}
-                            showFeedback={showResult}
-                            correctAnswers={q.options.filter(o => o.isCorrect).map(o => o.value)}
-                            explanation={q.explanation}
-                        />
-                    ))}
+                    : quiz.map((q, index) => {
+                        const mappedOptions = q.options.map(opt => ({
+                            label: opt.option,           
+                            value: String(opt.id),      
+                            isCorrect: Boolean(opt.value), 
+                        }));
+
+                        const correctValues = mappedOptions
+                            .filter(o => o.isCorrect)
+                            .map(o => o.value); 
+
+                        return (
+                            <QuestionCard
+                                key={q.id}
+                                questionNumber={(currentPage - 1) * 10 + index + 1}
+                                questionText={q.question}
+                                options={mappedOptions}
+                                onSelect={handleSelect(q.id)}
+                                selectedValue={selectedAnswers[q.id]}
+                                showFeedback={showResult}
+                                correctAnswers={correctValues} 
+                                explanation={q.explanation}
+                            />
+                        );
+                    })
+                }
 
                 <div className="flex justify-between mt-4">
                     <Button onClick={onPrevAction} disabled={currentPage === 1} variant="destructive">

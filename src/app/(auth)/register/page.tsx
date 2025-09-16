@@ -136,8 +136,8 @@ export default function RegistrationForm() {
                             placeholder="Select Exam Type"
                             label="Exam Type"
                             options={courseOptions}
-                            onChangeAction={(value: string | number) => setValue("exam_type", value as string)}
-                            {...register("exam_type")}
+                            onChangeAction={(value: string | number) => setValue("exam_type_id", value as string)}
+                            {...register("exam_type_id")}
                         />
 
                         <Button
