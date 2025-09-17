@@ -5,8 +5,10 @@ import sprintQuizServices from "@/services/ExamService/SprintQuiz";
 import mockTestService from "@/services/ExamService/MockTest";
 import {StudentBannerHeader} from "@/components/banner/header";
 import {useRouter} from "next/navigation";
+import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 
-export default function GetSprintQuizById({params}: { params: Promise<{ id: number }> }) {
+export default function GetSprintQuizById({params}: { params: Promise<{ id: string }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
     const router = useRouter();
@@ -17,22 +19,37 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: numb
     const [token, setToken] = useState<string | null>(null);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [correctAnswers, setCorrectAnswers] = useState(0);
-
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const fetchQuiz = useCallback(async () => {
         setLoading(true);
+        setErrorMessage(null);
 
         try {
             const res = await sprintQuizServices.getSprintQuizById({id: idNumber, page: currentPage, token});
+            console.log("fetchQuiz called");
+
+            if (res?.status === false) {
+                const msg = res?.message || "You do not have an active subscription.";
+                toast.error(msg);
+                setErrorMessage(msg); 
+                setQuiz([]);
+                setTotalQuestions(0);
+                setTotalPages(0);
+                return;
+            }
+
             console.log(`Sprint Quiz Response `, res);
             setQuiz(res?.data?.data || []);
             if (res?.data?.token) setToken(res.data.token);
             setTotalPages(Math.ceil(res?.data?.total / 10));
             setTotalQuestions(res?.data?.total || 0);
             console.log(`Sprint Quiz `, res?.data?.data);
-        } catch (err) {
-            console.error(err);
-
+        } catch (err: any) {
+            console.error("Error fetching sprint test:", err);
+            const backendMsg = err?.data.message || "Something went wrong fetching sprint test.";
+            // toast.error(backendMsg);
+            setErrorMessage(backendMsg);
         } finally {
             setLoading(false);
         }
@@ -53,10 +70,9 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: numb
         }
     };
     useEffect(() => {
+        console.log('fetchQuiz running');
         fetchQuiz();
     }, [fetchQuiz]);
-
-    console.log("correct", correctAnswers)
 
     return (
         <div className={'w-full'}>
@@ -66,18 +82,44 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: numb
                 className={'bg-gradient-to-r from-teal-200 to-teal-400 text-white'}
                 textClassName={'text-white'}
             />
-            <QuizEngine
-                quiz={quiz}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalQuestions={totalQuestions}
-                correctAnswers={correctAnswers}
-                loading={loading}
-                examId={idNumber}
-                onNextAction={() => setCurrentPage((prev) => prev + 1)}
-                onPrevAction={() => setCurrentPage((prev) => prev - 1)}
-                onSubmitAction={submitQuiz} setCurrentPageAction={setCurrentPage}
-            />
+
+            {quiz.length === 0 && !loading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                    {errorMessage === "You do not have an active subscription."
+                        ? "You don't have an active subscription"
+                        : errorMessage || "No questions found"}
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                    {errorMessage === "You do not have an active subscription."
+                        ? "Subscribe now to unlock Sprint Quizzes and start practicing."
+                        : "Please contact support or try again later."}
+                    </p>
+
+                    {errorMessage === "You do not have an active subscription." && (
+                    <Button
+                        onClick={() => router.push("/student/subscription")}
+                        className="px-6 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 transition"
+                    >
+                        Get Subscription
+                    </Button>
+                    )}
+            </div>
+            ) : (
+                <QuizEngine
+                    quiz={quiz}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalQuestions={totalQuestions}
+                    correctAnswers={correctAnswers}
+                    loading={loading}
+                    examId={idNumber}
+                    onNextAction={() => setCurrentPage((prev) => prev + 1)}
+                    onPrevAction={() => setCurrentPage((prev) => prev - 1)}
+                    onSubmitAction={submitQuiz}
+                    setCurrentPageAction={setCurrentPage}
+                />
+            )}
         </div>
     )
         ;

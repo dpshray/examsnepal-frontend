@@ -149,7 +149,7 @@ export default function MockTestPage() {
                                     onViewAllScoresAction={handleViewAllScoresAction as any}
                                     onTakeTestAction={handleTakeTestAction}
                                     onViewSolutionAction={(quizId: number) =>
-                                        router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
+                                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
@@ -178,7 +178,7 @@ export default function MockTestPage() {
                                     onViewAllScoresAction={handleViewAllScoresAction as any}
                                     onTakeTestAction={handleTakeTestAction}
                                     onViewSolutionAction={(quizId: number) =>
-                                        router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
+                                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
                                     }
                                 />
                                 <div className="flex justify-center mt-4">

@@ -8,10 +8,12 @@ import {Checkbox} from '@/components/ui/checkbox';
 import mockTestService from '@/services/ExamService/MockTest';
 import {toast} from 'react-hot-toast';
 import {StudentBannerHeader} from "@/components/banner/header";
+import { useRouter } from 'next/navigation';
 
 export default function GetMockTestById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
+    const router = useRouter();
     const [quiz, setQuiz] = useState<any[]>([]);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -25,18 +27,35 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     const [totalPages, setTotalPages] = useState(0);
     const [correctAnswers, setCorrectAnswers] = useState<number>(0);
     const [totalQuestions, setTotalQuestions] = useState<number>(0);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const fetchMockTest = useCallback(async (currentPage: number) => {
         setLoading(true);
+        setErrorMessage(null);
         try {
             const response = await mockTestService.getMockTestById({id: idNumber, page: currentPage, token});
+
+            if (response?.status === false) {
+                const msg = response?.message || "You do not have an active subscription.";
+                toast.error(msg);
+                setErrorMessage(msg); 
+                setQuiz([]);
+                setTotalQuestions(0);
+                setTotalPages(0);
+                return;
+            }
+            
             setQuiz(response?.data?.data || []);
             setTotalQuestions(response?.data?.total || 0);
             console.log(`Mock Test  `, response?.data?.data);
             if (response?.data?.token) setToken(response.data.token);
             const total = response?.data?.total || 0;
             setTotalPages(Math.ceil(total / 10));
-        } catch (err) {
+        } catch (err: any) {
+            console.error("Error fetching sprint test:", err);
+            const backendMsg = err?.data.message || "Something went wrong fetching sprint test.";
+            // toast.error(backendMsg);
+            setErrorMessage(backendMsg);
         } finally {
             setLoading(false);
         }
@@ -44,7 +63,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
 
     useEffect(() => {
         fetchMockTest(currentPage);
-    }, [currentPage]);
+    }, [currentPage, fetchMockTest]);
 
     const handleSelect = (qid: number) => (value: string) => {
         setSelectedAnswers(prev => ({...prev, [qid]: value}));
@@ -154,6 +173,29 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                 textClassName={'text-black'}
             />
             <div className="max-w-4xl mx-auto my-6 md:my-10">
+                {quiz.length === 0 && !loading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                        {errorMessage === "You do not have an active subscription."
+                            ? "You don't have an active subscription"
+                            : errorMessage || "No questions found"}
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                        {errorMessage === "You do not have an active subscription."
+                            ? "Subscribe now to unlock Sprint Quizzes and start practicing."
+                            : "Please contact support or try again later."}
+                        </p>
+
+                        {errorMessage === "You do not have an active subscription." && (
+                        <Button
+                            onClick={() => router.push("/student/subscription")}
+                            className="px-6 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 transition"
+                        >
+                            Get Subscription
+                        </Button>
+                        )}
+                </div>
+                ) : (
                 <div className="w-full bg-white rounded-lg shadow p-6 md:p-6">
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-6">
                         <div className="flex items-center gap-4">
@@ -224,6 +266,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
 
                     </div>
                 </div>
+                )}
             </div>
         </section>
     );
