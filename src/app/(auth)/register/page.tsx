@@ -12,8 +12,8 @@ import {useForm} from "react-hook-form"
 import {yupResolver} from "@hookform/resolvers/yup"
 import {authService} from "@/app/(auth)/authService"
 import {useCallback, useEffect, useState} from "react"
-import {toast} from "react-hot-toast";
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 
 export default function RegistrationForm() {

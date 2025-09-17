@@ -4,7 +4,6 @@ import {useCallback, useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import {useRouter} from "next/navigation";
-import {toast} from "react-hot-toast";
 import {AnimatePresence, motion} from "framer-motion";
 import {AlertCircle, CheckCircle, MessageCircle, RefreshCw} from "lucide-react";
 
@@ -20,6 +19,7 @@ import studentService from "@/services/StudentService";
 import {ExamData} from "@/types/types";
 import useMockCompletedQuizzes from "@/hooks/useMockCompletedQuizzes";
 import CustomPagination from "@/components/Pagination";
+import { toast } from "sonner";
 
 interface DoubtData {
     id: number;

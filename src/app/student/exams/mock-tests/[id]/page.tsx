@@ -6,9 +6,9 @@ import Image from 'next/image';
 import {Button} from '@/components/ui/button';
 import {Checkbox} from '@/components/ui/checkbox';
 import mockTestService from '@/services/ExamService/MockTest';
-import {toast} from 'react-hot-toast';
 import {StudentBannerHeader} from "@/components/banner/header";
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function GetMockTestById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);

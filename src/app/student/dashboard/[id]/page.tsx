@@ -6,7 +6,7 @@ import {Textarea} from "@/components/ui/textarea";
 import {useForm} from "react-hook-form";
 import {Button} from "@/components/ui/button";
 import forumService from "@/services/ForumService";
-import {toast} from "react-hot-toast";
+import { toast } from "sonner";
 
 export default function ReplyPage({params}: { params: Promise<{ id: number }> }) {
 

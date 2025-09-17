@@ -6,12 +6,12 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { toast } from "react-hot-toast"
 
 import { Button } from "@/components/ui/button"
 import TextInputField from "@/components/fields/TextInputField"
 import { forgotPasswordSchema } from "@/schema/authSchema"
 import { authService } from "@/app/(auth)/authService"
+import { toast } from "sonner"
 
 type ForgotPasswordFormValues = {
     email: string

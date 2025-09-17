@@ -9,7 +9,7 @@ import PasswordInputField from "@/components/fields/PasswordInput"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import studentService from "@/services/StudentService"
 import { useLoggedInStudent } from "@/hooks/useLoggedInStudent"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 
 export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false)

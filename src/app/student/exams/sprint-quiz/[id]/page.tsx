@@ -5,8 +5,8 @@ import sprintQuizServices from "@/services/ExamService/SprintQuiz";
 import mockTestService from "@/services/ExamService/MockTest";
 import {StudentBannerHeader} from "@/components/banner/header";
 import {useRouter} from "next/navigation";
-import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export default function GetSprintQuizById({params}: { params: Promise<{ id: string }> }) {
     const {id} = use(params);

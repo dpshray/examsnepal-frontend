@@ -11,8 +11,8 @@ import QuizCardList from '@/components/Exams/Quiz';
 import sprintQuizServices from '@/services/ExamService/SprintQuiz';
 import Pagination from '@/components/Pagination';
 import {QUIZ_TYPES, QuizType} from '@/lib/Constan';
-import {toast} from 'react-hot-toast';
 import CustomPagination from "@/components/Pagination";
+import { toast } from 'sonner';
 
 export default function SprintQuiz() {
     const router = useRouter();
