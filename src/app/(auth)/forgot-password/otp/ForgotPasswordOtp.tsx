@@ -2,11 +2,11 @@
 
 import {useId, useState} from "react"
 import {useRouter, useSearchParams} from "next/navigation"
-import { toast} from "react-hot-toast";
 import {InputOTP, InputOTPGroup, InputOTPSlot,} from "@/components/ui/input-otp"
 import {Label} from "@/components/ui/label"
 import {Button} from "@/components/ui/button"
 import {authService} from "@/app/(auth)/authService"
+import { toast } from "sonner"
 
 export default function VerifyForgotPasswordOtpClient() {
     const id = useId()

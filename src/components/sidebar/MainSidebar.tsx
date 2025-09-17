@@ -35,8 +35,6 @@ interface MainSidebarProps {
     }
 }
 
-
-
 const MainSidebar: React.FC<MainSidebarProps> = ({children, navItems, user}) => {
     const pathname = usePathname();
     const pathSegments = pathname

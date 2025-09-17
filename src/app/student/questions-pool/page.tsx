@@ -1,7 +1,7 @@
 'use client';
 
 import {useEffect, useRef, useState} from 'react';
-import {toast} from 'react-hot-toast';
+import {toast} from 'sonner';
 import {StudentBannerHeader} from '@/components/banner/header';
 import {QuestionCard, QuestionCardSkeleton} from '@/components/Exams/QuestionCard';
 import {Button} from '@/components/ui/button';

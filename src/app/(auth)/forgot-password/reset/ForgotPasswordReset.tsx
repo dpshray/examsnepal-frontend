@@ -4,10 +4,10 @@ import {useForm} from "react-hook-form"
 import {yupResolver} from "@hookform/resolvers/yup"
 import {useRouter, useSearchParams} from "next/navigation"
 import * as Yup from "yup"
-import { toast} from "react-hot-toast";
 import {Button} from "@/components/ui/button"
 import PasswordInputField from "@/components/fields/PasswordInput"
 import {authService} from "@/app/(auth)/authService"
+import { toast } from "sonner"
 
 const resetPasswordSchema = Yup.object({
     password: Yup.string().required("Password is required"),

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import {Textarea} from "@/components/ui/textarea"
 import doubtsService from "@/services/DoubtService";
-import {toast} from "react-hot-toast";
+import { toast } from "sonner";
 
 type Option = {
     label: string | number;
@@ -61,9 +61,6 @@ export const QuestionCard = ({
     const handleExplanation = () => {
         setExplanationVisible(!explanationVisible);
     };
-
-    console.log('selectedValue', selectedValue);
-    console.log('correctAnswers', correctAnswers);
 
     return (
         <article

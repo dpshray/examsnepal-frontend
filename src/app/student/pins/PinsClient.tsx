@@ -2,7 +2,6 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter, useSearchParams} from 'next/navigation';
-import {toast} from 'react-hot-toast';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
@@ -12,6 +11,7 @@ import pinsService from '@/services/pinsService';
 import CustomPagination from '@/components/Pagination';
 import {BoxIcon, FileText, PanelsTopLeftIcon, PinIcon, Search,} from 'lucide-react';
 import ErrorComponent from "@/components/state/ErrorComponent";
+import { toast } from 'sonner';
 
 
 const EmptyState = ({type}: { type: 'all' | 'my' }) => (

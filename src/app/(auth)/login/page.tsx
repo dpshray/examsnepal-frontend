@@ -13,7 +13,7 @@ import TextInputField from "@/components/fields/TextInputField"
 import PasswordInputField from "@/components/fields/PasswordInput"
 import {useRouter} from "next/navigation"
 import {cn} from "@/lib/utils"
-import {toast} from "react-hot-toast"
+import { toast } from "sonner"
 
 interface LoginFormInputs {
     email: string

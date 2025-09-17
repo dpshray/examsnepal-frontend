@@ -4,9 +4,9 @@ import {useCallback, useEffect, useState} from 'react';
 import {QuestionCard, QuestionCardSkeleton} from '@/components/Exams/QuestionCard';
 import {Button} from '@/components/ui/button';
 import {Checkbox} from '@/components/ui/checkbox';
-import {toast} from 'react-hot-toast';
 import Image from 'next/image';
 import {cn, FormatExamTime} from "@/lib/utils";
+import { toast } from 'sonner';
 
 interface Option {
     id: number;

@@ -12,10 +12,12 @@ import {useForm} from "react-hook-form"
 import {yupResolver} from "@hookform/resolvers/yup"
 import {authService} from "@/app/(auth)/authService"
 import {useCallback, useEffect, useState} from "react"
-import {toast} from "react-hot-toast";
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 
 export default function RegistrationForm() {
+    const router = useRouter()
     const [courseOptions, setCourseOptions] = useState<Array<{ value: string | number; label: string }>>([])
 
     const {
@@ -33,6 +35,7 @@ export default function RegistrationForm() {
             if (response) {
                 toast.success(response.message || "Registration successful")
                 localStorage.setItem("_at", response.access_token || "")
+                router.push("/login")
             }
         } catch (error: any) {
             toast.error(error?.response?.data?.message || "Registration failed")

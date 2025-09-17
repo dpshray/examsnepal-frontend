@@ -86,7 +86,7 @@ const navData = [
 export default function StudentLayout({children}: { children: React.ReactNode }) {
     const {student, loading, error} = useLoggedInStudent();
 
-    if (loading) return <LogoLoading/>;
+    // if (loading) return <LogoLoading/>;
     // if (error || !student) return <div className="p-4 text-center text-red-500">Failed to load user.</div>;
 
     return (
@@ -99,7 +99,13 @@ export default function StudentLayout({children}: { children: React.ReactNode })
             }}
             navItems={navData}
         >
-            {children}
+            {loading ? (
+                <div className="flex flex-1 items-center justify-center min-h-[300px]">
+                    <LogoLoading fullscreen={false}/>
+                </div>
+            ) : (
+                children
+            )}
         </MainSidebar>
     );
 }
