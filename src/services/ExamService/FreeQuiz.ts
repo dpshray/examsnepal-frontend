@@ -30,24 +30,15 @@ class FreeQuizServices extends HttpService {
         }
     }
 
-    getFreeQuizById = async ({
-                                 id,
-                                 page = 1,
-                                 token = "",
-                             }: {
-        id: number;
-        page?: number;
-        token?: string;
-    }): Promise<any> => {
+    getFreeQuizById = async ({id, page = 1, token = ''}: {id: number; page?: number; token?: string | null }) => {
         try {
-            const response = await this.getRequest<any>({
-                url: `/free-quiz/questions/${id}`,
+            const queryParams = [`page=${page}`];
+            if (token) queryParams.push(`token=${token}`);
+
+            const response = await this.getRequest({
+                url: `/free-quiz/questions/${id}?${queryParams.join('&')}`,
                 config: {
                     auth: true,
-                    params: {
-                        page,
-                        ...(page !== 1 && token ? {token} : {}),
-                    },
                 },
             });
 

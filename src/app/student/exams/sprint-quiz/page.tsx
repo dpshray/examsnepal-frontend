@@ -84,7 +84,7 @@ export default function SprintQuiz() {
                 quizzes={quizzes}
                 selectedTab={tab}
                 onTakeTestAction={(id: number) => {
-                    toast.success(`Quiz started successfully ${id}`);
+                    toast.success(`Quiz started successfully`);
                     router.push(`/student/exams/sprint-quiz/${id}`);
                 }}
                 onViewSolutionAction={(id: number) => {

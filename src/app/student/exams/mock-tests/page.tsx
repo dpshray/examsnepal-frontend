@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { CheckCheckIcon, ClockIcon } from "lucide-react";
 import CustomPagination from "@/components/Pagination";
+import { toast } from "sonner";
 
 interface MetaData {
     totalPages: number;
@@ -82,6 +83,7 @@ export default function MockTestPage() {
     };
 
     const handleTakeTestAction = (quizId: number) => {
+        toast.success(`Quiz started successfully`);
         router.push(`/student/exams/mock-tests/${quizId}`);
     };
 
