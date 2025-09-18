@@ -11,6 +11,15 @@ import studentService from "@/services/StudentService"
 import { useLoggedInStudent } from "@/hooks/useLoggedInStudent"
 import { toast } from "sonner"
 
+type ProfileFormData = {
+  name: string
+  email: string
+  phone: string
+  previous_password: string
+  new_password: string
+  new_password_confirmation: string
+}
+
 export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false)
 
@@ -22,7 +31,7 @@ export default function ProfilePage() {
         reset,
         formState: { errors },
         setValue
-    } = useForm({
+    } = useForm<ProfileFormData>({
         defaultValues: {
             name: student?.name || "",
             email: student?.email || "",
@@ -41,25 +50,20 @@ export default function ProfilePage() {
         }
     }, [student, setValue])
 
-    const onSubmit = async (data: any) => {
+    const onSubmit = async (data: ProfileFormData) => {
         try {
-            const updatedData: any = {}
-
-            if (data.name !== student?.name) updatedData.name = data.name
-            if (data.email !== student?.email) updatedData.email = data.email
-            if (data.phone !== student?.phone) updatedData.phone = data.phone
-            if (data.previous_password) updatedData.previous_password = data.previous_password
-            if (data.new_password) updatedData.new_password = data.new_password
-
-            if (Object.keys(updatedData).length === 0) {
-                toast.error("No changes detected.")
-                return
+            const payload = {
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                previous_password: data.previous_password || undefined,
+                new_password: data.new_password || undefined,
+                new_password_confirmation: data.new_password_confirmation || undefined,
             }
 
-            console.log(`Updated Data`, updatedData)
-            const response = await studentService.updateProfile(updatedData)
+            const response = await studentService.updateProfile(payload)
 
-            if (response){
+            if (response) {
                 toast.success("Profile updated successfully.")
             }
             setIsEditing(false)
@@ -92,7 +96,7 @@ export default function ProfilePage() {
                             </div>
                             <Avatar>
                                 <AvatarImage src={student?.image || "https://github.com/shadcn.png"} />
-                                <AvatarFallback>{student?.name?.[0]}</AvatarFallback>
+                                <AvatarFallback>{student?.name?.charAt(0) || "?"}</AvatarFallback>
                             </Avatar>
                         </div>
                     </div>
@@ -143,7 +147,10 @@ export default function ProfilePage() {
                                 label="Confirm your New Password"
                                 placeholder="Enter here..."
                                 disabled={!isEditing}
-                                {...register("new_password_confirmation")}
+                                {...register("new_password_confirmation", {
+                                    validate: (val, formValues) =>
+                                        val === formValues.new_password || "Passwords do not match"
+                                })}
                                 error={errors.new_password_confirmation?.message}
                             />
 
@@ -158,7 +165,14 @@ export default function ProfilePage() {
                                             variant="outline"
                                             type="button"
                                             onClick={() => {
-                                                reset()
+                                                reset({
+                                                    name: student?.name || "",
+                                                    email: student?.email || "",
+                                                    phone: student?.phone || "",
+                                                    previous_password: "",
+                                                    new_password: "",
+                                                    new_password_confirmation: ""
+                                                })
                                                 setIsEditing(false)
                                             }}
                                         >

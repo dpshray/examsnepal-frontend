@@ -14,6 +14,7 @@ import {CheckCheckIcon, ClockIcon} from 'lucide-react';
 import {useDispatch} from 'react-redux';
 import {AppDispatch} from "@/redux/Store";
 import CustomPagination from "@/components/Pagination";
+import { toast } from 'sonner';
 
 interface Quiz {
     id: number;
@@ -157,9 +158,10 @@ export default function FreeQuiz() {
                                     quizzes={pendingQuizzes}
                                     selectedTab={QUIZ_TYPES.PENDING}
                                     onViewAllScoresAction={handleViewAllScores}
-                                    onTakeTestAction={(quizId: number) =>
+                                    onTakeTestAction={(quizId: number) => {
+                                        toast.success(`Quiz started successfully`);
                                         router.push(`/student/exams/free-quiz/${quizId}`)
-                                    }
+                                    }}
                                     onViewSolutionAction={(quizId: number) =>
                                         router.push(`/student/exams/solution/${quizId}`)
                                     }

@@ -54,6 +54,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             setLoading(false);
         }
     }, [idNumber, currentPage, token]);
+
     const submitQuiz = async (payload: {
         exam_id: number;
         question_ids: number[];
@@ -69,6 +70,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             console.error("Error submitting sprint quiz:", err);
         }
     };
+    
     useEffect(() => {
         console.log('fetchQuiz running');
         fetchQuiz();

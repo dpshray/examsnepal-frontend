@@ -1,53 +1,41 @@
 'use client';
-import {use, useEffect, useState} from 'react';
+import {use, useCallback, useEffect, useState} from 'react';
 import QuizEngine from '@/components/Exams/ExamPaper';
 import mockTestService from '@/services/ExamService/MockTest';
 import {StudentBannerHeader} from '@/components/banner/header';
-import {useRouter} from 'next/navigation';
 import freeQuizServices from '@/services/ExamService/FreeQuiz';
 
 export default function GetFreeQuizById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
 
-
     const [quiz, setQuiz] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(0);
-    const [correctAnswers, setCorrectAnswers] = useState(0);
     const [token, setToken] = useState<string>('');
+    const [correctAnswers, setCorrectAnswers] = useState(0);
 
 
-    useEffect(() => {
-        const fetchQuiz = async (page: number, tokenToUse: string | null) => {
-            setLoading(true);
-            try {
-                const response = await freeQuizServices.getFreeQuizById({
-                    id: idNumber,
-                    page: page,
-                    token: tokenToUse as string,
-                });
-                console.log(' Response form freequiz',response)
-                setQuiz(response?.data?.data);
-                setTotalPages(Math.ceil(response?.data?.total / 10));
-                setTotalQuestions(response?.data?.total || 0);
-                setToken(response.data.token);
-                console.log(`currentPage ${page}  token ${token} quiz`, response.data);
-            } catch (err:any) {
-                if (err?.status===409){
-                    return
-                }
-                console.error('Error fetching Free quiz:', err);
-            } finally {
-                setLoading(false);
+    const fetchQuiz = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await freeQuizServices.getFreeQuizById({id: idNumber, page: currentPage, token});
+            console.log(' Response form freequiz',response)
+            setQuiz(response?.data?.data);
+            setTotalPages(Math.ceil(response?.data?.total / 10));
+            setTotalQuestions(response?.data?.total || 0);
+            setToken(response.data.token);
+        } catch (err:any) {
+            if (err?.status===409){
+                return
             }
+            console.error('Error fetching Free quiz:', err);
+        } finally {
+            setLoading(false);
         }
-        fetchQuiz(currentPage, token);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentPage]);
-
+    }, [idNumber, currentPage, token]);
 
     const submitQuiz = async (payload: {
         exam_id: number;
@@ -63,22 +51,9 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
         }
     };
 
-    const handleNextAction = () => {
-        if (currentPage < totalPages) {
-            const nextPage = currentPage + 1;
-            setCurrentPage(nextPage);
-            console.log(`Next Page ${nextPage}`);
-        }
-    };
-
-    const handlePrevAction = () => {
-        if (currentPage > 1) {
-            const prevPage = currentPage - 1;
-            setCurrentPage(prevPage);
-        }
-        console.log(`Prev Page ${currentPage}`);
-    };
-
+    useEffect(() => {
+        fetchQuiz();
+    }, [fetchQuiz]);
 
     return (
         <div className="w-full">
@@ -96,8 +71,8 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
                 correctAnswers={correctAnswers}
                 loading={loading}
                 examId={idNumber}
-                onNextAction={handleNextAction}
-                onPrevAction={handlePrevAction}
+                onNextAction={() => setCurrentPage((prev) => prev + 1)}
+                onPrevAction={() => setCurrentPage((prev) => prev - 1)}
                 onSubmitAction={submitQuiz}
                 setCurrentPageAction={setCurrentPage}
             />

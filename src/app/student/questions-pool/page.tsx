@@ -8,7 +8,10 @@ import {Button} from '@/components/ui/button';
 import {Progress} from '@/components/ui/progress';
 import studentService from '@/services/StudentService';
 import StudentScoreCard from '@/components/card/StudentScoreCard';
-import {PricingCard} from "@/components/card/card";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertTriangle, CreditCard, TrendingUp } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Link from 'next/link';
 
 interface Option {
     id: number;
@@ -42,32 +45,45 @@ const ErrorComponent = ({
                             onViewScoreAction,
                             allStudentsScore,
                             isScoreLoading,
-                            subscription
                         }: ErrorComponentProps) => (
     <section className=" w-full max-w-7xl mx-auto font-poppins text-center">
-        <div className=" w-full flex flex-col items-center justify-center my-10 p-4">
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <AlertTriangle className="size-12 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-destructive">{title}</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-6">
+            <Alert>
+              <AlertTriangle className="size-4" />
+              <AlertDescription className="text-base">{message}</AlertDescription>
+            </Alert>
 
-            {
-                subscription && (<div>
-                    <PricingCard/>
-                </div>)
-            }
-            <h2 className="text-2xl font-bold text-red-600">{title}</h2>
-            <p className="mt-2 text-gray-700">{message}</p>
-            <Button
-                className="bg-green-600 hover:bg-green-700 mt-4"
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
                 onClick={onViewScoreAction}
                 disabled={isScoreLoading || allStudentsScore.length > 0}
-            >
-                {isScoreLoading ? 'Loading...' : 'View Score'}
-            </Button>
+                size="lg"
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <TrendingUp className="size-4" />
+                {isScoreLoading ? "Loading..." : "View Score"}
+              </Button>
 
-
-        </div>
+              <Button asChild variant="outline" size="lg">
+                <Link href="/student/subscription">
+                  <CreditCard className="size-4" />
+                  Upgrade Subscription
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
 
         {allStudentsScore.length > 0 && (
-            <div className="max-w-3xl mx-auto mt-10">
+            <div className="max-w-3xl mx-auto mt-10 mb-4">
                 <h2 className="text-xl font-semibold mb-4">All Students&#39; Scores</h2>
                 <div className="space-y-4">
                     {allStudentsScore.map((student, index) => (
@@ -99,6 +115,7 @@ export default function QuestionsPool() {
     const [allStudentsScore, setAllStudentsScore] = useState<any[]>([]);
     const [isScoreLoading, setIsScoreLoading] = useState(false);
     const didFetchRef = useRef(false);
+
     const fetchQuestion = async (token: string = process.env.NEXT_PUBLIC_POOL_TOKEN || '') => {
         setIsLoading(true);
         setErrorMessage(null);
