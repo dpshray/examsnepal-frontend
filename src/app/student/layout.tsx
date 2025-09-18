@@ -100,9 +100,7 @@ export default function StudentLayout({children}: { children: React.ReactNode })
             navItems={navData}
         >
             {loading ? (
-                <div className="flex flex-1 items-center justify-center min-h-[300px]">
-                    <LogoLoading fullscreen={false}/>
-                </div>
+                <LogoLoading fullscreen={false}/>
             ) : (
                 children
             )}

@@ -7,6 +7,8 @@ import {Award, BarChart3, FileText, PieChart, Users} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {questionBank} from "../../../public/assest";
+import { useEffect, useState } from 'react';
+import subscriptionService from '@/services/SubscriptionService';
 
 const data = [
     {
@@ -52,6 +54,21 @@ const data = [
 ];
 
 export default function Home() {
+    const [subscription, setSubscription] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchUserSubscription = async () => {
+        try {
+            const data = await subscriptionService.getSubscriptionTypes();
+            console.log("data", data);
+            setSubscription(data);
+        } catch (err) {
+            console.error("Failed to fetch subscription status:", err);
+        }
+        };
+        fetchUserSubscription();
+    }, []);
+
     return (
         <main className="font-montserrat bg-white overflow-x-hidden scroll-smooth">
             <HeroSection/>
@@ -102,7 +119,7 @@ export default function Home() {
                 <p className="mt-4 text-sm font-light text-gray-600 sm:text-base md:font-normal">
                     Browse through our carefully curated packages designed to meet your specific needs
                 </p>
-                <PricingCard/>
+                <PricingCard subscription={subscription}/>
             </section>
             <section
                 className="relative flex flex-col-reverse items-center justify-between px-6 mt-20 mb-10 sm:px-10 md:flex-row lg:px-20">

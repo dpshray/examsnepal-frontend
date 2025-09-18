@@ -39,7 +39,7 @@ export default function ViewSolution({params}: { params: Promise<{ id: number }>
         window.scrollTo({top: 0, behavior: "smooth"});
     }, [currentPage]);
 
-    if (loading) return <LogoLoading/>;
+    if (loading) return <LogoLoading fullscreen={false}/>;
     if (error) return (
         <div className="flex flex-col items-center justify-center h-screen">
             <h1 className="text-2xl font-bold text-red-500">{error}</h1>

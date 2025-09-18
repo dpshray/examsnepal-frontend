@@ -13,12 +13,12 @@ interface LogoLoadingProps {
 }
 
 export default function LogoLoading({
-                                        width = 125,
-                                        height = 55,
-                                        text = 'Logging in...',
-                                        className,
-                                        fullscreen = true,
-                                    }: LogoLoadingProps) {
+    width = 125,
+    height = 55,
+    text = 'Logging in...',
+    className,
+    fullscreen = true,
+}: LogoLoadingProps) {
     return (
         <motion.div
             initial={{opacity: 0}}
@@ -27,7 +27,7 @@ export default function LogoLoading({
             className={cn(
                 fullscreen
                 ? "fixed inset-0 z-50 bg-white/70 backdrop-blur-md flex items-center justify-center"
-                : "flex items-center justify-center", 
+                : "flex flex-1 items-center justify-center min-h-[300px]", 
                 className
             )}
         >
