@@ -9,6 +9,8 @@ import {Button} from '@/components/ui/button';
 import {questionBank} from "../../../public/assest";
 import { useEffect, useState } from 'react';
 import subscriptionService from '@/services/SubscriptionService';
+import { redirectToConnectIPS } from '@/lib/connectIps';
+import { toast } from 'sonner';
 
 const data = [
     {
@@ -56,6 +58,7 @@ const data = [
 export default function Home() {
     const [subscription, setSubscription] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchUserSubscription = async () => {
@@ -71,6 +74,29 @@ export default function Home() {
         };
         fetchUserSubscription();
     }, []);
+
+    const onAddSubscription = async (subscription_type_id: number, promo_code: string) => {
+        try {
+            setPromoLoadingId(subscription_type_id);
+            const response = await subscriptionService.addSubscription({
+            subscription_type_id,
+            promo_code,
+            });
+
+            if (response.status) {
+                toast.success("Transaction generated. Redirecting to payment...");
+                redirectToConnectIPS(response.data);
+                console.log("try", response.data);
+            } else {
+                toast.error("Failed to generate transaction.");
+            }
+        } catch (err) {
+            toast.error("Failed to add subscription.");
+            console.error(err);
+        } finally {
+            setPromoLoadingId(null);
+        }
+    };
 
     console.log("parent state", subscription, loading);
 
@@ -124,7 +150,7 @@ export default function Home() {
                 <p className="mt-4 text-sm font-light text-gray-600 sm:text-base md:font-normal">
                     Browse through our carefully curated packages designed to meet your specific needs
                 </p>
-                <PricingCard subscription={subscription} loading={loading}/>
+                <PricingCard subscription={subscription} loading={loading} promoLoadingId={promoLoadingId} onAddSubscription={onAddSubscription}/>
             </section>
             <section
                 className="relative flex flex-col-reverse items-center justify-between px-6 mt-20 mb-10 sm:px-10 md:flex-row lg:px-20">
