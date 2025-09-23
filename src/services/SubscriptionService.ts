@@ -63,7 +63,7 @@ class SubscriptionService extends HttpServices {
 
   transactionStatus = async (txnId: string) => {
     try {
-      const response = await this.postRequest({
+      const response = await this.getRequest({
         url: `connectips/transaction-successfull/${txnId}`,
         config: { auth: true },
       });
@@ -74,6 +74,8 @@ class SubscriptionService extends HttpServices {
       throw error;
     }
   };
+
+  
 }
 
 const subscriptionService = new SubscriptionService();

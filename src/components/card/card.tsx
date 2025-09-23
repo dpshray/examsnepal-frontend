@@ -268,8 +268,8 @@ export const PricingCard = ({ subscription, loading, promoLoadingId, onAddSubscr
                                     e.preventDefault();
                                     if (activePromoId === plan.subscription_type_id) {
                                         onAddSubscription?.(
-                                        plan.subscription_type_id,
-                                        promoCodes[plan.subscription_type_id] || ""
+                                            plan.subscription_type_id,
+                                            promoCodes[plan.subscription_type_id] || ""
                                         );
                                     } else {
                                         setActivePromoId(plan.subscription_type_id);
