@@ -55,19 +55,24 @@ const data = [
 
 export default function Home() {
     const [subscription, setSubscription] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchUserSubscription = async () => {
-        try {
-            const data = await subscriptionService.getSubscriptionTypes();
-            console.log("data", data);
-            setSubscription(data);
-        } catch (err) {
-            console.error("Failed to fetch subscription status:", err);
-        }
+            try {
+                const data = await subscriptionService.getSubscriptionTypes();
+                setSubscription(data ?? null);
+            } catch (err) {
+                console.error("Failed to fetch subscription status:", err);
+                setSubscription(null);
+            } finally {
+                setLoading(false);
+            }
         };
         fetchUserSubscription();
     }, []);
+
+    console.log("parent state", subscription, loading);
 
     return (
         <main className="font-montserrat bg-white overflow-x-hidden scroll-smooth">
@@ -119,7 +124,7 @@ export default function Home() {
                 <p className="mt-4 text-sm font-light text-gray-600 sm:text-base md:font-normal">
                     Browse through our carefully curated packages designed to meet your specific needs
                 </p>
-                <PricingCard subscription={subscription}/>
+                <PricingCard subscription={subscription} loading={loading}/>
             </section>
             <section
                 className="relative flex flex-col-reverse items-center justify-between px-6 mt-20 mb-10 sm:px-10 md:flex-row lg:px-20">
