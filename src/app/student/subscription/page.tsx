@@ -4,6 +4,8 @@ import {StudentBannerHeader} from "@/components/banner/header";
 import { useEffect, useState } from "react";
 import subscriptionService from "@/services/SubscriptionService";
 import { PricingCard } from "@/components/card/card";
+import { toast } from "sonner";
+import { redirectToConnectIPS } from "@/lib/connectIps";
 
 // function SubscriptionClient() {
 //     return (
@@ -41,6 +43,8 @@ import { PricingCard } from "@/components/card/card";
 
 export default function Subscription() {
     const [subscription, setSubscription] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
     
     useEffect(() => {
         const fetchUserSubscription = async () => {
@@ -50,10 +54,35 @@ export default function Subscription() {
             setSubscription(data);
         } catch (err) {
             console.error("Failed to fetch subscription status:", err);
+        } finally {
+            setLoading(false);
         }
         };
         fetchUserSubscription();
     }, []);
+
+    const onAddSubscription = async (subscription_type_id: number, promo_code: string) => {
+        try {
+            setPromoLoadingId(subscription_type_id);
+            const response = await subscriptionService.addSubscription({
+            subscription_type_id,
+            promo_code,
+            });
+
+            if (response.status) {
+                toast.success("Transaction generated. Redirecting to payment...");
+                redirectToConnectIPS(response.data);
+                console.log("try", response.data);
+            } else {
+                toast.error("Failed to generate transaction.");
+            }
+        } catch (err) {
+            toast.error("Failed to add subscription.");
+            console.error(err);
+        } finally {
+            setPromoLoadingId(null);
+        }
+    };
 
     return (
         <>
@@ -77,7 +106,12 @@ export default function Subscription() {
                         <SubscriptionClient key={index}/>
                     ))}
                 </div> */}
-                <PricingCard subscription={subscription} />
+                <PricingCard 
+                    subscription={subscription} 
+                    loading={loading} 
+                    promoLoadingId={promoLoadingId} 
+                    onAddSubscription={onAddSubscription}
+                />
             </section>
         </>        
     );

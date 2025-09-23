@@ -30,6 +30,50 @@ class SubscriptionService extends HttpServices {
       throw error;
     }
   };
+
+  addSubscription = async (data: any) => {
+    try {
+      const response = await this.postRequest({
+        url: "connectips/init-transaction",
+        data,
+        config: {
+          auth: true,
+        },
+      });
+      return response?.data; 
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  verifySubscription = async (data: any) => {
+    try {
+      const response = await this.postRequest({
+        url: "verify-promo-code",
+        data,
+        config: {
+          auth: true,
+        },
+      });
+      return response?.data; 
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  transactionStatus = async (txnId: string) => {
+    try {
+      const response = await this.postRequest({
+        url: `connectips/transaction-successfull/${txnId}`,
+        config: { auth: true },
+      });
+      console.log("Service response:", response?.data);
+      return response?.data; 
+    } catch (error) {
+      console.error("Service error:", error);
+      throw error;
+    }
+  };
 }
 
 const subscriptionService = new SubscriptionService();
