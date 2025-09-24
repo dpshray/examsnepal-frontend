@@ -317,10 +317,6 @@ export default function StudentDashboard() {
         const day = String(date.getDate()).padStart(2, "0");
         return `${year}/${month}/${day}`;
     }
-
-  
-    // const subject = ['LokSewa', 'Nursing', 'Engineering', 'MBBS', 'Dental', 'Medical', 'Pharmacy', 'Others']
-    console.log("subjects", subjects);
     
     return (
         <div className="w-full max-w-7xl px-4 mx-auto space-y-6">

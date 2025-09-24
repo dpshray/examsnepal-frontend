@@ -31,6 +31,7 @@ class ForumService extends HttpService {
             throw error;
         }
     }
+
     deleteOwnForumQuestion = async (id: number) => {
         try {
             const response = await this.deleteRequest({
@@ -58,6 +59,7 @@ class ForumService extends HttpService {
             throw error;
         }
     }
+
     addReply = async (data: any) => {
         try {
             const response = await this.postRequest({
@@ -73,6 +75,19 @@ class ForumService extends HttpService {
         }
     }
 
+    getForumQuestionById = async (id: number) => {
+        try {
+            const response = await this.getRequest({
+                url: `/student/questions/answer/${id}`,
+                config: {
+                    auth: true,
+                }
+            });
+            return response?.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 const forumService = new ForumService();

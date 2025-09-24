@@ -60,6 +60,11 @@ const navData = [
         icon: CreditCard,
     },
     {
+        title: "Find MCQ",
+        url: "/student/mcq",
+        icon: BadgeCheck,
+    },
+    {
         title: "Profile",
         url: "/student/profile",
         icon: User,

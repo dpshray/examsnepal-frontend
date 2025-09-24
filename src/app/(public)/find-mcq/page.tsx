@@ -69,8 +69,12 @@ export default function FindMcq() {
                 setMcqs(response?.data?.data || []);
                 setError('');
                 console.log(`MCQs`, response?.data?.data);
-            } catch (err) {
-                setError('Failed to fetch MCQs');
+            } catch (err: any) {
+                const message =
+                    err?.response?.data?.message || 
+                    err?.message ||                
+                    'Failed to fetch MCQs';
+                setError(message);
                 setMcqs([]);
                 console.error(err);
             } finally {
@@ -138,6 +142,7 @@ export default function FindMcq() {
                                             showFeedback={true}
                                             correctAnswers={correctAnswers}
                                             explanation={mcq.explanation}
+                                            id={mcq.id}
                                         />
                                     </div>
                                 );
