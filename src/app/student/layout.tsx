@@ -76,7 +76,7 @@ const navData = [
             },
             {
                 title: "My Subscription",
-                url: "/student/subscription",
+                url: "/student/profile/my-subscription",
                 icon: CreditCard,
             },
         ]
