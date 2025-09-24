@@ -70,13 +70,8 @@ const navData = [
                 icon: User,
             },
             {
-                title: "My Badges",
-                url: "/student/badges",
-                icon: BadgeCheck,
-            },
-            {
                 title: "My Subscription",
-                url: "/student/profile/my-subscription",
+                url: "/student/my-subscription",
                 icon: CreditCard,
             },
         ]
