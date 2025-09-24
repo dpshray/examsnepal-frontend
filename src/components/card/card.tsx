@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 
-import {ArrowUp, CircleChevronDown, MessageSquare, MoveRight} from "lucide-react";
+import {ArrowUp, CircleChevronDown, Eye, MessageSquare, MoveRight} from "lucide-react";
 import Link from "next/link";
 import {onlineTest} from "../../../public/assest";
 import {Button} from "@/components/ui/button";
@@ -318,8 +318,8 @@ interface RepliesCardProps {
     onEditAction: (id: number, question: string) => void
     replyId: number
     isSolved?: boolean;
-
-
+    createdAt: string;
+    viewCount: number;
 }
 
 export function RepliesCard({
@@ -330,6 +330,8 @@ export function RepliesCard({
                                 replyId,
                                 onDeleteAction,
                                 onEditAction,
+                                createdAt,
+                                viewCount,
                                 isSolved
                             }: RepliesCardProps) {
     const [loggedInId, setLoggedInId] = useState<number | null>(null);
@@ -356,9 +358,12 @@ export function RepliesCard({
 
                 {/* Header Section */}
                 <div className="flex justify-between items-start gap-2">
-                    <h3 className="text-lg font-semibold font-poppins text-black break-words line-clamp-3">
-                        {name}
-                    </h3>
+                    <div className="w-full flex items-center justify-between">
+                        <h3 className="text-lg font-semibold font-poppins text-black break-words line-clamp-3">
+                            {name}
+                        </h3>
+                        <span>{createdAt}</span>
+                    </div>
                     {isOwner && (
                         <div className="flex gap-2">
                             <EditModal
@@ -378,6 +383,8 @@ export function RepliesCard({
 
                 {/* Reply Button */}
                 <div className="flex justify-start items-center">
+                    <Eye className="w-4 h-4 text-gray-500"/>
+                    <span className="text-sm text-gray-500 ml-1 mr-4">{viewCount} views</span>
                     <Button size="sm" variant="link" onClick={() => router.push(`/student/dashboard/${replyId}`)}>
                         <MessageSquare className="mr-1 h-4 w-4"/> {replies} replies
                     </Button>

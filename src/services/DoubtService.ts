@@ -31,6 +31,7 @@ class DoubtService extends HttpService {
             throw error;
         }
     }
+    
     createDoubt = async (data: any) => {
         try {
             const response = await this.postRequest({

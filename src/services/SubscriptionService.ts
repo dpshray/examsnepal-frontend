@@ -74,7 +74,6 @@ class SubscriptionService extends HttpServices {
       throw error;
     }
   };
-
   
 }
 

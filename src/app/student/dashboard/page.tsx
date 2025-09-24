@@ -21,13 +21,26 @@ import useMockCompletedQuizzes from "@/hooks/useMockCompletedQuizzes";
 import CustomPagination from "@/components/Pagination";
 import { toast } from "sonner";
 
-interface DoubtData {
+interface Answer {
     id: number;
-    question: string;
+    created_at?: string;
+    updated_at?: string;
+    answer: string;
     student_profile: {
         id: number;
         name: string;
     };
+}
+
+interface DoubtData {
+    id: number;
+    question: string;
+    view_count: number;
+    student_profile: {
+        id: number;
+        name: string;
+    };
+    answers: Answer[];
     answers_count: number;
     created_at: string;
     is_solved: boolean;
@@ -38,6 +51,11 @@ interface ErrorState {
     message: string;
     type: 'fetch' | 'submit' | 'delete' | 'edit';
 }
+
+type Subject = {
+  id: number;
+  name: string;
+};
 
 const ITEMS_PER_PAGE = 10;
 
@@ -53,6 +71,9 @@ export default function StudentDashboard() {
         message: '',
         type: 'fetch'
     });
+    const [subjects, setSubjects] = useState<Subject[]>([]);
+    const [subjectsLoading, setSubjectsLoading] = useState(true);
+    const [subjectsError, setSubjectsError] = useState<string | null>(null);
 
     const DEFAULT_EXAM_COUNT: ExamData = {
         free: {total: 0, overall: 0},
@@ -196,6 +217,26 @@ export default function StudentDashboard() {
         handleExamCount();
     }, []);
 
+    useEffect(() => {
+        const fetchSubjects = async () => {
+            try {
+                setSubjectsLoading(true);
+                setSubjectsError(null);
+                const response = await studentService.getTotalSubjects();
+                const list = response?.data ?? [];
+                setSubjects(list);
+            } catch (error: any) {
+                console.error("Failed to fetch subjects", error);
+                setSubjectsError("Could not load subjects.");
+                setSubjects([]);
+            } finally {
+                setSubjectsLoading(false);
+            }
+        };
+        fetchSubjects();
+    }, []);
+
+
     const {completedMockQuizzes} = useMockCompletedQuizzes();
 
     const EmptyState = ({type}: { type: 'all' | 'solved' | 'unsolved' }) => {
@@ -269,7 +310,14 @@ export default function StudentDashboard() {
         </motion.div>
     );
 
-    const subject = ['LokSewa', 'Nursing', 'Engineering', 'MBBS', 'Dental', 'Medical', 'Pharmacy', 'Others']
+    const formatDate = (isoString: string): string =>{
+        const date = new Date(isoString);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}/${month}/${day}`;
+    }
+    
     return (
         <div className="w-full max-w-7xl px-4 mx-auto space-y-6">
             <StudentBannerHeader
@@ -281,17 +329,30 @@ export default function StudentDashboard() {
                 <div className="lg:col-span-2 space-y-6">
                     <div>
                         <h3 className="text-xl sm:text-2xl font-semibold font-poppins text-black mb-3">Subject</h3>
-                        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-                            {subject.map((subject, index) => (
-                                <Badge
-                                    key={index}
-                                    variant="outline"
-                                    className="bg-green-600 border-green-600 text-white text-xs font-poppins whitespace-nowrap"
-                                >
-                                    {subject}
-                                </Badge>
-                            ))}
-                        </div>
+                        {subjectsLoading ? (
+                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                    {Array.from({ length: 6 }).map((_, i) => (
+                                        <div
+                                        key={i}
+                                        className="h-6 w-20 bg-gray-200 rounded-full animate-pulse"
+                                        />
+                                    ))}
+                                </div>
+                            ) : subjectsError ? (
+                                <p className="text-red-600 text-sm">{subjectsError}</p>
+                            ) : (
+                                <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+                                {subjects.map((subject, index) => (
+                                    <Badge
+                                        key={index}
+                                        variant="outline"
+                                        className="bg-green-600 border-green-600 text-white text-xs font-poppins whitespace-nowrap"
+                                    >
+                                        {subject.name}
+                                    </Badge>
+                                ))}
+                                </div>
+                            )}
                     </div>
 
                     <motion.div
@@ -356,8 +417,7 @@ export default function StudentDashboard() {
 
                     <div className="space-y-4">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <h3 className="text-lg sm:text-xl font-semibold font-poppins text-black">Community
-                                Questions</h3>
+                            <h3 className="text-lg sm:text-xl font-semibold font-poppins text-black">Community Questions</h3>
 
                             <div className="flex overflow-x-auto bg-gray-100 rounded-lg p-1">
                                 {(['all', 'solved', 'unsolved'] as const).map((tab) => (
@@ -429,6 +489,8 @@ export default function StudentDashboard() {
                                             <RepliesCard
                                                 name={question?.student_profile?.name}
                                                 question={question?.question}
+                                                viewCount={question?.view_count}
+                                                createdAt={formatDate(question?.created_at)}
                                                 replies={question?.answers_count}
                                                 replyId={question?.id}
                                                 studentId={question?.student_profile?.id}
@@ -532,7 +594,7 @@ export default function StudentDashboard() {
                         </ul>
                     </motion.div>
 
-                    <motion.div
+                    {/* <motion.div
                         initial={{opacity: 0, x: 20}}
                         animate={{opacity: 1, x: 0}}
                         transition={{delay: 0.6}}
@@ -552,7 +614,7 @@ export default function StudentDashboard() {
                                 <p className="text-gray-500 text-sm sm:text-lg lg:text-xl mt-1">Per month</p>
                             </div>
                         </div>
-                    </motion.div>
+                    </motion.div> */}
                 </div>
             </div>
         </div>
