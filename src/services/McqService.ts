@@ -4,9 +4,10 @@ class McqService extends HttpServices {
 
     searchMcq = async (keyword: string, page: number = 1) => {
         try {
+            const encodedKeyword = encodeURIComponent(keyword);
             const response = await this.getRequest({
 
-                url: `search-questions?page=${page}&keyword=${keyword}`,
+                url: `search-questions?page=${page}&keyword=${encodedKeyword}`,
                 config: {
                     auth: true,
                 },
