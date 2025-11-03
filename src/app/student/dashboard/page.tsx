@@ -397,7 +397,7 @@ export default function StudentDashboard() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-poppins font-semibold text-sm sm:text-base px-4 py-2"
+                                    className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white hover:text-white font-poppins font-semibold text-sm sm:text-base px-4 py-2"
                                     onClick={() => router.push("/student/pins?tab=my")}
                                 >
                                     My Pins
@@ -581,7 +581,7 @@ export default function StudentDashboard() {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => router.push("/student/mock-tests")}
+                                onClick={() => router.push("/student/exams/mock-tests")}
                                 className="w-fit text-xs sm:text-sm"
                             >
                                 View All

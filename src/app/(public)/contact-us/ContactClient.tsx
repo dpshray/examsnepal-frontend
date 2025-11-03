@@ -12,6 +12,8 @@ import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import contactService from '@/services/contactServices';
+import { toast } from 'sonner';
 
 export function ContactCard({
                                 icon: Icon,
@@ -96,15 +98,27 @@ export default function ContactClient() {
     const {
         register,
         handleSubmit,
+        reset,
         setValue,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: yupResolver(contactSchema),
         mode: "onBlur",
     });
 
-    const onSubmit = (data: FormData) => {
-        console.log(data);
+    const onSubmit = async (data: FormData) => {
+        try {
+        const response = await contactService.sendContactMessage(data);
+
+        if (response?.status) {
+            toast.success("Message sent successfully!");
+            reset();
+        } else {
+            toast.error(response?.message || "Failed to send message");
+        }
+        } catch (error: any) {
+        toast.error(error?.response?.data?.message || "Something went wrong");
+        }
     };
 
     return (
@@ -172,9 +186,10 @@ export default function ContactClient() {
                             />
                             <Button
                                 type="submit"
+                                disabled={isSubmitting}
                                 className="w-full bg-primaryGreen/90 hover:bg-primaryGreen text-white"
                             >
-                                Send Message
+                                {isSubmitting ? "Sending..." : "Send Message"}
                             </Button>
                         </form>
 

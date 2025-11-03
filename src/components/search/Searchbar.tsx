@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { toast } from "sonner"
 
 interface SearchBarProps {
     onSearchAction: (query: string) => void
@@ -23,7 +24,11 @@ export function SearchBar({
 
     const handleSearch = () => {
         const trimmed = query.trim()
-        if (trimmed) onSearchAction(trimmed)
+        if (trimmed.length >= 3) {
+            onSearchAction(trimmed)
+        } else {
+            toast.error("Please enter at least 3 characters")
+        }
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

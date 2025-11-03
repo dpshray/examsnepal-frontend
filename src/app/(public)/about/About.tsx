@@ -234,7 +234,7 @@ export default function AboutPage() {
                     </div>
                 </section>
 
-                <section className="py-12 sm:py-16 lg:py-20">
+                {/* <section className="py-12 sm:py-16 lg:py-20">
                     <motion.div
                         initial={{opacity: 0, y: 40}}
                         whileInView={{opacity: 1, y: 0}}
@@ -255,7 +255,7 @@ export default function AboutPage() {
                             <TeamMember key={index} {...member} />
                         ))}
                     </div>
-                </section>
+                </section> */}
 
                 <section className="py-12 sm:py-16 text-center">
                     <motion.div

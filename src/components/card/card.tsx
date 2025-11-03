@@ -13,36 +13,49 @@ import EditModal from "@/components/modal/EditModal";
 import {useRouter} from "next/navigation";
 import { Input } from "../ui/input";
 import subscriptionService from "@/services/SubscriptionService";
+
+interface FeaturedCardProps {
+  imageSrc?: string;
+  title: string;
+  description: string;
+  linkHref?: string;
+  linkText?: string;
+}
 import { toast } from "sonner";
 
-export const FeaturedCard = () => {
+export const FeaturedCard = ({
+  imageSrc,
+  title,
+  description,
+  linkHref,
+  linkText,
+}: FeaturedCardProps) => {
     return (
-        <div className="bg-[#F8F8F8] rounded-xl  p-4 flex flex-col items-center text-center max-w-xs">
-            {/* Image */}
-            <Image
-                src={onlineTest}
-                alt="Live Test"
-                className="w-28 h-28 object-contain"
-            />
+        <div className="bg-[#F8F8F8] rounded-xl p-4 flex flex-col items-center justify-between text-center h-full max-w-xs">
+            <div>
+                {imageSrc && 
+                    <Image
+                        src={imageSrc || "placeholder.png"}
+                        alt={title}
+                        className="w-28 h-28 object-contain"
+                        width={112}
+                        height={112}
+                    />
+                }
 
-            {/* Title */}
-            <h2 className="text-lg font-bold text-gray-900 mt-4">
-                Take Live Online Tests
-            </h2>
+                <h2 className="text-lg font-bold text-gray-900 mt-4">{title}</h2>
 
-            {/* Description */}
-            <p className="text-sm text-pretty text-gray-600 mt-2">
-                Participate in scheduled live tests or access missed ones at your
-                convenience.
-            </p>
+                <p className="text-sm text-pretty text-gray-600 mt-2">{description}</p>
+            </div>
 
-            {/* Link */}
-            <Link
-                href="/test-exam"
-                className="text-green-600 font-medium mt-4 flex items-center gap-1 hover:underline"
-            >
-                View integration <MoveRight size={18}/>
-            </Link>
+            { linkHref && linkText && 
+                <Link
+                    href={linkHref}
+                    className="text-green-600 font-medium mt-4 flex items-center gap-1 hover:underline"
+                >
+                    {linkText} <MoveRight size={18} />
+                </Link>
+            }
         </div>
     );
 };
