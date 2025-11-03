@@ -12,7 +12,7 @@ export const featuredSteps = [
         description:
           "Practice with real exam-style online tests designed by experts. Track your performance and improve with detailed explanations and analytics.",
         imageSrc: "/images/online-test.png",
-        linkHref: "/student/exams/mock-tests",
+        linkHref: "#",
         linkText: "Start Testing",
       },
       {
