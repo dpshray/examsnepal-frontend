@@ -17,11 +17,12 @@ import {
 import {cn} from "@/lib/utils";
 
 const NAV_ITEMS = [
-    {label: "Find MCQ", link: "/find-mcq"},
-    {label: "Blog", link: "/blog"},
-    {label: "Lok Sewa Notices", link: "/lok-sewa-notices"},
+    {label: "Home", link: "/"},
+    {label: "About Us", link: "/about"},
+    {label: "Find MCQs", link: "/find-mcq"},
+    {label: "Create Exams", link: "#"},
+    {label: "Blogs", link: "/blog"},
     {label: "Contact Us", link: "/contact-us"},
-    {label: "About", link: "/about"},
 ];
 
 export default function NavBar() {

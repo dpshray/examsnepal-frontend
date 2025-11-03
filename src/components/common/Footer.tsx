@@ -15,10 +15,9 @@ const Footer = () => {
     ];
 
     const socialIcons = [
-        {name: 'Facebook', link: '#', icon: FaFacebookF},
-        {name: 'Twitter', link: '#', icon: FaTwitter},
-        {name: 'Instagram', link: '#', icon: FaInstagram},
-        {name: 'LinkedIn', link: '#', icon: FaLinkedinIn},
+        {name: 'Facebook', link: process.env.NEXT_PUBLIC_FACEBOOK_LINK, icon: FaFacebookF},
+        {name: 'Instagram', link: process.env.NEXT_PUBLIC_INSTAGRAM_LINK, icon: FaInstagram},
+        {name: 'LinkedIn', link: process.env.NEXT_PUBLIC_LINKEDIN_LINK, icon: FaLinkedinIn},
     ];
 
 
