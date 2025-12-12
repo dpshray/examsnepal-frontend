@@ -7,11 +7,11 @@ import {StudentBannerHeader} from "@/components/banner/header";
 import {useRouter} from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import ExamInterrupted from "@/lib/ExamInterrupted";
 
 export default function GetSprintQuizById({params}: { params: Promise<{ id: string }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
-    const router = useRouter();
     const [quiz, setQuiz] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -19,9 +19,31 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
     const [token, setToken] = useState<string | null>(null);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [correctAnswers, setCorrectAnswers] = useState(0);
+    const [interrupted, setInterrupted] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+    const storageKey = `sprint_exam_in_progress_${idNumber}`;
+
+    useEffect(() => {
+        const running = localStorage.getItem(storageKey);
+        const submitted = localStorage.getItem(`${storageKey}_submitted`);
+
+        if (running === "true" && !submitted) {
+            setInterrupted(true);
+            return;
+        }
+
+        localStorage.setItem(storageKey, "true");
+
+        return () => {
+            if (!submitted) {
+                localStorage.removeItem(storageKey);
+            }
+        };
+    }, []);
+
     const fetchQuiz = useCallback(async () => {
+        if (interrupted) return;
         setLoading(true);
         setErrorMessage(null);
 
@@ -85,42 +107,39 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
                 textClassName={'text-white'}
             />
 
-            {quiz.length === 0 && !loading ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                    {errorMessage === "You do not have an active subscription."
-                        ? "You don't have an active subscription"
-                        : errorMessage || "No questions found"}
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                    {errorMessage === "You do not have an active subscription."
-                        ? "Subscribe now to unlock Sprint Quizzes and start practicing."
-                        : "Please contact support or try again later."}
-                    </p>
+            {interrupted && (
+                <ExamInterrupted storageKey={storageKey}/>
+            )}
 
-                    {errorMessage === "You do not have an active subscription." && (
-                    <Button
-                        onClick={() => router.push("/student/subscription")}
-                        className="px-6 py-3 bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 transition"
-                    >
-                        Get Subscription
-                    </Button>
+
+            {!interrupted && (
+                <>
+                    {quiz.length === 0 && !loading ? (
+                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                                {errorMessage || "No questions found"}
+                            </h2>
+                            <p className="text-gray-600 mb-6">
+                                Please contact support or try again later.
+                            </p>
+                        </div>
+                    ) : (
+                        <QuizEngine
+                            quiz={quiz}
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            totalQuestions={totalQuestions}
+                            correctAnswers={correctAnswers}
+                            loading={loading}
+                            examId={idNumber}
+                            onNextAction={() => setCurrentPage((prev) => prev + 1)}
+                            onPrevAction={() => setCurrentPage((prev) => prev - 1)}
+                            onSubmitAction={submitQuiz}
+                            setCurrentPageAction={setCurrentPage}
+                            storageKey={storageKey}
+                        />
                     )}
-            </div>
-            ) : (
-                <QuizEngine
-                    quiz={quiz}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalQuestions={totalQuestions}
-                    correctAnswers={correctAnswers}
-                    loading={loading}
-                    examId={idNumber}
-                    onNextAction={() => setCurrentPage((prev) => prev + 1)}
-                    onPrevAction={() => setCurrentPage((prev) => prev - 1)}
-                    onSubmitAction={submitQuiz}
-                    setCurrentPageAction={setCurrentPage}
-                />
+                </>
             )}
         </div>
     )

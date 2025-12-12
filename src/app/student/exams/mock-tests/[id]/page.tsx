@@ -28,6 +28,37 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     const [correctAnswers, setCorrectAnswers] = useState<number>(0);
     const [totalQuestions, setTotalQuestions] = useState<number>(0);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [interrupted, setInterrupted] = useState(false);
+
+    const storageKey = `mock_exam_in_progress_${idNumber}`;
+
+    useEffect(() => {
+        const running = localStorage.getItem(storageKey);
+
+        if (running === "true" && !isSubmitted) {
+            setInterrupted(true);
+            toast.error("Your mock test was interrupted due to page refresh or navigation.");
+        }
+
+        // Mark that exam is now running
+        localStorage.setItem(storageKey, "true");
+
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (!isSubmitted) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            
+            localStorage.removeItem(storageKey);
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [storageKey, isSubmitted]);
+
 
     const fetchMockTest = useCallback(async (currentPage: number) => {
         setLoading(true);
@@ -143,6 +174,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         setScore(total);
         setIsSubmitted(true);
         setTimeLeft(0);
+        localStorage.removeItem('mock_exam_in_progress');
 
         toast.success('Exam submitted!');
     }, [quiz, selectedAnswers, isSubmitted, idNumber]);
@@ -162,6 +194,28 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     useEffect(() => {
         if (isSubmitted) toast.success(`Your Score: ${score} / ${quiz.length}`);
     }, [isSubmitted, score, quiz.length]);
+
+    if (interrupted && !isSubmitted) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+                <h2 className="text-2xl font-bold text-red-600 mb-4">
+                    Your mock test was interrupted due to page refresh or leaving the page.
+                </h2>
+                <p className="text-gray-600 mb-6">
+                    Refreshing, closing, or leaving this page automatically ends the test.
+                </p>
+                <Button
+                    onClick={() => {
+                        localStorage.removeItem(storageKey);
+                        router.back();
+                    }}
+                    variant="green"
+                >
+                    Go Back
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <section className="w-full min-h-screen">
