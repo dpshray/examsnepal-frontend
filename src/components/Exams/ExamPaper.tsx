@@ -25,7 +25,6 @@ interface Question {
 }
 
 interface QuizEngineProps {
-    storageKey?: string;
     quiz: Question[];
     currentPage: number;
     totalPages: number;
@@ -42,7 +41,6 @@ interface QuizEngineProps {
 }
 
 export default function QuizEngine({
-    storageKey,
     quiz,
     currentPage,
     totalPages,
@@ -64,30 +62,15 @@ export default function QuizEngine({
     const [isAgreedToTerms, setIsAgreedToTerms] = useState(false);
 
     useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-        if (!isSubmitted) {
-            event.preventDefault();
-            event.returnValue = '';
-        }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-}, [isSubmitted]);
-
-
-
-    useEffect(() => {
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
             if (!isSubmitted) {
                 event.preventDefault();
                 event.returnValue = '';
             }
         };
-
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [isSubmitted]);
-
 
     const handleSelect = (qid: number) => (value: string) => {
         setSelectedAnswers(prev => ({...prev, [qid]: value}));
@@ -107,8 +90,7 @@ export default function QuizEngine({
             await onSubmitAction(payload);
             setIsSubmitted(true);
             setTimeLeft(0);
-            toast.success('Exam submitted!');
-            if (storageKey) localStorage.removeItem(storageKey);
+            toast.success('Exam submitted successfully!');
         } catch {
             toast.error('Failed to submit exam. Please try again.');
         }

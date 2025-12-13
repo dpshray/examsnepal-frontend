@@ -20,3 +20,9 @@ export type DoubtType = typeof DOUBT_TYPES[keyof typeof DOUBT_TYPES];
     MOCK: 'Mock'
 }
 export type TestType = typeof TEST_TYPES[keyof typeof TEST_TYPES];
+
+export const EXAM_TYPES = {
+  MOCK: "MOCK_TEST",
+  SPRINT: "SPRINT_TEST",
+  FREE: "FREE_TEST",
+} as const;

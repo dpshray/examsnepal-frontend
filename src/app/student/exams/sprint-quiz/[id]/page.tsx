@@ -1,46 +1,26 @@
 'use client';
-import {use, useCallback, useEffect, useState} from "react";
+import {use, useCallback, useEffect, useRef, useState} from "react";
 import QuizEngine from "@/components/Exams/ExamPaper";
 import sprintQuizServices from "@/services/ExamService/SprintQuiz";
 import mockTestService from "@/services/ExamService/MockTest";
 import {StudentBannerHeader} from "@/components/banner/header";
-import {useRouter} from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import ExamInterrupted from "@/lib/ExamInterrupted";
+import { EXAM_DURATION_SECONDS } from "@/lib/examDurations";
 
 export default function GetSprintQuizById({params}: { params: Promise<{ id: string }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
+    const isInitialMount = useRef(true);
     const [quiz, setQuiz] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    const [token, setToken] = useState<string | null>(null);
+    const tokenRef = useRef<string | null>(null);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [interrupted, setInterrupted] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-    const storageKey = `sprint_exam_in_progress_${idNumber}`;
-
-    useEffect(() => {
-        const running = localStorage.getItem(storageKey);
-        const submitted = localStorage.getItem(`${storageKey}_submitted`);
-
-        if (running === "true" && !submitted) {
-            setInterrupted(true);
-            return;
-        }
-
-        localStorage.setItem(storageKey, "true");
-
-        return () => {
-            if (!submitted) {
-                localStorage.removeItem(storageKey);
-            }
-        };
-    }, []);
 
     const fetchQuiz = useCallback(async () => {
         if (interrupted) return;
@@ -48,8 +28,14 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
         setErrorMessage(null);
 
         try {
-            const res = await sprintQuizServices.getSprintQuizById({id: idNumber, page: currentPage, token});
-            console.log("fetchQuiz called");
+            const res = await sprintQuizServices.getSprintQuizById({id: idNumber, page: currentPage, token: tokenRef.current});
+            // console.log("fetchQuiz called");
+
+            if (res?.status === 409 || (res?.status === false && (res?.message?.includes("already been completed")))) {
+                setInterrupted(true);
+                toast.error("Exam session interrupted");
+                return;
+            }
 
             if (res?.status === false) {
                 const msg = res?.message || "You do not have an active subscription.";
@@ -63,19 +49,26 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
 
             console.log(`Sprint Quiz Response `, res);
             setQuiz(res?.data?.data || []);
-            if (res?.data?.token) setToken(res.data.token);
+            if (res?.data?.token) {
+                tokenRef.current = res.data.token; 
+            }
             setTotalPages(Math.ceil(res?.data?.total / 10));
             setTotalQuestions(res?.data?.total || 0);
             console.log(`Sprint Quiz `, res?.data?.data);
         } catch (err: any) {
             console.error("Error fetching sprint test:", err);
+            if (err?.status === 409 || err?.response?.status === 409) {
+                setInterrupted(true);
+                toast.error("Exam session interrupted");
+                return;
+            }
             const backendMsg = err?.data.message || "Something went wrong fetching sprint test.";
             // toast.error(backendMsg);
             setErrorMessage(backendMsg);
         } finally {
             setLoading(false);
         }
-    }, [idNumber, currentPage, token]);
+    }, [idNumber, currentPage, interrupted]);
 
     const submitQuiz = async (payload: {
         exam_id: number;
@@ -94,8 +87,10 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
     };
     
     useEffect(() => {
-        console.log('fetchQuiz running');
-        fetchQuiz();
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            fetchQuiz();
+        }
     }, [fetchQuiz]);
 
     return (
@@ -108,7 +103,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             />
 
             {interrupted && (
-                <ExamInterrupted storageKey={storageKey}/>
+                <ExamInterrupted />
             )}
 
 
@@ -136,7 +131,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
                             onPrevAction={() => setCurrentPage((prev) => prev - 1)}
                             onSubmitAction={submitQuiz}
                             setCurrentPageAction={setCurrentPage}
-                            storageKey={storageKey}
+                            duration={EXAM_DURATION_SECONDS.SPRINT_TEST}
                         />
                     )}
                 </>

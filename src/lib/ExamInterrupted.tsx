@@ -5,20 +5,17 @@ import { Button } from '@/components/ui/button';
 import React from 'react';
 
 interface ExamInterruptedProps {
-  storageKey: string; 
   message?: string;
   subMessage?: string; 
 }
 
 const ExamInterrupted: React.FC<ExamInterruptedProps> = ({
-  storageKey ,
   message = 'Your exam has been completed due to page refresh or interruption.',
   subMessage = 'Refreshing, closing this page, or leaving it automatically ends the exam.',
 }) => {
   const router = useRouter();
 
   const handleGoBack = () => {
-    localStorage.removeItem(storageKey);
     router.back();
   };
 

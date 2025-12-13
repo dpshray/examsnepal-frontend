@@ -1,6 +1,6 @@
 'use client';
 
-import {use, useCallback, useEffect, useState} from 'react';
+import {use, useCallback, useEffect, useRef, useState} from 'react';
 import {QuestionCard, QuestionCardSkeleton} from '@/components/Exams/QuestionCard';
 import Image from 'next/image';
 import {Button} from '@/components/ui/button';
@@ -9,62 +9,55 @@ import mockTestService from '@/services/ExamService/MockTest';
 import {StudentBannerHeader} from "@/components/banner/header";
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import ExamInterrupted from '@/lib/ExamInterrupted';
+import { MdWarningAmber } from 'react-icons/md';
+import { EXAM_DURATION_SECONDS } from '@/lib/examDurations';
 
 export default function GetMockTestById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
     const router = useRouter();
+    const hasFetchedRef = useRef(false);
     const [quiz, setQuiz] = useState<any[]>([]);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showResult, setShowResult] = useState(false);
     const [score, setScore] = useState(0);
-    const [timeLeft, setTimeLeft] = useState(3 * 60 * 60);
+    const [timeLeft, setTimeLeft] = useState(
+        EXAM_DURATION_SECONDS.MOCK_TEST
+    );
     const [currentPage, setCurrentPage] = useState(1);
     const [isAgreedToTerms, setIsAgreedToTerms] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [token, setToken] = useState<string | null>(null);
+    const tokenRef = useRef<string | null>(null);
     const [totalPages, setTotalPages] = useState(0);
     const [correctAnswers, setCorrectAnswers] = useState<number>(0);
     const [totalQuestions, setTotalQuestions] = useState<number>(0);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [interrupted, setInterrupted] = useState(false);
 
-    const storageKey = `mock_exam_in_progress_${idNumber}`;
-
     useEffect(() => {
-        const running = localStorage.getItem(storageKey);
-
-        if (running === "true" && !isSubmitted) {
-            setInterrupted(true);
-            toast.error("Your mock test was interrupted due to page refresh or navigation.");
-        }
-
-        // Mark that exam is now running
-        localStorage.setItem(storageKey, "true");
-
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
             if (!isSubmitted) {
                 event.preventDefault();
                 event.returnValue = '';
             }
         };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-        return () => {
-            
-            localStorage.removeItem(storageKey);
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-        };
-    }, [storageKey, isSubmitted]);
-
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isSubmitted]);
 
     const fetchMockTest = useCallback(async (currentPage: number) => {
         setLoading(true);
         setErrorMessage(null);
         try {
-            const response = await mockTestService.getMockTestById({id: idNumber, page: currentPage, token});
+            const response = await mockTestService.getMockTestById({id: idNumber, page: currentPage, token: tokenRef.current});
+
+            if (response?.status === 409 || response?.message?.includes("already been completed")) {
+                setInterrupted(true);
+                toast.error("Exam session interrupted");
+                return;
+            }
 
             if (response?.status === false) {
                 const msg = response?.message || "You do not have an active subscription.";
@@ -78,23 +71,35 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
             
             setQuiz(response?.data?.data || []);
             setTotalQuestions(response?.data?.total || 0);
-            console.log(`Mock Test  `, response?.data?.data);
-            if (response?.data?.token) setToken(response.data.token);
+            // console.log(`Mock Test  `, response?.data?.data);
+            if (response?.data?.token) {
+                tokenRef.current = response.data.token;
+            }
             const total = response?.data?.total || 0;
             setTotalPages(Math.ceil(total / 10));
         } catch (err: any) {
             console.error("Error fetching sprint test:", err);
+
+            if (err?.status === 409 || err?.response?.status === 409) {
+                setInterrupted(true);
+                toast.error("Exam session interrupted");
+                return;
+            }
             const backendMsg = err?.data.message || "Something went wrong fetching sprint test.";
             // toast.error(backendMsg);
             setErrorMessage(backendMsg);
         } finally {
             setLoading(false);
         }
-    }, [idNumber, token]);
+    }, [idNumber]);
 
     useEffect(() => {
+        if (hasFetchedRef.current) return;
+        hasFetchedRef.current = true;
+
         fetchMockTest(currentPage);
     }, [currentPage, fetchMockTest]);
+
 
     const handleSelect = (qid: number) => (value: string) => {
         setSelectedAnswers(prev => ({...prev, [qid]: value}));
@@ -174,12 +179,12 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         setScore(total);
         setIsSubmitted(true);
         setTimeLeft(0);
-        localStorage.removeItem('mock_exam_in_progress');
 
         toast.success('Exam submitted!');
     }, [quiz, selectedAnswers, isSubmitted, idNumber]);
 
     useEffect(() => {
+        if (interrupted) return;
         if (timeLeft <= 0) {
             handleSubmit();
             return;
@@ -189,31 +194,15 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
             setTimeLeft(prev => prev - 1);
         }, 1000);
         return () => clearInterval(timer);
-    }, [timeLeft, handleSubmit]);
+    }, [timeLeft, handleSubmit, interrupted]);
 
     useEffect(() => {
         if (isSubmitted) toast.success(`Your Score: ${score} / ${quiz.length}`);
     }, [isSubmitted, score, quiz.length]);
 
-    if (interrupted && !isSubmitted) {
+    if (interrupted) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-                <h2 className="text-2xl font-bold text-red-600 mb-4">
-                    Your mock test was interrupted due to page refresh or leaving the page.
-                </h2>
-                <p className="text-gray-600 mb-6">
-                    Refreshing, closing, or leaving this page automatically ends the test.
-                </p>
-                <Button
-                    onClick={() => {
-                        localStorage.removeItem(storageKey);
-                        router.back();
-                    }}
-                    variant="green"
-                >
-                    Go Back
-                </Button>
-            </div>
+            <ExamInterrupted />
         );
     }
 
@@ -226,7 +215,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                 className={'bg-gradient-to-r from-teal-400 to-teal-600  text-black'}
                 textClassName={'text-black'}
             />
-            <div className="max-w-4xl mx-auto my-6 md:my-10">
+            <div className="max-w-7xl mx-auto my-6 md:my-10">
                 {quiz.length === 0 && !loading ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
                         <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -251,6 +240,10 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                 </div>
                 ) : (
                 <div className="w-full bg-white rounded-lg shadow p-6 md:p-6">
+                    <div className="flex items-center gap-1 bg-amber-100 border border-amber-300 text-amber-800 p-3 rounded-md text-sm font-medium">
+                        <MdWarningAmber className='w-4 h-4'/> Once the exam starts, refreshing the page, closing the browser, or leaving this page will
+                        automatically submit your exam.
+                    </div>
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-6">
                         <div className="flex items-center gap-4">
                             <Image src="/book.svg" alt="Exam book icon" width={48} height={48}/>
