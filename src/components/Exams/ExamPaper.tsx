@@ -7,6 +7,7 @@ import {Checkbox} from '@/components/ui/checkbox';
 import Image from 'next/image';
 import {cn, FormatExamTime} from "@/lib/utils";
 import { toast } from 'sonner';
+import { MdWarningAmber } from 'react-icons/md';
 
 interface Option {
     id: number;
@@ -40,25 +41,36 @@ interface QuizEngineProps {
 }
 
 export default function QuizEngine({
-                                       quiz,
-                                       currentPage,
-                                       totalPages,
-                                       loading,
-                                       onNextAction,
-                                       onPrevAction,
-                                       onSubmitAction,
-                                       examId,
-                                       duration = 3 * 60 * 60,
-                                       totalQuestions = 0,
-                                       correctAnswers = 0,
-                                       setCurrentPageAction,
-                                       className,
-                                   }: QuizEngineProps) {
+    quiz,
+    currentPage,
+    totalPages,
+    loading,
+    onNextAction,
+    onPrevAction,
+    onSubmitAction,
+    examId,
+    duration = 3 * 60 * 60,
+    totalQuestions = 0,
+    correctAnswers = 0,
+    setCurrentPageAction,
+    className,
+}: QuizEngineProps) {
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [showResult, setShowResult] = useState(false);
     const [timeLeft, setTimeLeft] = useState(duration);
     const [isAgreedToTerms, setIsAgreedToTerms] = useState(false);
+
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            if (!isSubmitted) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }, [isSubmitted]);
 
     const handleSelect = (qid: number) => (value: string) => {
         setSelectedAnswers(prev => ({...prev, [qid]: value}));
@@ -78,7 +90,7 @@ export default function QuizEngine({
             await onSubmitAction(payload);
             setIsSubmitted(true);
             setTimeLeft(0);
-            toast.success('Exam submitted!');
+            toast.success('Exam submitted successfully!');
         } catch {
             toast.error('Failed to submit exam. Please try again.');
         }
@@ -104,6 +116,11 @@ export default function QuizEngine({
     return (
         <section className={cn('w-full mx-auto my-6 md:my-10', className)}>
             <div className="bg-white shadow rounded-lg p-6 space-y-6">
+                <div className="flex items-center gap-1 bg-amber-100 border border-amber-300 text-amber-800 p-3 rounded-md text-sm font-medium">
+                    <MdWarningAmber className='w-4 h-4'/> Once the exam starts, refreshing the page, closing the browser, or leaving this page will
+                    automatically submit your exam.
+                </div>
+
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-6">
                     <div className="flex items-center gap-4">
                         <Image src="/book.svg" alt="Exam book icon" width={48} height={48} />
