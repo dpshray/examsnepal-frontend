@@ -27,15 +27,15 @@ class MockTest extends HttpService {
             throw error;
         }
     }
-    getMockTestById = async ({id, page = 1, token = ''}: { id: number; page?: number; token?: string | null }) => {
+    getMockTestById = async (examId:number,params?:any) => {
         try {
-            const queryParams = [`page=${page}`];
-            if (token) queryParams.push(`token=${token}`);
+           
 
             const response = await this.getRequest({
-                url: `/mock-test/questions/${id}?${queryParams.join('&')}`,
+                url: `/mock-test/questions/${examId}`,
                 config: {
                     auth: true,
+                    params
                 },
             });
             return response?.data;
