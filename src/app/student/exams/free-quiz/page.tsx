@@ -90,8 +90,7 @@ export default function FreeQuiz() {
         } else {
             console.warn('Quiz not found or no players available');
         }
-
-        router.push(`/student/scores/${quizId}`);
+        router.push(`${process.env.NEXT_PUBLIC_STUDENT_SCORE_ROUTE}/${quizId}`)
     };
 
 

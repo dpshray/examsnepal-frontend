@@ -5,6 +5,7 @@ import "./custom.css";
 import React from "react";
 import StoreProvider from "@/redux/StoreProvider";
 import { Toaster } from "@/components/ui/sonner";
+import TanstackProvider from "@/lib/TanstackProvider";
 
 const poppins = Poppins({
     variable: "--font-poppins",
@@ -24,18 +25,20 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-        <body className={`${poppins.variable} antialiased`}>
-        <StoreProvider>
-            <Toaster position="top-right" richColors/>
-            {children}
-        </StoreProvider>
-        </body>
+            <body className={`${poppins.variable} antialiased`}>
+                <TanstackProvider>
+                    <StoreProvider>
+                        <Toaster position="top-right" richColors/>
+                        {children}
+                    </StoreProvider>
+                </TanstackProvider>
+            </body>
         </html>
     );
 }

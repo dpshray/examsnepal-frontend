@@ -78,8 +78,8 @@ export default function MockTestPage() {
         }
     };
 
-    const handleViewAllScoresAction = (quizName: string) => {
-        console.log(`View Scores for ${quizName}`);
+    const handleViewAllScoresAction = (quizId: number) => {
+        router.push(`${process.env.NEXT_PUBLIC_STUDENT_SCORE_ROUTE}/${quizId}`)
     };
 
     const handleTakeTestAction = (quizId: number) => {

@@ -22,18 +22,18 @@ export interface TextInputFieldProps {
 }
 
 const TextInputField: React.FC<TextInputFieldProps> = React.memo(({
-                                                                      name,
-                                                                      label,
-                                                                      placeholder,
-                                                                      type = "text",
-                                                                      required = false,
-                                                                      className,
-                                                                      icon: Icon,
-                                                                      error,
-                                                                      textarea = false,
-                                                                      disabled = false,
-                                                                      ...props
-                                                                  }) => {
+    name,
+    label,
+    placeholder,
+    type = "text",
+    required = false,
+    className,
+    icon: Icon,
+    error,
+    textarea = false,
+    disabled = false,
+    ...props
+}) => {
     const inputId = name || `input-${Math.random().toString(36).substr(2, 9)}`
 
     return (
@@ -52,7 +52,7 @@ const TextInputField: React.FC<TextInputFieldProps> = React.memo(({
                     <div
                         className={cn(
                             "absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground",
-                            error && "text-red-500"
+                            error && "text-red-500 pb-5"
                         )}
                     >
                         <Icon size={16} aria-hidden="true"/>
@@ -71,7 +71,7 @@ const TextInputField: React.FC<TextInputFieldProps> = React.memo(({
                         aria-describedby={error ? `${inputId}-error` : undefined}
                         aria-required={required}
                         className={cn(
-                            "w-full min-h-[100px] rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:bg-background dark:text-white",
+                            "w-full min-h-25 rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 dark:bg-background dark:text-white",
                             Icon && "pl-10",
                             error && "border-red-500 focus-visible:ring-red-500",
                             className
