@@ -11,7 +11,8 @@ import QuizCardList from '@/components/Exams/Quiz';
 import sprintQuizServices from '@/services/ExamService/SprintQuiz';
 import Pagination from '@/components/Pagination';
 import {QUIZ_TYPES, QuizType} from '@/lib/Constan';
-import {toast} from 'react-hot-toast';
+import CustomPagination from "@/components/Pagination";
+import { toast } from 'sonner';
 
 export default function SprintQuiz() {
     const router = useRouter();
@@ -83,7 +84,7 @@ export default function SprintQuiz() {
                 quizzes={quizzes}
                 selectedTab={tab}
                 onTakeTestAction={(id: number) => {
-                    toast.success(`Quiz started successfully ${id}`);
+                    toast.success(`Quiz started successfully`);
                     router.push(`/student/exams/sprint-quiz/${id}`);
                 }}
                 onViewSolutionAction={(id: number) => {
@@ -149,10 +150,10 @@ export default function SprintQuiz() {
                 <div className="p-4">
                     {
                         completedTotalPages > 1 || pendingTotalPages > 1 ? (
-                            <Pagination
+                            <CustomPagination
                                 totalPages={selectedTab === QUIZ_TYPES.PENDING ? pendingTotalPages : completedTotalPages}
                                 currentPage={selectedTab === QUIZ_TYPES.PENDING ? pendingPage : completedPage}
-                                onPageChange={(page: number) => {
+                                onPageChangeAction={(page: number) => {
                                     if (selectedTab === QUIZ_TYPES.PENDING) {
                                         setPendingPage(page);
                                         fetchPending(page);

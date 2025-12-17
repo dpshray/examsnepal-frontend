@@ -99,6 +99,20 @@ class StudentService extends HttpServices {
             throw error
         }
     }
+
+    getTotalSubjects = async () => {
+        try {
+            const response = await this.getRequest({
+                url: `/subjects`,
+                config: {
+                    auth: true
+                }
+            })
+            return response?.data
+        } catch (error) {
+            throw error
+        }
+    }
 }
 
 const studentService = new StudentService();

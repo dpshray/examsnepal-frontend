@@ -9,21 +9,25 @@ interface LogoLoadingProps {
     height?: number;
     text?: string;
     className?: string;
+    fullscreen?: boolean;
 }
 
 export default function LogoLoading({
-                                        width = 125,
-                                        height = 55,
-                                        text = 'Logging in...',
-                                        className,
-                                    }: LogoLoadingProps) {
+    width = 125,
+    height = 55,
+    text = 'Logging in...',
+    className,
+    fullscreen = true,
+}: LogoLoadingProps) {
     return (
         <motion.div
             initial={{opacity: 0}}
             animate={{opacity: 1}}
             exit={{opacity: 0}}
             className={cn(
-                'fixed inset-0 z-50 bg-white/70 backdrop-blur-md flex items-center justify-center',
+                fullscreen
+                ? "fixed inset-0 z-50 bg-white/70 backdrop-blur-md flex items-center justify-center"
+                : "flex flex-1 items-center justify-center min-h-[300px]", 
                 className
             )}
         >

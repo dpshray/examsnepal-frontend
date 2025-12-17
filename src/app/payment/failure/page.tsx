@@ -1,18 +1,31 @@
 "use client"
 
-import { ArrowLeft, HelpCircle, RefreshCw, XCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import Link from "next/link"
-
+import { XCircle } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import subscriptionService from "@/services/SubscriptionService"
 
 export default function PaymentFailurePage() {
-    const handleRetryPayment = () => {
-        // Redirect to payment page or retry logic
-        window.location.href = "/payment"
-    }
+    const searchParams = useSearchParams();
+    const txnId = searchParams.get("TXNID");
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!txnId) return;
+
+        setLoading(true);
+        subscriptionService.transactionStatus(txnId)
+            .then((res) => console.log("Transaction confirmed:", res))
+            .catch((err) => console.error("Error confirming transaction", err))
+            .finally(() => setLoading(false));
+    }, [txnId]);
+
+
+    // const handleRetryPayment = () => {
+    //     // Redirect to payment page or retry logic
+    //     window.location.href = "/payment"
+    // }
 
     return (
         <div className="h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
@@ -31,7 +44,7 @@ export default function PaymentFailurePage() {
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold text-gray-900">Payment Failed</h1>
                         <p className="text-gray-600">
-                            Oops! Something went wrong while processing your payment.
+                            {loading ? "Verifying payment status…" : "Oops! Something went wrong while processing your payment. Please try again."}
                         </p>
                     </div>
                 </CardContent>

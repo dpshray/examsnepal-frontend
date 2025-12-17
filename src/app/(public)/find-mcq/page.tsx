@@ -6,6 +6,8 @@ import {useEffect, useState} from 'react';
 import BannerHeader from '@/components/banner/header';
 import {QuestionCard} from '@/components/Exams/QuestionCard';
 import mcqService from '@/services/McqService';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 interface CategoryCardProps {
     icon: React.ElementType;
@@ -52,14 +54,14 @@ export default function FindMcq() {
     const [error, setError] = useState<string>('');
     const [page, setPage] = useState<number>(1);
 
-    const categories = [
-        {title: 'Dental NMCLE / Loksewa / MDS', icon: GiTooth, questions: '200+'},
-        {title: 'Medical NMCLE / Loksewa / MDMS', icon: GiStethoscope, questions: '200+'},
-        {title: 'MBBS Entrance and Bachelor Level', icon: FaHeartbeat, questions: '200+'},
-        {title: 'Engineering entrance and bachelor level', icon: FaTools, questions: '200+'},
-        {title: 'Nursing entrance and bachelor level', icon: GiStethoscope, questions: '200+'},
-        {title: 'Pharmacy entrance and bachelor level', icon: FaTools, questions: '200+'},
-    ];
+    // const categories = [
+    //     {title: 'Dental NMCLE / Loksewa / MDS', icon: GiTooth, questions: '200+'},
+    //     {title: 'Medical NMCLE / Loksewa / MDMS', icon: GiStethoscope, questions: '200+'},
+    //     {title: 'MBBS Entrance and Bachelor Level', icon: FaHeartbeat, questions: '200+'},
+    //     {title: 'Engineering entrance and bachelor level', icon: FaTools, questions: '200+'},
+    //     {title: 'Nursing entrance and bachelor level', icon: GiStethoscope, questions: '200+'},
+    //     {title: 'Pharmacy entrance and bachelor level', icon: FaTools, questions: '200+'},
+    // ];
 
     useEffect(() => {
         const fetchMcqs = async () => {
@@ -68,11 +70,14 @@ export default function FindMcq() {
                 const response = await mcqService.searchMcq(query, page);
                 setMcqs(response?.data?.data || []);
                 setError('');
-                console.log(`MCQs`, response?.data?.data);
-            } catch (err) {
-                setError('Failed to fetch MCQs');
+            } catch (err: any) {
+                const message =
+                    err?.data?.message || 
+                    err?.message ||                
+                    'Failed to fetch MCQs';
+                setError(message);
                 setMcqs([]);
-                console.error(err);
+                toast.error(message);
             } finally {
                 setLoading(false);
             }
@@ -98,7 +103,7 @@ export default function FindMcq() {
             />
 
             <div className="max-w-6xl mx-auto px-4 py-8">
-                <div className="flex flex-col items-center text-center mb-8">
+                {/* <div className="flex flex-col items-center text-center mb-8">
                     <h2 className="text-2xl font-bold font-montserrat text-gray-900 mb-6">
                         Find MCQ by Category
                     </h2>
@@ -107,11 +112,19 @@ export default function FindMcq() {
                         you&#39;re preparing
                         for a medical, engineering, or other entrance exam, we have the right practice material for you.
                     </p>
-                </div>
+                </div> */}
 
                 {/* Loading/Error Messages */}
-                {loading && <p className="text-center">Loading...</p>}
-                {error && <p className="text-center text-red-500">{error}</p>}
+                {loading && (
+                    <div>
+                        <Skeleton className="h-6 w-1/3 mb-4 mx-auto" />
+                        <div className="flex flex-col gap-4">
+                            {[1, 2, 3].map((i) => (
+                                <Skeleton key={i} className="h-10 w-full" />
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* MCQs Found */}
                 {!loading && !error && mcqs.length > 0 ? (
@@ -138,6 +151,7 @@ export default function FindMcq() {
                                             showFeedback={true}
                                             correctAnswers={correctAnswers}
                                             explanation={mcq.explanation}
+                                            id={mcq.id}
                                         />
                                     </div>
                                 );
@@ -150,24 +164,25 @@ export default function FindMcq() {
                         </div>
                     </>
                 ) : (
-                    // Show category cards if no MCQs or query is empty
-                    !query && !loading && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12 place-items-center">
-                            {categories.map((category, index) => (
-                                <CategoryCard
-                                    key={index}
-                                    icon={category.icon}
-                                    title={category.title}
-                                    questionCount={category.questions}
-                                    onClick={() => handleSearch(category.title)}
-                                />
-                            ))}
-                        </div>
+                        !query && !loading && (
+                            <div className="flex flex-col items-center text-center mb-8">
+                                <h2 className="text-2xl font-bold font-montserrat text-gray-900 mb-4">
+                                    Explore MCQs Instantly
+                                </h2>
+                                <p className="text-muted-foreground font-montserrat mb-4 max-w-2xl">
+                                    Search for any topic or exam type to start practicing multiple choice questions.
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                    Try keywords like <span className="font-semibold">&quot;Physiology&quot;</span> or <span className="font-semibold">&quot;Engineering&quot;</span>.
+                                </p>
+                            </div>
+                        )
                     )
-                )}
+                }
 
                 {/* No results message (only after search attempt) */}
-                {!loading && !error && query && mcqs.length === 0 && (
+                {error && <p className="text-center text-red-500">{error}</p>}
+                {!loading && error && query && mcqs.length === 0 && (
                     <p className="text-center text-gray-500">
                         No MCQs found for &#34;{query}&#34;. Please try a different search term.
                     </p>

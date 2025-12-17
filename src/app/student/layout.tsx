@@ -60,6 +60,11 @@ const navData = [
         icon: CreditCard,
     },
     {
+        title: "Find MCQ",
+        url: "/student/mcq",
+        icon: BadgeCheck,
+    },
+    {
         title: "Profile",
         url: "/student/profile",
         icon: User,
@@ -70,13 +75,8 @@ const navData = [
                 icon: User,
             },
             {
-                title: "My Badges",
-                url: "/student/badges",
-                icon: BadgeCheck,
-            },
-            {
                 title: "My Subscription",
-                url: "/student/subscription",
+                url: "/student/my-subscription",
                 icon: CreditCard,
             },
         ]
@@ -86,7 +86,7 @@ const navData = [
 export default function StudentLayout({children}: { children: React.ReactNode }) {
     const {student, loading, error} = useLoggedInStudent();
 
-    if (loading) return <LogoLoading/>;
+    // if (loading) return <LogoLoading/>;
     // if (error || !student) return <div className="p-4 text-center text-red-500">Failed to load user.</div>;
 
     return (
@@ -99,7 +99,11 @@ export default function StudentLayout({children}: { children: React.ReactNode })
             }}
             navItems={navData}
         >
-            {children}
+            {loading ? (
+                <LogoLoading fullscreen={false}/>
+            ) : (
+                children
+            )}
         </MainSidebar>
     );
 }

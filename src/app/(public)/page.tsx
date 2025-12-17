@@ -7,6 +7,11 @@ import {Award, BarChart3, FileText, PieChart, Users} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Button} from '@/components/ui/button';
 import {questionBank} from "../../../public/assest";
+import { useEffect, useState } from 'react';
+import subscriptionService from '@/services/SubscriptionService';
+import { redirectToConnectIPS } from '@/lib/connectIps';
+import { toast } from 'sonner';
+import { featuredSteps } from '@/lib/data';
 
 const data = [
     {
@@ -52,6 +57,48 @@ const data = [
 ];
 
 export default function Home() {
+    const [subscription, setSubscription] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchUserSubscription = async () => {
+            try {
+                const data = await subscriptionService.getSubscriptionTypes();
+                setSubscription(data ?? null);
+            } catch (err) {
+                console.error("Failed to fetch subscription status:", err);
+                setSubscription(null);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchUserSubscription();
+    }, []);
+
+    const onAddSubscription = async (subscription_type_id: number, promo_code: string) => {
+        try {
+            setPromoLoadingId(subscription_type_id);
+            const response = await subscriptionService.addSubscription({
+            subscription_type_id,
+            promo_code,
+            });
+
+            if (response.status) {
+                toast.success("Transaction generated. Redirecting to payment...");
+                redirectToConnectIPS(response.data);
+                console.log("try", response.data);
+            } else {
+                toast.error("Failed to generate transaction.");
+            }
+        } catch (err) {
+            toast.error("Failed to add subscription.");
+            console.error(err);
+        } finally {
+            setPromoLoadingId(null);
+        }
+    };
+
     return (
         <main className="font-montserrat bg-white overflow-x-hidden scroll-smooth">
             <HeroSection/>
@@ -63,9 +110,15 @@ export default function Home() {
                     Discover the Advantages of Seamless Online Exam Solutions
                 </p>
                 <div className="grid grid-cols-1 gap-6 mt-8 sm:grid-cols-2 lg:grid-cols-3">
-                    {[...Array(3)].map((_, index) => (
-                        <div key={index}>
-                            <FeaturedCard/>
+                    {featuredSteps.map((step, index) => (
+                        <div key={index} className='flex justify-center'>
+                            <FeaturedCard
+                                key={index}
+                                title={step.title}
+                                description={step.description}
+                                linkHref={step.linkHref}
+                                linkText={step.linkText}
+                            />
                         </div>
                     ))}
                 </div>
@@ -102,7 +155,7 @@ export default function Home() {
                 <p className="mt-4 text-sm font-light text-gray-600 sm:text-base md:font-normal">
                     Browse through our carefully curated packages designed to meet your specific needs
                 </p>
-                <PricingCard/>
+                <PricingCard subscription={subscription} loading={loading} promoLoadingId={promoLoadingId} onAddSubscription={onAddSubscription}/>
             </section>
             <section
                 className="relative flex flex-col-reverse items-center justify-between px-6 mt-20 mb-10 sm:px-10 md:flex-row lg:px-20">
@@ -143,20 +196,16 @@ export default function Home() {
             <section className="w-full">
                 <div className={' flex flex-col items-center text-center mb-8 max-w-3xl container mx-auto'}>
                     <h2 className="text-3xl font-bold text-black  font-montserrat sm:text-4xl lg:text-5xl">
-                        Become an Instructor
+                        Conduct Your Own Test
                     </h2>
-                    <span
-                        className={'font-montserrat text-gray-600 mt-4 text-sm font-light sm:text-base md:font-normal'}>
-                    Share Your Expertise with Aspiring Students
-                </span>
+                    <span className={'font-montserrat text-gray-600 mt-4 text-sm font-light sm:text-base md:font-normal'}>
+                        Register as a teacher and create your own online exams with ease.
+                    </span>
                     <p className=" text-sm font-light text-muted-foreground sm:text-base md:font-normal">
-                        Join our platform to reach a vast audience of learners. Share your knowledge and contribute to
-                        shaping the future of education in Nepal.
+                        Manage questions, set time limits, and invite students to take your tests — all from one platform. Perfect for teachers, institutions, and coaching centers who want to assess and guide their learners effectively.
                     </p>
-                    <Button className={'mt-4 text-white bg-green-600 hover:bg-green-700'}>Apply For Instructor</Button>
+                    <Button className={'mt-4 text-white bg-green-600 hover:bg-green-700'}>Register as Teacher</Button>
                 </div>
-
-
             </section>
         </main>
     );

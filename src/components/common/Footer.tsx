@@ -15,10 +15,9 @@ const Footer = () => {
     ];
 
     const socialIcons = [
-        {name: 'Facebook', link: '#', icon: FaFacebookF},
-        {name: 'Twitter', link: '#', icon: FaTwitter},
-        {name: 'Instagram', link: '#', icon: FaInstagram},
-        {name: 'LinkedIn', link: '#', icon: FaLinkedinIn},
+        {name: 'Facebook', link: process.env.NEXT_PUBLIC_FACEBOOK_LINK, icon: FaFacebookF},
+        {name: 'Instagram', link: process.env.NEXT_PUBLIC_INSTAGRAM_LINK, icon: FaInstagram},
+        {name: 'LinkedIn', link: process.env.NEXT_PUBLIC_LINKEDIN_LINK, icon: FaLinkedinIn},
     ];
 
 
@@ -134,9 +133,27 @@ const Footer = () => {
 
                 {/* Footer Bottom */}
                 <hr className="border-gray-600 my-6"/>
-                <p className="text-center text-sm text-gray-300">
-                    &copy; {new Date().getFullYear()} Exams Nepal. All rights reserved.
-                </p>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-2 sm:gap-4 text-center">
+                    <p className="text-center text-sm text-gray-300">
+                        &copy; {new Date().getFullYear()} Exams Nepal. All rights reserved.
+                    </p>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/privacy-policy"
+                            className="text-sm text-gray-300 hover:text-white transition"
+                        >
+                            Privacy Policy
+                        </Link>
+                        <span className="text-gray-500">|</span>
+                        <Link
+                            href="/terms-and-conditions"
+                            className="text-sm text-gray-300 hover:text-white transition"
+                        >
+                            Terms & Conditions
+                        </Link>
+                    </div>
+                </div>
             </div>
         </footer>
     );

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import {Textarea} from "@/components/ui/textarea"
 import doubtsService from "@/services/DoubtService";
-import {toast} from "react-hot-toast";
+import { toast } from "sonner";
 
 type Option = {
     label: string | number;
@@ -208,6 +208,7 @@ export function RaiseDoubtModal({questionId}: { questionId?: number }) {
     const [doubt, setDoubt] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    console.log("questionId", questionId)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

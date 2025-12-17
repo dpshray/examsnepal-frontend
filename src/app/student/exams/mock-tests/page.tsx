@@ -11,6 +11,8 @@ import Pagination from "@/components/Pagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { CheckCheckIcon, ClockIcon } from "lucide-react";
+import CustomPagination from "@/components/Pagination";
+import { toast } from "sonner";
 
 interface MetaData {
     totalPages: number;
@@ -81,6 +83,7 @@ export default function MockTestPage() {
     };
 
     const handleTakeTestAction = (quizId: number) => {
+        toast.success(`Quiz started successfully`);
         router.push(`/student/exams/mock-tests/${quizId}`);
     };
 
@@ -148,14 +151,14 @@ export default function MockTestPage() {
                                     onViewAllScoresAction={handleViewAllScoresAction as any}
                                     onTakeTestAction={handleTakeTestAction}
                                     onViewSolutionAction={(quizId: number) =>
-                                        router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
+                                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
-                                    <Pagination
+                                    <CustomPagination
                                         totalPages={pendingMeta.totalPages}
                                         currentPage={pendingMeta.currentPage}
-                                        onPageChange={handlePageChange}
+                                        onPageChangeAction={handlePageChange}
                                     />
                                 </div>
                             </>
@@ -174,17 +177,17 @@ export default function MockTestPage() {
                                 <QuizCardList
                                     quizzes={completedQuizzes}
                                     selectedTab={QUIZ_TYPES.COMPLETED}
-                                    onViewAllScoresAction={handleViewAllScoresAction}
+                                    onViewAllScoresAction={handleViewAllScoresAction as any}
                                     onTakeTestAction={handleTakeTestAction}
                                     onViewSolutionAction={(quizId: number) =>
-                                        router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
+                                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
-                                    <Pagination
+                                    <CustomPagination
                                         totalPages={completedMeta.totalPages}
                                         currentPage={completedMeta.currentPage}
-                                        onPageChange={handlePageChange}
+                                        onPageChangeAction={handlePageChange}
                                     />
                                 </div>
                             </>

@@ -30,24 +30,13 @@ class FreeQuizServices extends HttpService {
         }
     }
 
-    getFreeQuizById = async ({
-                                 id,
-                                 page = 1,
-                                 token = ""
-                             }: {
-        id: number;
-        page?: number;
-        token?: string;
-    }): Promise<any> => {
+    getFreeQuizById = async ({id, page = 1, token = ''}: {id: number; page?: number; token?: string | null }) => {
         try {
-            // ✅ Build query params conditionally
-            let queryParams = `?page=${page}`;
-            if (page !== 1 && token) {
-                queryParams += `&token=${token}`;
-            }
+            const queryParams = [`page=${page}`];
+            if (token) queryParams.push(`token=${token}`);
 
             const response = await this.getRequest({
-                url: `/free-quiz/questions/${id}${queryParams}`,
+                url: `/free-quiz/questions/${id}?${queryParams.join('&')}`,
                 config: {
                     auth: true,
                 },
@@ -55,7 +44,8 @@ class FreeQuizServices extends HttpService {
 
             return response?.data;
         } catch (error: any) {
-
+            console.error(`Failed to fetch free quiz ${id}:`, error);
+            throw error;
         }
     };
 

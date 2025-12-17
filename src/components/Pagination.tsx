@@ -1,112 +1,111 @@
 "use client"
+import React from "react"
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
+import {cn} from "@/lib/utils";
 
-import { useEffect, useState } from "react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-
-interface PaginationProps {
+interface CustomPaginationProps {
+    currentPage: number
     totalPages: number
-    currentPage?: number
-    onPageChange?: (page: number) => void
+    onPageChangeAction: (page: number) => void
+    maxPagesToShow?: number
     className?: string
 }
 
-export default function Pagination({
-                                       totalPages,
-                                       currentPage: propCurrentPage = 1,
-                                       onPageChange,
-                                       className,
-                                   }: PaginationProps) {
-    const [currentPage, setCurrentPage] = useState(propCurrentPage)
+export default function CustomPagination({
+                                             currentPage,
+                                             totalPages,
+                                             onPageChangeAction,
+                                             maxPagesToShow = 5,
+                                             className
+                                         }: CustomPaginationProps) {
+    const getPageNumbers = () => {
+        const pageNumbers: number[] = []
+        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
+        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
 
-    useEffect(() => {
-        setCurrentPage(propCurrentPage)
-    }, [propCurrentPage])
-
-    const handlePageChange = (page: number) => {
-        if (page < 1 || page > totalPages || page === currentPage) return
-        setCurrentPage(page)
-        onPageChange?.(page)
-    }
-
-    const generatePages = (): (number | string)[] => {
-        const pages: (number | string)[] = []
-
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i)
-            }
-        } else {
-            if (currentPage <= 4) {
-                for (let i = 1; i <= 5; i++) pages.push(i)
-                pages.push("...")
-                pages.push(totalPages)
-            } else if (currentPage >= totalPages - 3) {
-                pages.push(1)
-                pages.push("...")
-                for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i)
-            } else {
-                pages.push(1)
-                pages.push("...")
-                for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i)
-                pages.push("...")
-                pages.push(totalPages)
-            }
+        if (endPage - startPage + 1 < maxPagesToShow) {
+            startPage = Math.max(1, endPage - maxPagesToShow + 1)
         }
 
-        return pages
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i)
+        }
+        return pageNumbers
     }
-    if (totalPages <= 1) return null
+
+    const pageNumbers = getPageNumbers()
 
     return (
-        <nav
-            className={cn("flex flex-wrap items-center justify-center gap-x-2 gap-y-2 sm:gap-x-3", className)}
-            aria-label="Pagination"
-        >
-            <Button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                variant="outline"
-                className="rounded-full px-4 sm:px-5 py-2 text-sm sm:text-base font-medium"
-            >
-                Previous
-            </Button>
+        <Pagination className={cn('justify-end', className)}>
+            <PaginationContent>
+                <PaginationItem>
+                    <PaginationPrevious
+                        onClick={() => {
+                            if (currentPage > 1) onPageChangeAction(currentPage - 1)
+                        }}
+                        aria-disabled={currentPage === 1}
+                        aria-label="Previous page"
+                        tabIndex={currentPage === 1 ? -1 : undefined}
+                    />
+                </PaginationItem>
 
-            {generatePages().map((page, index) =>
-                    typeof page === "number" ? (
-                        <Button
-                            key={page}
-                            onClick={() => handlePageChange(page)}
-                            variant={currentPage === page ? "outline" : "ghost"}
-                            size="icon"
+                {pageNumbers[0] > 1 && (
+                    <>
+                        <PaginationItem>
+                            <PaginationLink onClick={() => onPageChangeAction(1)}>1</PaginationLink>
+                        </PaginationItem>
+                        {pageNumbers[0] > 2 && (
+                            <PaginationItem>
+                                <PaginationEllipsis/>
+                            </PaginationItem>
+                        )}
+                    </>
+                )}
+
+                {pageNumbers.map((page) => (
+                    <PaginationItem key={page}>
+                        <PaginationLink
+                            onClick={() => onPageChangeAction(page)}
+                            isActive={currentPage === page}
                             aria-current={currentPage === page ? "page" : undefined}
-                            className={cn(
-                                "h-10 w-10 sm:h-11 sm:w-11 text-sm font-medium rounded-full transition-colors",
-                                currentPage === page &&
-                                "bg-green-100 text-green-700 hover:bg-green-100 border-0"
-                            )}
                         >
                             {page}
-                        </Button>
-                    ) : (
-                        <span
-                            key={`ellipsis-${index}`}
-                            className="h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center text-gray-400"
-                            aria-hidden="true"
-                        >
-            ...
-          </span>
-                    )
-            )}
+                        </PaginationLink>
+                    </PaginationItem>
+                ))}
 
-            <Button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                variant="outline"
-                className="rounded-full px-4 sm:px-5 py-2 text-sm sm:text-base font-medium"
-            >
-                Next
-            </Button>
-        </nav>
+                {pageNumbers[pageNumbers.length - 1] < totalPages && (
+                    <>
+                        {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
+                            <PaginationItem>
+                                <PaginationEllipsis/>
+                            </PaginationItem>
+                        )}
+                        <PaginationItem>
+                            <PaginationLink onClick={() => onPageChangeAction(totalPages)}>{totalPages}</PaginationLink>
+                        </PaginationItem>
+                    </>
+                )}
+
+                <PaginationItem>
+                    <PaginationNext
+                        onClick={() => {
+                            if (currentPage < totalPages) onPageChangeAction(currentPage + 1)
+                        }}
+                        aria-disabled={currentPage === totalPages}
+                        aria-label="Next page"
+                        tabIndex={currentPage === totalPages ? -1 : undefined}
+                    />
+                </PaginationItem>
+            </PaginationContent>
+        </Pagination>
     )
 }

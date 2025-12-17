@@ -2,9 +2,10 @@ import type {Metadata} from "next";
 import {Poppins} from "next/font/google";
 import "./globals.css";
 import "./custom.css";
-import {Toaster} from "react-hot-toast";
 import React from "react";
 import StoreProvider from "@/redux/StoreProvider";
+import { Toaster } from "@/components/ui/sonner";
+import TanstackProvider from "@/lib/TanstackProvider";
 
 const poppins = Poppins({
     variable: "--font-poppins",
@@ -24,18 +25,20 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en" suppressHydrationWarning>
-        <body className={`${poppins.variable} antialiased`}>
-        <StoreProvider>
-            <Toaster position="top-right" containerClassName={' font-poppins text-sm'}/>
-            {children}
-        </StoreProvider>
-        </body>
+            <body className={`${poppins.variable} antialiased`}>
+                <TanstackProvider>
+                    <StoreProvider>
+                        <Toaster position="top-right" richColors/>
+                        {children}
+                    </StoreProvider>
+                </TanstackProvider>
+            </body>
         </html>
     );
 }

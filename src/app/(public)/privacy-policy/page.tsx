@@ -22,13 +22,8 @@ export default function PrivacyPolicyPage() {
   const sections = [
     { id: "interpretation", title: "Interpretation and Definitions", icon: FileText },
     { id: "collecting", title: "Collecting and Using Your Personal Data", icon: Eye },
-    { id: "retention", title: "Retention of Your Personal Data", icon: Lock },
-    { id: "transfer", title: "Transfer of Your Personal Data", icon: Users },
-    { id: "disclosure", title: "Disclosure of Your Personal Data", icon: AlertCircle },
     { id: "security", title: "Security of Your Personal Data", icon: Shield },
     { id: "children", title: "Children's Privacy", icon: Users },
-    { id: "links", title: "Links to Other Websites", icon: ExternalLink },
-    { id: "changes", title: "Changes to this Privacy Policy", icon: Calendar },
     { id: "contact", title: "Contact Us", icon: Mail },
   ]
 
@@ -99,7 +94,7 @@ export default function PrivacyPolicyPage() {
               </div>
 
               {/* Interpretation and Definitions */}
-              <section id="interpretation" className="mb-12">
+              <section id="interpretation" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <FileText className="w-6 h-6 text-blue-600" />
                   Interpretation and Definitions
@@ -180,7 +175,7 @@ export default function PrivacyPolicyPage() {
               </section>
 
               {/* Data Collection */}
-              <section id="collecting" className="mb-12">
+              <section id="collecting" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Eye className="w-6 h-6 text-blue-600" />
                   Collecting and Using Your Personal Data
@@ -264,7 +259,7 @@ export default function PrivacyPolicyPage() {
               </section>
 
               {/* Security */}
-              <section id="security" className="mb-12">
+              <section id="security" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Shield className="w-6 h-6 text-blue-600" />
                   Security of Your Personal Data
@@ -280,7 +275,7 @@ export default function PrivacyPolicyPage() {
               </section>
 
               {/* Children's Privacy */}
-              <section id="children" className="mb-12">
+              <section id="children" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Users className="w-6 h-6 text-blue-600" />
                   Children&apos;s Privacy
@@ -300,7 +295,7 @@ export default function PrivacyPolicyPage() {
               </section>
 
               {/* Contact Information */}
-              <section id="contact" className="mb-12">
+              <section id="contact" className="mb-12 scroll-mt-24">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Mail className="w-6 h-6 text-blue-600" />
                   Contact Us

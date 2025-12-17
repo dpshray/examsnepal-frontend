@@ -1,79 +1,134 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { toast } from 'react-hot-toast';
-
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-    MyPin,
-    MyPinCard,
-    MyPinCardSkeleton,
-    Pin,
-    PinCard,
-} from '@/components/card/PinsCard';
+import {useEffect, useState} from 'react';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from '@/components/ui/card';
+import {Badge} from '@/components/ui/badge';
+import {Skeleton} from '@/components/ui/skeleton';
+import {MyPin, MyPinCard, Pin, PinCard} from '@/components/card/PinsCard';
 import pinsService from '@/services/pinsService';
-import Pagination from '@/components/Pagination';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { BoxIcon, PanelsTopLeftIcon } from 'lucide-react';
+import CustomPagination from '@/components/Pagination';
+import {BoxIcon, FileText, PanelsTopLeftIcon, PinIcon, Search,} from 'lucide-react';
+import ErrorComponent from "@/components/state/ErrorComponent";
+import { toast } from 'sonner';
+
+
+const EmptyState = ({type}: { type: 'all' | 'my' }) => (
+    <Card className="max-w-md mx-auto text-center p-6">
+        <CardHeader>
+            <div className="flex justify-center mb-4">
+                {type === 'all' ? (
+                    <Search className="h-16 w-16 text-gray-400"/>
+                ) : (
+                    <PinIcon className="h-16 w-16 text-gray-400"/>
+                )}
+            </div>
+            <CardTitle
+                className="text-xl text-gray-600">{type === 'all' ? 'No Pins Available' : 'No Pins Created Yet'}</CardTitle>
+            <CardDescription className="text-gray-500">
+                {type === 'all'
+                    ? 'There are currently no pins available to display.'
+                    : "You haven't created any pins yet. Start pinning your favorite notes!"}
+            </CardDescription>
+        </CardHeader>
+    </Card>
+);
+
+const LoadingSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({length: 10}).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-24"/>
+                        <Skeleton className="h-6 w-16"/>
+                    </div>
+                    <Skeleton className="h-5 w-3/4"/>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-full"/>
+                        <Skeleton className="h-4 w-5/6"/>
+                        <Skeleton className="h-4 w-4/6"/>
+                    </div>
+                    <div className="flex justify-between items-center mt-4">
+                        <Skeleton className="h-4 w-20"/>
+                        <Skeleton className="h-8 w-20"/>
+                    </div>
+                </CardContent>
+            </Card>
+        ))}
+    </div>
+);
 
 export default function PinsClient() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
     const tabParam = searchParams.get('tab') || 'all';
-    const [selectedTab, setSelectedTab] = useState<'all' | 'my'>(
-        tabParam === 'my' ? 'my' : 'all'
-    );
+    const [selectedTab, setSelectedTab] = useState<'all' | 'my'>(tabParam === 'my' ? 'my' : 'all');
 
     const [allPins, setAllPins] = useState<Pin[]>([]);
     const [myPins, setMyPins] = useState<MyPin[]>([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const [allPinsCurrentPage, setAllPinsCurrentPage] = useState(1);
     const [myPinsCurrentPage, setMyPinsCurrentPage] = useState(1);
     const [allPinsTotalPages, setAllPinsTotalPages] = useState(1);
     const [myPinsTotalPages, setMyPinsTotalPages] = useState(1);
 
-    const fetchAllPins = async (page: number = 1) => {
+    const fetchAllPins = async (page = 1) => {
         setLoading(true);
+        setError(null);
         try {
             const response = await pinsService.getAllPins(page);
             setAllPins(response?.data?.data || []);
-            setAllPinsTotalPages(Math.ceil(response?.data?.total / 10));
+            setAllPinsTotalPages(Math.ceil((response?.data?.total || 1) / 10));
             setAllPinsCurrentPage(response?.data?.current_page || 1);
-        } catch (error) {
-            console.error('Error fetching all pins:', error);
+        } catch (error: any) {
+            const message = error?.response?.data?.message || 'Failed to fetch pins';
+            setError(message);
+            toast.error(message);
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchMyPins = async (page: number = 1) => {
+    const fetchMyPins = async (page = 1) => {
         setLoading(true);
+        setError(null);
         try {
             const response = await pinsService.getMyPins(page);
             setMyPins(response?.data?.data || []);
-            setMyPinsTotalPages(Math.ceil(response?.data?.total / 10));
+            setMyPinsTotalPages(Math.ceil((response?.data?.total || 1) / 10));
             setMyPinsCurrentPage(response?.data?.current_page || 1);
-        } catch (error) {
-            console.error('Error fetching my pins:', error);
+        } catch (error: any) {
+            const message = error?.response?.data?.message || 'Failed to fetch your pins';
+            setError(message);
+            toast.error(message);
         } finally {
             setLoading(false);
         }
     };
 
     const handleUnPin = async (pinId: number) => {
-        setLoading(true);
         try {
             await pinsService.deletePin(pinId);
             toast.success('Pin unpinned successfully');
+            await fetchMyPins(myPinsCurrentPage);
+        } catch (error: any) {
+            const message = error?.response?.data?.message || 'Failed to unpin';
+            toast.error(message);
+        }
+    };
+
+    const handleRetry = () => {
+        if (selectedTab === 'all') {
+            fetchAllPins(allPinsCurrentPage);
+        } else {
             fetchMyPins(myPinsCurrentPage);
-        } catch (error) {
-            console.error('Error unpinning pin:', error);
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -88,8 +143,8 @@ export default function PinsClient() {
     const handleTabChange = (val: string) => {
         const tab = val === 'my' ? 'my' : 'all';
         setSelectedTab(tab);
+        setError(null);
 
-        // Reset page number when switching tabs
         if (tab === 'all') {
             setAllPinsCurrentPage(1);
         } else {
@@ -99,105 +154,125 @@ export default function PinsClient() {
         router.push(`?tab=${tab}`);
     };
 
+    const currentPins = selectedTab === 'all' ? allPins : myPins;
+    const currentPage = selectedTab === 'all' ? allPinsCurrentPage : myPinsCurrentPage;
+    const totalPages = selectedTab === 'all' ? allPinsTotalPages : myPinsTotalPages;
+    const setCurrentPage = selectedTab === 'all' ? setAllPinsCurrentPage : setMyPinsCurrentPage;
+
+    const pinsTabs = [
+        {
+            value: 'all',
+            label: 'All Pins',
+            icon: PanelsTopLeftIcon,
+        },
+        {
+            value: 'my',
+            label: 'My Pins',
+            icon: BoxIcon,
+        },
+    ];
+
     return (
         <main
             role="main"
             aria-label="Pinned notes"
             className="w-full p-4 max-w-7xl mx-auto flex flex-col gap-6"
         >
-            <header className="flex flex-col gap-1">
-                <h1 className="font-poppins text-3xl md:text-4xl font-bold leading-snug">
-                    {selectedTab === 'all' ? 'All Pins' : 'My Pins'}
-                </h1>
-                <p className="text-gray-500 text-sm md:text-base">
+            <header className="flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                    <FileText className="h-8 w-8 text-primary"/>
+                    <h1 className="font-poppins text-3xl md:text-4xl font-bold leading-snug">
+                        {selectedTab === 'all' ? 'All Pins' : 'My Pins'}
+                    </h1>
+                </div>
+                <p className="text-muted-foreground text-sm md:text-base">
                     {selectedTab === 'all'
-                        ? 'All your pinned notes will be here.'
-                        : 'Only notes pinned by you are shown here.'}
+                        ? 'Discover and explore all pinned notes from the community.'
+                        : 'Manage your personal collection of pinned notes.'}
                 </p>
+                {currentPins.length > 0 && (
+                    <Badge variant="outline" className="w-fit">
+                        {currentPins.length} pin{currentPins.length !== 1 ? 's' : ''}
+                    </Badge>
+                )}
             </header>
 
-            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-6">
-                <ScrollArea>
-                    <TabsList
-                        role="tablist"
-                        className="before:bg-border relative mb-3 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px"
-                    >
-                        <TabsTrigger
-                            value="all"
-                            className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:bg-green-600 data-[state=active]:text-white"
-                        >
-                            <PanelsTopLeftIcon className="me-2 opacity-60" size={16} aria-hidden="true" />
-                            All Pins
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="my"
-                            className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:bg-amber-600 data-[state=active]:text-white"
-                        >
-                            <BoxIcon className="me-2 opacity-60" size={16} aria-hidden="true" />
-                            My Pins
-                        </TabsTrigger>
-                    </TabsList>
-                    <ScrollBar orientation="horizontal" />
-                </ScrollArea>
+            <ErrorComponent error={error} onRetry={handleRetry}/>
 
-                {/* All Pins Tab Content */}
-                <TabsContent value="all">
+            <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-6">
+                <TabsList
+                    role="tablist"
+                    className="relative mb-6 h-auto w-full gap-2 bg-gray-300 p-1 rounded-lg flex"
+                >
+                    {pinsTabs.map((tab) => (
+                        <TabsTrigger
+                            key={tab.value}
+                            value={tab.value}
+                            className="flex-1 gap-2 rounded-md  px-4 font-medium   transition-all data-[state=active]:bg-green-600 data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm flex items-center justify-center"
+                        >
+                            <tab.icon className="h-4 w-4"/>
+                            {tab.label}
+                            {tab.value === 'all' && allPins.length > 0 && (
+                                <Badge variant="secondary" className="ml-1 text-xs">
+                                    {allPins.length}
+                                </Badge>
+                            )}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+
+                <TabsContent value="all" className="space-y-6">
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {Array.from({ length: 10 }).map((_, i) => (
-                                <MyPinCardSkeleton key={i} />
-                            ))}
-                        </div>
+                        <LoadingSkeleton/>
+                    ) : currentPins.length === 0 ? (
+                        <EmptyState type="all"/>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
                             {allPins.map((pin, index) => (
-                                <PinCard
-                                    key={index}
-                                    pin={pin}
-                                    index={(allPinsCurrentPage - 1) * 10 + index}
-                                />
+                                <div
+                                    key={`all-pin-${pin.id || index}`}
+                                    className="animate-in fade-in-0 slide-in-from-bottom-4"
+                                    style={{animationDelay: `${index * 100}ms`}}
+                                >
+                                    <PinCard pin={pin} index={(allPinsCurrentPage - 1) * 10 + index}/>
+                                </div>
                             ))}
                         </div>
                     )}
-
-                    {allPinsTotalPages > 1 && (
-                        <div className="my-8 flex justify-center items-center">
-                            <Pagination
-                                totalPages={allPinsTotalPages}
-                                currentPage={allPinsCurrentPage}
-                                onPageChange={(page) => setAllPinsCurrentPage(page)}
-                            />
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center pt-8">
+                            <CustomPagination totalPages={allPinsTotalPages} currentPage={allPinsCurrentPage}
+                                              onPageChangeAction={setAllPinsCurrentPage}/>
                         </div>
                     )}
                 </TabsContent>
 
-                {/* My Pins Tab Content */}
-                <TabsContent value="my" className="w-full">
+                <TabsContent value="my" className="space-y-6">
                     {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {Array.from({ length: 10 }).map((_, i) => (
-                                <MyPinCardSkeleton key={i} />
-                            ))}
-                        </div>
+                        <LoadingSkeleton/>
+                    ) : currentPins.length === 0 ? (
+                        <EmptyState type="my"/>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {myPins.map((pin, index) => (
-                                <MyPinCard
-                                    key={index}
-                                    pin={pin}
-                                    index={(myPinsCurrentPage - 1) * 10 + index}
-                                    onDeleteAction={handleUnPin}
-                                />
+                                <div
+                                    key={`my-pin-${pin.id || index}`}
+                                    className="animate-in fade-in-0 slide-in-from-bottom-4"
+                                    style={{animationDelay: `${index * 100}ms`}}
+                                >
+                                    <MyPinCard pin={pin} index={(myPinsCurrentPage - 1) * 10 + index}
+                                               onDeleteAction={handleUnPin}/>
+                                </div>
                             ))}
                         </div>
                     )}
 
-                    {myPinsTotalPages > 1 && (
-                        <div className="my-8 flex justify-center items-center">
-                            <Pagination
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center pt-8">
+                            <CustomPagination
                                 totalPages={myPinsTotalPages}
                                 currentPage={myPinsCurrentPage}
-                                onPageChange={(page) => setMyPinsCurrentPage(page)}
+                                onPageChangeAction={setMyPinsCurrentPage}
                             />
                         </div>
                     )}

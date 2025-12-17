@@ -12,7 +12,9 @@ import QuizCardList from '@/components/Exams/Quiz';
 import Pagination from '@/components/Pagination';
 import {CheckCheckIcon, ClockIcon} from 'lucide-react';
 import {useDispatch} from 'react-redux';
-import {AppDispatch} from "@/redux/Srore";
+import {AppDispatch} from "@/redux/Store";
+import CustomPagination from "@/components/Pagination";
+import { toast } from 'sonner';
 
 interface Quiz {
     id: number;
@@ -156,9 +158,10 @@ export default function FreeQuiz() {
                                     quizzes={pendingQuizzes}
                                     selectedTab={QUIZ_TYPES.PENDING}
                                     onViewAllScoresAction={handleViewAllScores}
-                                    onTakeTestAction={(quizId: number) =>
+                                    onTakeTestAction={(quizId: number) => {
+                                        toast.success(`Quiz started successfully`);
                                         router.push(`/student/exams/free-quiz/${quizId}`)
-                                    }
+                                    }}
                                     onViewSolutionAction={(quizId: number) =>
                                         router.push(`/student/exams/solution/${quizId}`)
                                     }
@@ -166,10 +169,10 @@ export default function FreeQuiz() {
                                 <div className="flex justify-center mt-4">
                                     {
                                         pendingTotalPages > 1 &&
-                                        <Pagination
+                                        <CustomPagination
                                             totalPages={pendingTotalPages}
                                             currentPage={pendingPage}
-                                            onPageChange={(page) => setPendingPage(page)}
+                                            onPageChangeAction={(page) => setPendingPage(page)}
                                         />
                                     }
                                 </div>
@@ -198,14 +201,13 @@ export default function FreeQuiz() {
                                     }
                                 />
                                 <div className="flex justify-center mt-4">
-                                    {
-                                        completedTotalPages > 1 &&
-                                        <Pagination
+
+                                        <CustomPagination
                                             totalPages={completedTotalPages}
                                             currentPage={completedPage}
-                                            onPageChange={(page) => setCompletedPage(page)}
-                                        />
-                                    }
+                                            onPageChangeAction={(page) => setCompletedPage(page)} // ✅ correct
+                                            />
+
                                 </div>
                             </>
                         )}

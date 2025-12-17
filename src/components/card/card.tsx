@@ -1,7 +1,7 @@
 'use client'
 import Image from "next/image";
 
-import {ArrowUp, CircleChevronDown, MessageSquare, MoveRight} from "lucide-react";
+import {ArrowUp, CircleChevronDown, Eye, MessageSquare, MoveRight} from "lucide-react";
 import Link from "next/link";
 import {onlineTest} from "../../../public/assest";
 import {Button} from "@/components/ui/button";
@@ -11,72 +11,102 @@ import {Skeleton} from "@/components/ui/skeleton";
 import {DeleteModal} from "@/components/modal/DeleteModal";
 import EditModal from "@/components/modal/EditModal";
 import {useRouter} from "next/navigation";
+import { Input } from "../ui/input";
+import subscriptionService from "@/services/SubscriptionService";
 
-export const FeaturedCard = () => {
+interface FeaturedCardProps {
+  imageSrc?: string;
+  title: string;
+  description: string;
+  linkHref?: string;
+  linkText?: string;
+}
+import { toast } from "sonner";
+
+export const FeaturedCard = ({
+  imageSrc,
+  title,
+  description,
+  linkHref,
+  linkText,
+}: FeaturedCardProps) => {
     return (
-        <div className="bg-[#F8F8F8] rounded-xl  p-4 flex flex-col items-center text-center max-w-xs">
-            {/* Image */}
-            <Image
-                src={onlineTest}
-                alt="Live Test"
-                className="w-28 h-28 object-contain"
-            />
+        <div className="bg-[#F8F8F8] rounded-xl p-4 flex flex-col items-center justify-between text-center h-full max-w-xs">
+            <div>
+                {imageSrc && 
+                    <Image
+                        src={imageSrc || "placeholder.png"}
+                        alt={title}
+                        className="w-28 h-28 object-contain"
+                        width={112}
+                        height={112}
+                    />
+                }
 
-            {/* Title */}
-            <h2 className="text-lg font-bold text-gray-900 mt-4">
-                Take Live Online Tests
-            </h2>
+                <h2 className="text-lg font-bold text-gray-900 mt-4">{title}</h2>
 
-            {/* Description */}
-            <p className="text-sm text-pretty text-gray-600 mt-2">
-                Participate in scheduled live tests or access missed ones at your
-                convenience.
-            </p>
+                <p className="text-sm text-pretty text-gray-600 mt-2">{description}</p>
+            </div>
 
-            {/* Link */}
-            <Link
-                href="/test-exam"
-                className="text-green-600 font-medium mt-4 flex items-center gap-1 hover:underline"
-            >
-                View integration <MoveRight size={18}/>
-            </Link>
+            { linkHref && linkText && 
+                <Link
+                    href={linkHref}
+                    className="text-green-600 font-medium mt-4 flex items-center gap-1 hover:underline"
+                >
+                    {linkText} <MoveRight size={18} />
+                </Link>
+            }
         </div>
     );
 };
 
+type PricingCardProps = {
+  subscription?: Array<{
+    subscription_type_id: number;
+    duration: number;
+    price: string;
+  }> | null;
+  loading?: boolean;
+  promoLoadingId?: number | null;
+  onAddSubscription?: (subscription_type_id: number, promo_code: string) => void;
+};
 
-export const PricingCard = () => {
-    const plans = {
-        monthly: [
-            {
-                name: "Starter",
-                price: "$9.99",
-                priceUnit: "/month",
-                features: ["7-day free trial", "1,000 tokens per month", "1 chatbot", "20 stored chats"],
-            },
-            {
-                name: "Pro",
-                price: "$19.99",
-                priceUnit: "/month",
-                features: ["14-day free trial", "5,000 tokens per month", "5 chatbots", "Unlimited chats"],
-            },
-        ],
-        yearly: [
-            {
-                name: "Starter",
-                price: "$99.99",
-                priceUnit: "/year",
-                features: ["7-day free trial", "12,000 tokens per year", "1 chatbot", "240 stored chats"],
-            },
-            {
-                name: "Pro",
-                price: "$199.99",
-                priceUnit: "/year",
-                features: ["14-day free trial", "60,000 tokens per year", "5 chatbots", "Unlimited chats"],
-            },
-        ],
-    };
+function PricingCardSkeleton() {
+  return (
+    <div className="flex flex-col justify-between rounded-3xl p-6 sm:p-8 xl:p-10 border border-slate-300 shadow-lg bg-white w-full">
+      <div>
+        <div className="flex items-center justify-between gap-x-4">
+          <Skeleton className="h-6 w-24 rounded-md" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+        </div>
+
+        <div className="mt-6 flex items-baseline gap-x-1">
+          <Skeleton className="h-10 w-24 rounded-md" />
+          <Skeleton className="h-6 w-10 rounded-md" />
+        </div>
+      </div>
+
+      <Skeleton className="mt-8 h-10 w-full rounded-lg" />
+    </div>
+  );
+}
+
+
+export const PricingCard = ({ subscription, loading, promoLoadingId, onAddSubscription }: PricingCardProps) => {
     const [billingType, setBillingType] = useState<"monthly" | "yearly">("monthly");
+    const [promoCodes, setPromoCodes] = useState<Record<number, string>>({});
+    const [activePromoId, setActivePromoId] = useState<number | null>(null);
+
+    const [promoApplyingId, setPromoApplyingId] = useState<number | null>(null);
+    const [promoData, setPromoData] = useState<Record<number, any>>({});
+
+    const monthlyPlans = subscription?.filter(plan => plan.duration <= 6) || [];
+    const yearlyPlans = subscription?.filter(plan => plan.duration > 6) || [];
+
+    const plans = billingType === "monthly" ? monthlyPlans : yearlyPlans;
+    const isLoading = loading;
+    const isLoggedOut = !loading && subscription === null;
+
     return (
         <section className="flex flex-col items-center mt-8">
             {/* Toggle Buttons */}
@@ -89,7 +119,7 @@ export const PricingCard = () => {
 
                     onClick={() => setBillingType("monthly")}
                     className={`px-4 py-2 transition text-primary focus:outline-none ${
-                        billingType === "monthly" ? "bg-green-600 text-white" : "bg-white hover:bg-gray-100"
+                        billingType === "monthly" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-white hover:bg-gray-100"
                     }`}
                 >
                     Monthly
@@ -98,58 +128,179 @@ export const PricingCard = () => {
                     type="button"
                     onClick={() => setBillingType("yearly")}
                     className={`px-4 py-2 transition text-primary focus:outline-none ${
-                        billingType === "yearly" ? "bg-green-600 text-white" : "bg-white hover:bg-gray-100"
+                        billingType === "yearly" ? "bg-green-600 hover:bg-green-700 text-white" : "bg-white hover:bg-gray-100"
                     }`}
                 >
                     Yearly
                 </Button>
             </div>
 
-            <div className={' flex items-center justify-center gap-x-8 mt-4'}>
-                {plans[billingType].map((plan, index) => (
-                    <div
-                        key={index}
-                        className={`flex flex-col justify-between rounded-3xl p-6 sm:p-8 xl:p-10 text-primary border border-slate-300 shadow-lg bg-white w-full max-w-sm ${
-                            index === 1 ? "mt-12" : ""
-                        }`}
-                    >
-                        <div>
-                            {/* Header */}
-                            <div className="flex items-center justify-between gap-x-4">
-                                <h3 className="text-lg font-semibold">{plan.name}</h3>
-                                <p className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                    ✨ Free trial
-                                </p>
-                            </div>
-
-                            {/* Pricing */}
-                            <p className="mt-6 flex items-baseline gap-x-1">
-                                <span className="text-5xl font-bold tracking-tight">{plan.price}</span>
-                                <span className="text-sm font-semibold text-slate-600 tracking-wide">
-                                  {plan.priceUnit}
-                                </span>
-                            </p>
-
-                            {/* Features */}
-                            <ul className="mt-8 space-y-3 text-sm text-gray-700">
-                                {plan.features.map((feature, i) => (
-                                    <li key={i} className="flex items-center gap-x-2">
-                                        <CircleChevronDown className="h-5 w-5 text-green-600"/>
-                                        {feature}
-                                    </li>
-                                ))}
-                            </ul>
+            <div className="flex items-center justify-center gap-8 mt-4 flex-wrap">
+                {isLoading &&
+                    Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="flex-wrap">
+                            <PricingCardSkeleton />
                         </div>
+                    ))
+                }
 
-                        {/* CTA Button */}
+                {!isLoading && isLoggedOut && (
+                    <div className="flex flex-col items-center justify-center w-full max-w-md p-8 rounded-3xl bg-white border border-gray-300 shadow-lg text-center">
+                        <h3 className="text-xl font-semibold mb-4">Login to View Plans</h3>
+                        <p className="text-gray-600 mb-6">
+                            To see available subscription plans and pricing, please log in to your account.
+                        </p>
                         <Link
-                            href="#"
-                            className="mt-8 block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-green-700"
+                            href="/login"
+                            className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition"
                         >
-                            Buy Plan
+                            Login
                         </Link>
                     </div>
-                ))}
+                )}
+
+                {!isLoading && !isLoggedOut && plans.map(plan => {
+                    const promo = promoData[plan.subscription_type_id];
+                    const discountedPrice = promo
+                    ? (
+                        Number(plan.price) -
+                        (Number(plan.price) * Number(promo.discount_percent)) / 100
+                        ).toFixed(2)
+                    : null;
+
+                    return (
+                        <div
+                            key={plan.subscription_type_id}
+                            className="w-full flex flex-col justify-between rounded-3xl p-6 sm:p-8 xl:p-10 text-primary border border-slate-300 shadow-lg bg-white max-w-sm"
+                        >
+                            <div>
+                                {/* Header */}
+                                <div className="flex items-center justify-between gap-x-4">
+                                    <h3 className="text-lg font-semibold">
+                                    {plan.duration} {plan.duration > 1 ? "Months" : "Month"}
+                                    </h3>
+                                    <p className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                        ✨ Active
+                                    </p>
+                                </div>
+
+                                {/* Pricing */}
+                                <p className="mt-6 flex items-baseline gap-x-1">
+                                    {discountedPrice ? (
+                                    <>
+                                        <span className="text-4xl font-bold tracking-tight text-green-700">
+                                        ₹{discountedPrice}
+                                        </span>
+                                        <span className="text-sm font-semibold text-slate-600 tracking-wide">
+                                        / {plan.duration}m
+                                        </span>
+                                        <span className="ml-2 line-through text-slate-400">
+                                        ₹{plan.price}
+                                        </span>
+                                    </>
+                                    ) : (
+                                    <>
+                                        <span className="text-5xl font-bold tracking-tight">
+                                        ₹{plan.price}
+                                        </span>
+                                        <span className="text-sm font-semibold text-slate-600 tracking-wide">
+                                        / {plan.duration}m
+                                        </span>
+                                    </>
+                                    )}
+                                </p>
+
+                                {promo?.detail && (
+                                    <p className="mt-2 text-xs text-green-600">
+                                    {promo.detail} ({promo.discount_percent}% off)
+                                    </p>
+                                )}
+
+                                {activePromoId === plan.subscription_type_id && (
+                                    <div className="mt-4 space-y-3">
+                                        <Input
+                                        type="text"
+                                        placeholder="Promo Code"
+                                        value={promoCodes[plan.subscription_type_id] || ""}
+                                        onChange={(e) =>
+                                            setPromoCodes((prev) => ({
+                                            ...prev,
+                                            [plan.subscription_type_id]: e.target.value,
+                                            }))
+                                        }
+                                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        />
+
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white hover:text-white transition hover:bg-green-700"
+                                            disabled={promoApplyingId === plan.subscription_type_id}
+                                            onClick={async () => {
+                                                setPromoApplyingId(plan.subscription_type_id);
+                                                try {
+                                                const res = await subscriptionService.verifySubscription({
+                                                    subscription_type_id: plan.subscription_type_id,
+                                                    promo_code: promoCodes[plan.subscription_type_id] || "",
+                                                });
+                                                if (res?.status) {
+                                                    setPromoData((prev) => ({
+                                                    ...prev,
+                                                    [plan.subscription_type_id]: res.data,
+                                                    }));
+                                                    toast.success("Promo code applied!");
+                                                } else {
+                                                    setPromoData((prev) => ({
+                                                    ...prev,
+                                                    [plan.subscription_type_id]: null,
+                                                    }));
+                                                    toast.error(res?.message || "Invalid promo code");
+                                                }
+                                                } catch (err) {
+                                                setPromoData((prev) => ({
+                                                    ...prev,
+                                                    [plan.subscription_type_id]: null,
+                                                }));
+                                                toast.error("Invalid promo code");
+                                                } finally {
+                                                setPromoApplyingId(null);
+                                                }
+                                            }}
+                                        >
+                                        {promoApplyingId === plan.subscription_type_id ? "Applying..." : "Apply Coupon"}
+                                        </Button>
+                                    </div>
+                                )}
+
+                            </div>
+
+                            {/* CTA Button */}
+                            <Link
+                                href="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (activePromoId === plan.subscription_type_id) {
+                                        onAddSubscription?.(
+                                            plan.subscription_type_id,
+                                            promoCodes[plan.subscription_type_id] || ""
+                                        );
+                                    } else {
+                                        setActivePromoId(plan.subscription_type_id);
+                                    }
+                                }}
+                                className="mt-4 block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-green-700"
+                            >
+                                {
+                                    promoLoadingId === plan.subscription_type_id
+                                    ? "Loading..."
+                                    : activePromoId === plan.subscription_type_id
+                                    ? "Confirm Purchase"
+                                    : "Buy Plan"
+                                }
+                            </Link>
+                        </div>
+                    )
+                })}
             </div>
         </section>
     );
@@ -179,8 +330,9 @@ interface RepliesCardProps {
     onDeleteAction: (id: number) => void
     onEditAction: (id: number, question: string) => void
     replyId: number
-
-
+    isSolved?: boolean;
+    createdAt: string;
+    viewCount: number;
 }
 
 export function RepliesCard({
@@ -190,7 +342,10 @@ export function RepliesCard({
                                 studentId,
                                 replyId,
                                 onDeleteAction,
-                                onEditAction
+                                onEditAction,
+                                createdAt,
+                                viewCount,
+                                isSolved
                             }: RepliesCardProps) {
     const [loggedInId, setLoggedInId] = useState<number | null>(null);
 
@@ -216,9 +371,12 @@ export function RepliesCard({
 
                 {/* Header Section */}
                 <div className="flex justify-between items-start gap-2">
-                    <h3 className="text-lg font-semibold font-poppins text-black break-words line-clamp-3">
-                        {name}
-                    </h3>
+                    <div className="w-full flex items-center justify-between">
+                        <h3 className="text-lg font-semibold font-poppins text-black break-words line-clamp-3">
+                            {name}
+                        </h3>
+                        <span>{createdAt}</span>
+                    </div>
                     {isOwner && (
                         <div className="flex gap-2">
                             <EditModal
@@ -238,6 +396,8 @@ export function RepliesCard({
 
                 {/* Reply Button */}
                 <div className="flex justify-start items-center">
+                    <Eye className="w-4 h-4 text-gray-500"/>
+                    <span className="text-sm text-gray-500 ml-1 mr-4">{viewCount} views</span>
                     <Button size="sm" variant="link" onClick={() => router.push(`/student/dashboard/${replyId}`)}>
                         <MessageSquare className="mr-1 h-4 w-4"/> {replies} replies
                     </Button>

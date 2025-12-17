@@ -1,5 +1,4 @@
 import {heroImage} from "../../../public/assest";
-import {Play} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
@@ -7,7 +6,7 @@ import {Button} from "@/components/ui/button";
 
 export const HeroSection = () => {
     return (
-        <section className="py-3 my-4 flex items-center max-h-[600px]">
+        <section className="py-3 my-4 flex items-center justify-center max-h-[600px]">
             <div
                 className="container mx-auto flex flex-col lg:flex-row lg:justify-between items-center gap-10 px-6 md:px-12">
 
@@ -50,7 +49,7 @@ export const HeroSection = () => {
 
                 {/* Right Illustration with Parallax and Animation */}
                 <div
-                    className="w-full md:w-1/2 hidden md:flex justify-center">
+                    className="w-full md:w-1/2 hidden md:flex items-center justify-end">
                     <Image src={heroImage} alt={'heroImage'}
                            className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg object-cover"/>
                 </div>

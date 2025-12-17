@@ -2,7 +2,7 @@
 import Image from "next/image";
 import {cn} from "@/lib/utils";
 import {SearchBar} from "@/components/search/Searchbar";
-import {motion, useAnimation, useInView} from "framer-motion";
+import {motion, useAnimation, useInView, easeOut} from "framer-motion";
 import {useEffect, useRef} from "react";
 
 interface BannerHeaderProps {
@@ -14,7 +14,6 @@ interface BannerHeaderProps {
     showSearch?: boolean;
     onSearchAction?: (query: string) => void;
 }
-
 
 export default function BannerHeader({
                                          title,
@@ -84,15 +83,12 @@ export function StudentBannerHeader({
 
     useEffect(() => {
         if (!inView) return;
-
         textControls.start("visible");
         imageControls.start("visible");
-
         const animateStar = async () => {
             await starControls.start("fall");
             await starControls.start("reset");
         };
-
         animateStar();
     }, [inView, textControls, imageControls, starControls]);
 
@@ -108,7 +104,7 @@ export function StudentBannerHeader({
             y: 100,
             rotate: 120,
             opacity: 1,
-            transition: {duration: 1.2, ease: "easeOut"},
+            transition: { duration: 1.2, ease: easeOut },
         },
         reset: {
             x: 0,
@@ -149,7 +145,6 @@ export function StudentBannerHeader({
                         loading="lazy"
                     />
                 </motion.div>
-
                 <Image
                     src="/images/books.png"
                     alt="Books representing study material"
@@ -159,7 +154,6 @@ export function StudentBannerHeader({
                     loading="lazy"
                 />
             </div>
-
             <motion.div
                 className={cn('flex-1 flex flex-col justify-center items-start text-muted-foreground text-left md:text-left px-4', textClassName)}
                 initial="hidden"
@@ -169,7 +163,6 @@ export function StudentBannerHeader({
                 <h1 className="text-3xl font-montserrat font-bold">{title}</h1>
                 <p className="text-lg font-montserrat mt-1">{subtitle}</p>
             </motion.div>
-
             <motion.div
                 className="relative flex-1"
                 initial="hidden"
