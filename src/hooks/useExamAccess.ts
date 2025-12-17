@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+
+type ExamType = "public" | "private";
 
 interface UseExamAccessOptions {
     skip?: boolean;
+    type: ExamType;
 }
 
-export default function useExamAccess({ skip = false }: UseExamAccessOptions = {}) {
+export default function useExamAccess({
+    skip = false,
+    type,
+}: UseExamAccessOptions) {
     const router = useRouter();
     const { examSlug } = useParams<{ examSlug: string }>();
 
@@ -21,17 +27,20 @@ export default function useExamAccess({ skip = false }: UseExamAccessOptions = {
             return;
         }
 
-        const privateToken = localStorage.getItem("_student_exam_at");
-        const publicToken = localStorage.getItem("_public_exam_attempt");
+        const token =
+            type === "private"
+                ? localStorage.getItem("_student_exam_at")
+                : localStorage.getItem("_public_exam_attempt");
 
-        if (!privateToken && !publicToken) {
+        if (!token) {
             router.replace(`/exam/${examSlug}`);
             return;
         }
 
         setAuthorized(true);
         setLoading(false);
-    }, [skip, examSlug, router]);
+    }, [skip, type, examSlug, router]);
 
     return { authorized, loading };
 }
+

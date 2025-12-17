@@ -1,11 +1,14 @@
-// hooks/exam/usePrivateExamLogin.ts
 "use client";
 
-import privateExamService from "@/services/privateExamService";
-import publicExamService from "@/services/publicExamService";
-import { useMutation } from "@tanstack/react-query";
+import { PrivateExamForm } from "@/app/exam/[examSlug]/page";
+import corporateExamService from "@/services/corporateExamServices";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+
+type PrivateExamLoginVars = {
+    examSlug: string;
+    payload: PrivateExamForm;
+};
 
 export const usePrivateExamLogin = (
     onSuccess?: (data: any) => void,
@@ -13,8 +16,8 @@ export const usePrivateExamLogin = (
 ) => {
     const router = useRouter();
     return useMutation({
-        mutationFn: (payload: any) =>
-            privateExamService.privateExamLogin(payload),
+        mutationFn: ({ examSlug, payload }: PrivateExamLoginVars) =>
+            corporateExamService.privateExamLogin(examSlug, payload),
 
         onSuccess: (data) => {
             // console.log("data", data?.data);
@@ -35,19 +38,21 @@ export const usePublicExamLogin = (
     onError?: (error: any) => void
 ) => {
     return useMutation({
-        mutationFn: (payload: any) =>
-            publicExamService.publicExamLogin(payload),
+        mutationFn: ({ examSlug, payload }: PrivateExamLoginVars) =>
+            corporateExamService.publicExamLogin(examSlug, payload),
 
-        onSuccess: (data) => {
+        onSuccess: (response) => {
             /** 
              * Public exam does NOT store a user token.
              * Usually backend returns an attempt/session token.
              */
-            if (data?.attempt_token) {
-                localStorage.setItem("_public_exam_attempt", data.attempt_token);
+            const token = response.data[0]?.token;
+            console.log("data", token);
+            if (token) {
+                localStorage.setItem("_public_exam_attempt", token);
             }
 
-            onSuccess?.(data);
+            onSuccess?.(response);
         },
 
         onError: (error) => {
@@ -59,10 +64,19 @@ export const usePublicExamLogin = (
 export const useGetExamDetails = (onSuccess?: (data: any) => void) => {
     const router = useRouter();
     return useMutation({
-        mutationFn: (payload: any) => privateExamService.getExamDetails(payload),
+        mutationFn: (payload: any) => corporateExamService.getExamDetails(payload),
 
         onSuccess: (data) => {
             onSuccess?.(data);
         },
     });
+};
+
+export const useGetExamType = (examSlug: string) => {
+  return useQuery({
+    queryKey: ["exam-type", examSlug],
+    queryFn: () => corporateExamService.getExamType(examSlug),
+    staleTime: 5 * 60 * 1000, 
+    enabled: !!examSlug,     
+  });
 };
