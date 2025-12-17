@@ -35,7 +35,7 @@ const QuizCardList: FC<QuizCardListProps> = ({
                         title={quiz.exam_name}
                         provider={quiz.user?.fullname || "Unknown"}
                         questionCount={quiz.questions_count}
-                        onViewAllScoresAction={() => onViewAllScoresAction(quiz.exam_name)}
+                        onViewAllScoresAction={() => onViewAllScoresAction(quiz.id)}
                         onTakeTestAction={() => onTakeTestAction(quiz.id)}
                     />
                 ) : (

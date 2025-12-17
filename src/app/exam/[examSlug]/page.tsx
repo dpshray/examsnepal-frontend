@@ -7,31 +7,30 @@ import Image from "next/image";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 import { Lock, User, Mail, Phone } from "lucide-react";
 import TextInputField from "@/components/fields/TextInputField";
 import PasswordInputField from "@/components/fields/PasswordInput";
-import { usePrivateExamLogin, usePublicExamLogin } from "@/hooks/usePrivateExam";
+import { usePrivateExamLogin, usePublicExamLogin } from "@/hooks/useCorporateExam";
 import { toast } from "sonner";
 
 const PublicExamSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.email("Invalid email address"),
-  phone: z
-    .string()
-    .min(10, "Phone number must be at least 10 digits")
-    .regex(/^\+?[\d\s-()]+$/, "Invalid phone number format"),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.email("Invalid email address"),
+    phone: z
+        .string()
+        .min(10, "Phone number must be at least 10 digits")
+        .regex(/^\+?[\d\s-()]+$/, "Invalid phone number format"),
 });
 
 const PrivateExamSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+    email: z.email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 
-type PublicExamForm = z.infer<typeof PublicExamSchema>;
-type PrivateExamForm = z.infer<typeof PrivateExamSchema>;
+export type PublicExamForm = z.infer<typeof PublicExamSchema>;
+export type PrivateExamForm = z.infer<typeof PrivateExamSchema>;
 
 export default function ExamForm() {
     const searchParams = useSearchParams();
@@ -71,16 +70,16 @@ export default function ExamForm() {
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        formState: { errors },
     } = useForm<any>({
         resolver: zodResolver(schema),
     });
 
     const onSubmit = (data: PublicExamForm | PrivateExamForm) => {
         if (isPrivate) {
-            loginPrivateExam(data as PrivateExamForm);
+            loginPrivateExam({ examSlug: String(examSlug), payload: data as PrivateExamForm });
         } else {
-            startPublicExam(data as PublicExamForm);
+            startPublicExam({ examSlug: String(examSlug), payload: data as PrivateExamForm });
         }
     };
 

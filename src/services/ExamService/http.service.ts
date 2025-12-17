@@ -12,6 +12,7 @@ interface HeaderConfigProps {
     file?: boolean;
     params?: Record<string, any>;
     customHeaders?: Record<string, string>;
+    useToken?: string;
 }
 
 interface ApiResponse<T = any> {
@@ -26,7 +27,7 @@ class HttpServices {
     private setHeaders(config?: HeaderConfigProps) {
         this.headers = {};
         if (config?.auth) {
-            const token = localStorage.getItem("_at");
+            const token = config.useToken || localStorage.getItem("_at");
             if (!token) {
                 throw new Error("Authentication required. Please login first.");
             }

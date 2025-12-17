@@ -90,8 +90,8 @@ export default function SprintQuiz() {
                 onViewSolutionAction={(id: number) => {
                     router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${id}`);
                 }}
-                onViewAllScoresAction={() => {
-                    router.push(`/student/exams/sprint-quiz/scores`);
+                onViewAllScoresAction={(id: number) => {
+                    router.push(`${process.env.NEXT_PUBLIC_STUDENT_SCORE_ROUTE}/${id}`)
                 }}
             />
         );
