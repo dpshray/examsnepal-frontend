@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Card } from "@/components/ui/card"
 import { Clock, FileText, AlertCircle } from "lucide-react"
+import { useGetExamDetails } from "@/hooks/useCorporateExam"
 
 const MOCK_EXAM = {
     id: "exam-1",
@@ -46,6 +46,15 @@ const MOCK_EXAM = {
 
 export default function InstructionsPage() {
   const router = useRouter()
+  const { mutateAsync: getExamDetails } = useGetExamDetails((data) => {
+  console.log("Exam details", data);
+});
+
+useEffect(() => {
+  getExamDetails({examSlug:"id-est-corporis-adi", type:"public"});
+}, []);
+
+
   const [selectedSections, setSelectedSections] = useState<string[]>(MOCK_EXAM.sections.map((s) => s.id))
 
   const toggleSection = (sectionId: string) => {

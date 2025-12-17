@@ -64,7 +64,7 @@ export const usePublicExamLogin = (
 export const useGetExamDetails = (onSuccess?: (data: any) => void) => {
     const router = useRouter();
     return useMutation({
-        mutationFn: (payload: any) => corporateExamService.getExamDetails(payload),
+        mutationFn: ({  examSlug, type }: {examSlug: string, type: "public" | "private"}) => corporateExamService.getExamDetails(examSlug, type),
 
         onSuccess: (data) => {
             onSuccess?.(data);

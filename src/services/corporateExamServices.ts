@@ -26,16 +26,27 @@ class CorporateExamService extends HttpServices {
         }
     }
 
-    getExamDetails = async (examSlug: string) => {
-        try {
-            const response = await this.getRequest({
-                url: `/exam/${examSlug}`,
-            })
-            return response?.data
-        } catch (error) {
-            throw error
-        }
+    getExamDetails = async (examSlug: string, type: "public" | "private") => {
+    try {
+        const token =
+            type === "private"
+                ? localStorage.getItem("_student_exam_at")
+                : localStorage.getItem("_public_exam_attempt");
+
+        const response = await this.getRequest({
+            url: `/exams/${examSlug}/examsdetail`,
+            config: {
+                auth: true,
+                useToken: token as string, 
+            },
+        });
+
+        return response?.data;
+    } catch (error) {
+        throw error;
     }
+};
+
 
     getExamType = async (examSlug: string) => {
         try {
