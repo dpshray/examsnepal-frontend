@@ -11,7 +11,7 @@ import { EXAM_DURATION_SECONDS } from '@/lib/examDurations';
 export default function GetFreeQuizById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
-    const isInitialMount = useRef(true);
+    // const isInitialMount = useRef(true);
     const [quiz, setQuiz] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -19,19 +19,19 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
     const [totalQuestions, setTotalQuestions] = useState(0);
     const tokenRef = useRef<string | null>(null);    
     const [correctAnswers, setCorrectAnswers] = useState(0);
-    const [interrupted, setInterrupted] = useState(false);
+    // const [interrupted, setInterrupted] = useState(false);
 
     const fetchQuiz = useCallback(async () => {
-        if (interrupted) return;
+        // if (interrupted) return;
         setLoading(true);
         try {
             const response = await freeQuizServices.getFreeQuizById({id: idNumber, page: currentPage, token: tokenRef.current});
             console.log(' Response form freequiz',response)
-            if (response?.status === 409 || (response?.status === false && (response?.message?.includes("already been completed")))) {
-                setInterrupted(true);
-                toast.error("Exam session interrupted");
-                return;
-            }
+            // if (response?.status === 409 || (response?.status === false && (response?.message?.includes("already been completed")))) {
+            //     setInterrupted(true);
+            //     toast.error("Exam session interrupted");
+            //     return;
+            // }
 
             setQuiz(response?.data?.data);
             if (response?.data?.token) {
@@ -40,16 +40,16 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
             setTotalPages(Math.ceil(response?.data?.total / 10));
             setTotalQuestions(response?.data?.total || 0);
         } catch (err:any) {
-            if (err?.status === 409 || err?.response?.status === 409) {
-                setInterrupted(true);
-                toast.error("Exam session interrupted");
-                return;
-            }
+            // if (err?.status === 409 || err?.response?.status === 409) {
+            //     // setInterrupted(true);
+            //     toast.error("Exam session interrupted");
+            //     return;
+            // }
             console.error('Error fetching Free quiz:', err);
         } finally {
             setLoading(false);
         }
-    }, [idNumber, currentPage, interrupted]);
+    }, [idNumber, currentPage]);
 
     const submitQuiz = async (payload: {
         exam_id: number;
@@ -66,24 +66,18 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
     };
 
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            fetchQuiz();
-        }
-    }, [fetchQuiz]);
+        fetchQuiz();
+    }, [currentPage, fetchQuiz]);
 
     return (
         <div className="w-full">
             <StudentBannerHeader
                 title="Free Quiz"
                 subtitle="Get instant answers to your questions"
-                className="bg-gradient-to-r from-teal-200 to-teal-400 text-white"
+                className="bg-linear-to-r from-teal-200 to-teal-400 text-white"
                 textClassName="text-white"
             />
 
-            {interrupted ? (
-                <ExamInterrupted />
-            ) : (
                 <QuizEngine
                     quiz={quiz}
                     currentPage={currentPage}
@@ -98,7 +92,7 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
                     setCurrentPageAction={setCurrentPage}
                     duration={EXAM_DURATION_SECONDS.FREE_TEST}
                 />
-            )}
+            
         </div>
     );
 }

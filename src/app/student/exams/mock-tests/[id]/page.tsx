@@ -17,7 +17,6 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     const {id} = use(params);
     const idNumber = Number(id);
     const router = useRouter();
-    const hasFetchedRef = useRef(false);
     const [quiz, setQuiz] = useState<any[]>([]);
     const [selectedAnswers, setSelectedAnswers] = useState<Record<number, string>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -34,7 +33,6 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     const [correctAnswers, setCorrectAnswers] = useState<number>(0);
     const [totalQuestions, setTotalQuestions] = useState<number>(0);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [interrupted, setInterrupted] = useState(false);
 
     useEffect(() => {
         const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -53,11 +51,11 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         try {
             const response = await mockTestService.getMockTestById({id: idNumber, page: currentPage, token: tokenRef.current});
 
-            if (response?.status === 409 || response?.message?.includes("already been completed")) {
-                setInterrupted(true);
-                toast.error("Exam session interrupted");
-                return;
-            }
+            // if (response?.status === 409 || response?.message?.includes("already been completed")) {
+            //     setInterrupted(true);
+            //     toast.error("Exam session interrupted");
+            //     return;
+            // }
 
             if (response?.status === false) {
                 const msg = response?.message || "You do not have an active subscription.";
@@ -80,11 +78,11 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         } catch (err: any) {
             console.error("Error fetching sprint test:", err);
 
-            if (err?.status === 409 || err?.response?.status === 409) {
-                setInterrupted(true);
-                toast.error("Exam session interrupted");
-                return;
-            }
+            // if (err?.status === 409 || err?.response?.status === 409) {
+            //     setInterrupted(true);
+            //     toast.error("Exam session interrupted");
+            //     return;
+            // }
             const backendMsg = err?.data.message || "Something went wrong fetching sprint test.";
             // toast.error(backendMsg);
             setErrorMessage(backendMsg);
@@ -94,12 +92,8 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     }, [idNumber]);
 
     useEffect(() => {
-        if (hasFetchedRef.current) return;
-        hasFetchedRef.current = true;
-
         fetchMockTest(currentPage);
     }, [currentPage, fetchMockTest]);
-
 
     const handleSelect = (qid: number) => (value: string) => {
         setSelectedAnswers(prev => ({...prev, [qid]: value}));
@@ -184,7 +178,6 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
     }, [quiz, selectedAnswers, isSubmitted, idNumber]);
 
     useEffect(() => {
-        if (interrupted) return;
         if (timeLeft <= 0) {
             handleSubmit();
             return;
@@ -194,17 +187,11 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
             setTimeLeft(prev => prev - 1);
         }, 1000);
         return () => clearInterval(timer);
-    }, [timeLeft, handleSubmit, interrupted]);
+    }, [timeLeft, handleSubmit]);
 
     useEffect(() => {
         if (isSubmitted) toast.success(`Your Score: ${score} / ${quiz.length}`);
     }, [isSubmitted, score, quiz.length]);
-
-    if (interrupted) {
-        return (
-            <ExamInterrupted />
-        );
-    }
 
     return (
         <section className="w-full min-h-screen">
@@ -212,7 +199,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                 title="Mock Test"
                 subtitle="Take your mock test and get ready for the real exam."
                 imageSrc="/book.png"
-                className={'bg-gradient-to-r from-teal-400 to-teal-600  text-black'}
+                className={'bg-linear-to-r from-teal-400 to-teal-600  text-black'}
                 textClassName={'text-black'}
             />
             <div className="max-w-7xl mx-auto my-6 md:my-10">
@@ -282,7 +269,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                                 />
                             ))
                         )}
-                        <div className="flex justify-between mt-4">
+                        <div className="flex justify-between mt-4 flex-wrap gap-2">
                             <Button disabled={currentPage === 1} onClick={handlePrevPage} variant="destructive"
                                     className="w-full sm:w-auto">Previous</Button>
                             <Button onClick={handleNextPage} variant="outline" className="w-full sm:w-auto primary-btn"

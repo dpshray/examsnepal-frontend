@@ -11,7 +11,6 @@ import { EXAM_DURATION_SECONDS } from "@/lib/examDurations";
 export default function GetSprintQuizById({params}: { params: Promise<{ id: string }> }) {
     const {id} = use(params);
     const idNumber = Number(id);
-    const isInitialMount = useRef(true);
     const [quiz, setQuiz] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -19,11 +18,11 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
     const tokenRef = useRef<string | null>(null);
     const [totalQuestions, setTotalQuestions] = useState(0);
     const [correctAnswers, setCorrectAnswers] = useState(0);
-    const [interrupted, setInterrupted] = useState(false);
+    // const [interrupted, setInterrupted] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const fetchQuiz = useCallback(async () => {
-        if (interrupted) return;
+        // if (interrupted) return;
         setLoading(true);
         setErrorMessage(null);
 
@@ -31,11 +30,11 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             const res = await sprintQuizServices.getSprintQuizById({id: idNumber, page: currentPage, token: tokenRef.current});
             // console.log("fetchQuiz called");
 
-            if (res?.status === 409 || (res?.status === false && (res?.message?.includes("already been completed")))) {
-                setInterrupted(true);
-                toast.error("Exam session interrupted");
-                return;
-            }
+            // if (res?.status === 409 || (res?.status === false && (res?.message?.includes("already been completed")))) {
+            //     setInterrupted(true);
+            //     toast.error("Exam session interrupted");
+            //     return;
+            // }
 
             if (res?.status === false) {
                 const msg = res?.message || "You do not have an active subscription.";
@@ -57,18 +56,18 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             console.log(`Sprint Quiz `, res?.data?.data);
         } catch (err: any) {
             console.error("Error fetching sprint test:", err);
-            if (err?.status === 409 || err?.response?.status === 409) {
-                setInterrupted(true);
-                toast.error("Exam session interrupted");
-                return;
-            }
+            // if (err?.status === 409 || err?.response?.status === 409) {
+            //     setInterrupted(true);
+            //     toast.error("Exam session interrupted");
+            //     return;
+            // }
             const backendMsg = err?.data.message || "Something went wrong fetching sprint test.";
             // toast.error(backendMsg);
             setErrorMessage(backendMsg);
         } finally {
             setLoading(false);
         }
-    }, [idNumber, currentPage, interrupted]);
+    }, [idNumber, currentPage]);
 
     const submitQuiz = async (payload: {
         exam_id: number;
@@ -87,28 +86,18 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
     };
     
     useEffect(() => {
-        if (isInitialMount.current) {
-            isInitialMount.current = false;
-            fetchQuiz();
-        }
-    }, [fetchQuiz]);
+        fetchQuiz();
+    }, [currentPage, fetchQuiz]);
 
     return (
         <div className={'w-full'}>
             <StudentBannerHeader
                 title={' Sprint Quiz'}
                 subtitle={'Get instant answers to your questions'}
-                className={'bg-gradient-to-r from-teal-200 to-teal-400 text-white'}
+                className={'bg-linear-to-r from-teal-200 to-teal-400 text-white'}
                 textClassName={'text-white'}
             />
-
-            {interrupted && (
-                <ExamInterrupted />
-            )}
-
-
-            {!interrupted && (
-                <>
+    
                     {quiz.length === 0 && !loading ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -134,8 +123,6 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
                             duration={EXAM_DURATION_SECONDS.SPRINT_TEST}
                         />
                     )}
-                </>
-            )}
         </div>
     )
         ;

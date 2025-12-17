@@ -51,7 +51,7 @@ export default function PasswordInputField({
                     <div
                         className={cn(
                             "absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground",
-                            error && "text-red-500"
+                            error && "text-red-500 pb-5"
                         )}
                     >
                         <Icon size={16} aria-hidden="true" />
@@ -68,9 +68,9 @@ export default function PasswordInputField({
                     autoComplete="current-password"
                     autoCorrect="off"
                     className={cn(
-                        'focus-visible:ring-[0px]',
+                        'focus-visible:ring-0',
                         Icon ? "pl-10" : "pl-3",
-                        error && "border-red-500 focus-visible:ring-[0px] focus-visible:ring-red-500",
+                        error && "border-red-500 focus-visible:ring-0 focus-visible:ring-red-500",
                         className
                     )}
                     {...props}
