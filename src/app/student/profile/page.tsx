@@ -10,8 +10,11 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import studentService from "@/services/StudentService"
 import {useLoggedInStudent} from "@/hooks/useLoggedInStudent"
 import {toast} from "sonner"
-import ProfileScoreCard from "./ScoreCard"
-import examService from "@/services/ExamService/ExamService"
+
+
+import ExamScoreCard from "@/app/student/profile/ScoreCard";
+import scoreService from "@/services/score.service";
+
 
 type ProfileFormData = {
     name: string
@@ -33,7 +36,7 @@ export default function ProfilePage() {
         const fetchScores = async () => {
             try {
                 setScoreLoading(true)
-                const response = await examService.getProfileScore()
+                const response = await scoreService.getProfileScore()
                 setExamScores(response?.data || [])
             } catch (err: any) {
                 console.error(err)
@@ -144,7 +147,8 @@ export default function ProfilePage() {
 
                 <Card className="mb-6 sm:mb-8 lg:mb-10 overflow-hidden shadow-md py-0">
                     <div className="relative h-24 sm:h-28 md:h-32 lg:h-36 bg-linear-to-r from-amber-600 to-rose-400">
-                        <div className="absolute left-4 right-4 sm:left-6 sm:right-6 bottom-4 sm:bottom-6 flex items-end justify-between">
+                        <div
+                            className="absolute left-4 right-4 sm:left-6 sm:right-6 bottom-4 sm:bottom-6 flex items-end justify-between">
                             <div className="flex-1 min-w-0 mr-4 text-white">
                                 <h2 className="text-base sm:text-lg md:text-xl font-semibold truncate">
                                     {student?.name}
@@ -153,9 +157,12 @@ export default function ProfilePage() {
                                     {student?.email}
                                 </p>
                             </div>
-                            <Avatar className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-4 border-white shadow-lg shrink-0">
-                                <AvatarImage src={student?.image || "https://github.com/shadcn.png"} alt={student?.name}/>
-                                <AvatarFallback className="text-lg sm:text-xl">{student?.name?.charAt(0) || "?"}</AvatarFallback>
+                            <Avatar
+                                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 border-4 border-white shadow-lg shrink-0">
+                                <AvatarImage src={student?.image || "https://github.com/shadcn.png"}
+                                             alt={student?.name}/>
+                                <AvatarFallback
+                                    className="text-lg sm:text-xl">{student?.name?.charAt(0) || "?"}</AvatarFallback>
                             </Avatar>
                         </div>
                     </div>
@@ -191,7 +198,8 @@ export default function ProfilePage() {
                                     error={errors.phone?.message as string}
                                 />
                                 <div className="md:col-span-2 border-t border-gray-200 pt-4 sm:pt-6">
-                                    <h3 className="text-sm sm:text-base font-semibold text-gray-700 mb-4">Change Password</h3>
+                                    <h3 className="text-sm sm:text-base font-semibold text-gray-700 mb-4">Change
+                                        Password</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                                         <PasswordInputField
                                             label="Enter your Old Password"
@@ -290,7 +298,7 @@ export default function ProfilePage() {
                         )}
 
                         {!scoreLoading && examScores.map((exam, index) => (
-                            <ProfileScoreCard key={index} results={exam} />
+                            <ExamScoreCard key={index} data={exam}/>
                         ))}
                     </div>
 

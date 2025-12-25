@@ -2,99 +2,86 @@
 
 import {useEffect, useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {useQuery} from '@tanstack/react-query';
 import {StudentBannerHeader} from '@/components/banner/header';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {ScrollArea, ScrollBar} from '@/components/ui/scroll-area';
 import {CheckCheckIcon, ClockIcon} from 'lucide-react';
-import {QuizTestCardSkeleton} from '@/components/Exams/exam-card';
-import QuizCardList from '@/components/Exams/Quiz';
+import {QuizCompletedCard, QuizPendingCard, QuizTestCardSkeleton} from '@/components/Exams/exam-card';
 import sprintQuizServices from '@/services/ExamService/SprintQuiz';
-import Pagination from '@/components/Pagination';
+import CustomPagination from '@/components/Pagination';
 import {QUIZ_TYPES, QuizType} from '@/lib/Constan';
-import CustomPagination from "@/components/Pagination";
-import { toast } from 'sonner';
+import {toast} from 'sonner';
+import {SOLUTIONS_ROUTE, SPRINT_QUIZ_ROUTE} from "@/config/app-constant";
 
 export default function SprintQuiz() {
     const router = useRouter();
 
     const [selectedTab, setSelectedTab] = useState<QuizType>(QUIZ_TYPES.PENDING);
-
-    const [pendingQuizzes, setPendingQuizzes] = useState<any[]>([]);
-    const [completedQuizzes, setCompletedQuizzes] = useState<any[]>([]);
-
     const [pendingPage, setPendingPage] = useState(1);
     const [completedPage, setCompletedPage] = useState(1);
 
-    const [pendingTotalPages, setPendingTotalPages] = useState(1);
-    const [completedTotalPages, setCompletedTotalPages] = useState(1);
+    const {data: pendingData, isLoading: isPendingLoading, refetch: refetchPendingData} = useQuery({
+        queryKey: ['pendingSprintQuizzes', pendingPage],
+        queryFn: async () => {
+            const res = await sprintQuizServices.getPendingSprintQuizzes(pendingPage);
+            return {
+                data: res.data.data || [],
+                totalPages: res.data.meta?.totalPages || 1,
+                currentPage: pendingPage
+            };
+        },
+        enabled: selectedTab === QUIZ_TYPES.PENDING
 
-    const [loading, setLoading] = useState(false);
+    });
 
-    const fetchPending = async (page: number) => {
-        setLoading(true);
-        try {
-            const res = await sprintQuizServices.getPendingSprintQuizzes(page);
-            setPendingQuizzes(res.data.data || []);
-            setPendingTotalPages(res.data.meta?.totalPages || 1);
-        } catch {
-            setPendingQuizzes([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchCompleted = async (page: number) => {
-        setLoading(true);
-        try {
-            const res = await sprintQuizServices.getCompleteSprintQuizzes(page);
-            setCompletedQuizzes(res.data.data || []);
-            setCompletedTotalPages(res.data.meta?.totalPages || 1);
-        } catch {
-            setCompletedQuizzes([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchPending(pendingPage);
-        fetchCompleted(completedPage);
-    }, [completedPage, pendingPage]);
+    const {data: completedData, isLoading: isCompletedLoading, refetch: refetchCompletedData} = useQuery({
+        queryKey: ['completedSprintQuizzes', completedPage],
+        queryFn: async () => {
+            const res = await sprintQuizServices.getCompleteSprintQuizzes(completedPage);
+            return {
+                data: res.data.data || [],
+                totalPages: res.data.meta?.totalPages || 1,
+                currentPage: completedPage
+            };
+        },
+        enabled: selectedTab === QUIZ_TYPES.COMPLETED
+    });
 
     const handleTabChange = (tab: string) => {
         setSelectedTab(tab as QuizType);
         if (tab === QUIZ_TYPES.PENDING) {
-            fetchPending(1);
             setPendingPage(1);
+            refetchPendingData()
         } else {
-            fetchCompleted(1);
             setCompletedPage(1);
+            refetchCompletedData()
         }
     };
+    useEffect(() => {
+        if (selectedTab === QUIZ_TYPES.PENDING) {
+            refetchPendingData();
+        } else {
+            refetchCompletedData();
+        }
+    }, [selectedTab, pendingPage, completedPage, refetchPendingData, refetchCompletedData]);
 
-    const renderContent = (quizzes: any[], tab: QuizType) => {
-        return loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                {Array.from({length: 6}).map((_, i) => (
-                    <QuizTestCardSkeleton key={i}/>
-                ))}
-            </div>
-        ) : (
-            <QuizCardList
-                quizzes={quizzes}
-                selectedTab={tab}
-                onTakeTestAction={(id: number) => {
-                    toast.success(`Quiz started successfully`);
-                    router.push(`/student/exams/sprint-quiz/${id}`);
-                }}
-                onViewSolutionAction={(id: number) => {
-                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${id}`);
-                }}
-                onViewAllScoresAction={(id: number) => {
-                    router.push(`${process.env.NEXT_PUBLIC_STUDENT_SCORE_ROUTE}/${id}`)
-                }}
-            />
-        );
+
+    const handleTakeTestAction = (quizId: number) => {
+        toast.success('Quiz started successfully');
+        router.push(`${SPRINT_QUIZ_ROUTE}/${quizId}`);
+    };
+
+    const handleViewSolutionAction = (quizId: number) => {
+        router.push(`${SOLUTIONS_ROUTE}/${quizId}`);
+    };
+
+    const handlePageChange = (page: number) => {
+        if (selectedTab === QUIZ_TYPES.PENDING) {
+            setPendingPage(page);
+        } else {
+            setCompletedPage(page);
+        }
     };
 
     return (
@@ -116,8 +103,8 @@ export default function SprintQuiz() {
                 </p>
             </section>
 
-            <div className="max-w-7xl mx-auto px-4 flex flex-col gap-4">
-                <Tabs value={selectedTab} onValueChange={handleTabChange}>
+            <div className="max-w-7xl mx-auto px-4 flex flex-col gap-6 pb-8">
+                <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-4">
                     <ScrollArea>
                         <TabsList
                             className="before:bg-border relative mb-3 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px">
@@ -140,32 +127,81 @@ export default function SprintQuiz() {
                     </ScrollArea>
 
                     <TabsContent value={QUIZ_TYPES.PENDING}>
-                        {renderContent(pendingQuizzes, QUIZ_TYPES.PENDING)}
+                        {isPendingLoading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {Array.from({length: 6}).map((_, index) => (
+                                    <QuizTestCardSkeleton key={index}/>
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                {pendingData?.data && pendingData.data.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {pendingData.data.map((exam: any) => (
+                                            <QuizPendingCard
+                                                key={exam.id}
+                                                exam={exam}
+                                                onTakeTestAction={handleTakeTestAction}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <p className="text-gray-500 text-lg">No pending sprint quizzes available</p>
+                                    </div>
+                                )}
+
+                                {pendingData && pendingData.totalPages > 1 && (
+                                    <div className="flex justify-center mt-6">
+                                        <CustomPagination
+                                            totalPages={pendingData.totalPages}
+                                            currentPage={pendingData.currentPage}
+                                            onPageChangeAction={handlePageChange}
+                                        />
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </TabsContent>
+
                     <TabsContent value={QUIZ_TYPES.COMPLETED}>
-                        {renderContent(completedQuizzes, QUIZ_TYPES.COMPLETED)}
+                        {isCompletedLoading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {Array.from({length: 6}).map((_, index) => (
+                                    <QuizTestCardSkeleton key={index}/>
+                                ))}
+                            </div>
+                        ) : (
+                            <>
+                                {completedData?.data && completedData.data.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {completedData.data.map((exam: any) => (
+                                            <QuizCompletedCard
+                                                key={exam.id}
+                                                exam={exam}
+                                                onViewSolutionAction={handleViewSolutionAction}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <p className="text-gray-500 text-lg">No completed sprint quizzes available</p>
+                                    </div>
+                                )}
+
+                                {completedData && completedData.totalPages > 1 && (
+                                    <div className="flex justify-center mt-6">
+                                        <CustomPagination
+                                            totalPages={completedData.totalPages}
+                                            currentPage={completedData.currentPage}
+                                            onPageChangeAction={handlePageChange}
+                                        />
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </TabsContent>
                 </Tabs>
-
-                <div className="p-4">
-                    {
-                        completedTotalPages > 1 || pendingTotalPages > 1 ? (
-                            <CustomPagination
-                                totalPages={selectedTab === QUIZ_TYPES.PENDING ? pendingTotalPages : completedTotalPages}
-                                currentPage={selectedTab === QUIZ_TYPES.PENDING ? pendingPage : completedPage}
-                                onPageChangeAction={(page: number) => {
-                                    if (selectedTab === QUIZ_TYPES.PENDING) {
-                                        setPendingPage(page);
-                                        fetchPending(page);
-                                    } else {
-                                        setCompletedPage(page);
-                                        fetchCompleted(page);
-                                    }
-                                }}
-                            />
-                        ) : null
-                    }
-                </div>
             </div>
         </main>
     );

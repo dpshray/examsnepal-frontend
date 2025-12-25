@@ -4,9 +4,10 @@ import QuizEngine from "@/components/Exams/ExamPaper";
 import sprintQuizServices from "@/services/ExamService/SprintQuiz";
 import mockTestService from "@/services/ExamService/MockTest";
 import {StudentBannerHeader} from "@/components/banner/header";
-import { toast } from "sonner";
+import {toast} from "sonner";
 import ExamInterrupted from "@/lib/ExamInterrupted";
-import { EXAM_DURATION_SECONDS } from "@/lib/examDurations";
+import {EXAM_DURATION_SECONDS} from "@/lib/examDurations";
+import {useRouter} from "next/navigation";
 
 export default function GetSprintQuizById({params}: { params: Promise<{ id: string }> }) {
     const {id} = use(params);
@@ -21,6 +22,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
     const [interrupted, setInterrupted] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const router = useRouter();
 
     const hasInitialized = useRef(false);
     const isFetchingRef = useRef(false);
@@ -50,7 +52,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
     }, [isSubmitted]);
 
     const fetchQuiz = useCallback(async (page: number) => {
-         if (isFetchingRef.current) return;
+        if (isFetchingRef.current) return;
         isFetchingRef.current = true;
         setLoading(true);
         setErrorMessage(null);
@@ -76,7 +78,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             if (res?.status === false) {
                 const msg = res?.message || "You do not have an active subscription.";
                 toast.error(msg);
-                setErrorMessage(msg); 
+                setErrorMessage(msg);
                 setQuiz([]);
                 setTotalQuestions(0);
                 setTotalPages(0);
@@ -95,7 +97,7 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
             setTotalPages(Math.ceil(total / 10));
         } catch (err: any) {
             console.error("Error fetching sprint test:", err);
-            
+
             if (err?.status === 409 || err?.response?.status === 409) {
                 setInterrupted(true);
                 toast.error("Exam session interrupted");
@@ -116,20 +118,17 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
         question_id: string[];
         option_id: string[];
     }) => {
-        try {
-            const res = await mockTestService.submitExam(payload);
-            console.log(`Sprint Quiz Submit Response `, res);
-            setCorrectAnswers(res?.data?.correct_answered);
 
-        } catch (err) {
-            console.error("Error submitting sprint quiz:", err);
-        }
-    };
+        await mockTestService.submitExam(payload).then((res) => {
+            console.log(`Sprint Quiz Submit Response `, res);
+            router.push(`/student/scores/${idNumber}`);
+        })
+    }
 
     if (interrupted) {
         return <ExamInterrupted/>;
     }
-    
+
     return (
         <div className={'w-full'}>
             <StudentBannerHeader
@@ -138,32 +137,32 @@ export default function GetSprintQuizById({params}: { params: Promise<{ id: stri
                 className={'bg-linear-to-r from-teal-200 to-teal-400 text-white'}
                 textClassName={'text-white'}
             />
-    
-                    {quiz.length === 0 && !loading ? (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                                {errorMessage || "No questions found"}
-                            </h2>
-                            <p className="text-gray-600 mb-6">
-                                Please contact support or try again later.
-                            </p>
-                        </div>
-                    ) : (
-                        <QuizEngine
-                            quiz={quiz}
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalQuestions={totalQuestions}
-                            correctAnswers={correctAnswers}
-                            loading={loading}
-                            examId={idNumber}
-                            onNextAction={() => setCurrentPage((prev) => prev + 1)}
-                            onPrevAction={() => setCurrentPage((prev) => prev - 1)}
-                            onSubmitAction={submitQuiz}
-                            setCurrentPageAction={setCurrentPage}
-                            duration={EXAM_DURATION_SECONDS.SPRINT_TEST}
-                        />
-                    )}
+
+            {quiz.length === 0 && !loading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                        {errorMessage || "No questions found"}
+                    </h2>
+                    <p className="text-gray-600 mb-6">
+                        Please contact support or try again later.
+                    </p>
+                </div>
+            ) : (
+                <QuizEngine
+                    quiz={quiz}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalQuestions={totalQuestions}
+                    correctAnswers={correctAnswers}
+                    loading={loading}
+                    examId={idNumber}
+                    onNextAction={() => setCurrentPage((prev) => prev + 1)}
+                    onPrevAction={() => setCurrentPage((prev) => prev - 1)}
+                    onSubmitAction={submitQuiz}
+                    setCurrentPageAction={setCurrentPage}
+                    duration={EXAM_DURATION_SECONDS.SPRINT_TEST}
+                />
+            )}
         </div>
     )
         ;

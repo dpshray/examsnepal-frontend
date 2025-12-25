@@ -1,165 +1,165 @@
-'use client';
-
-import {memo, useMemo} from 'react';
+import React from 'react';
 import {Badge} from '@/components/ui/badge';
-import {Award, ChevronUp, LucideIcon, Star, Target} from 'lucide-react';
+import {Progress} from '@/components/ui/progress';
+import {EXAM_TYPE} from "@/types/Enum";
+import {cn} from "@/lib/utils";
+import {CheckCircle2, MinusCircle, XCircle} from 'lucide-react';
 
 interface ScoreResult {
-    scoreId?: number;
+    exam_id: number;
     exam_name: string;
-    total_question_count: number;
-    correct_answer_count: number;
-    exam_type?: string;
+    type: EXAM_TYPE | string;
+    is_negative_marking?: boolean;
+    negative_marking_point?: number;
+    total_question_count?: number;
+    correct_answer_count?: number;
+    incorrect_answer_count: number;
+    missed_answer_count?: number;
+    total_point_reduction_based_on_negative_marking_point?: number;
+    final_exam_marks_after_reduction_of_negative_marking_point?: number;
+    submitted_date?: string;
 }
 
-interface ScoreCardProps {
-    results: ScoreResult;
+interface ExamScoreCardProps {
+    data: ScoreResult;
+    className?: string;
 }
 
-interface PerformanceLevel {
-    label: string;
-    color: string;
-    bgColor: string;
-    icon: LucideIcon;
-}
-
-const ProfileScoreCard = memo(({results}: ScoreCardProps) => {
-    const {exam_name, total_question_count, correct_answer_count, exam_type} = results;
-
-    const percentage = useMemo(() => {
-        return total_question_count > 0
-            ? Math.round((correct_answer_count / total_question_count) * 100)
-            : 0;
-    }, [correct_answer_count, total_question_count]);
-
-    const incorrectCount = useMemo(() =>
-            total_question_count - correct_answer_count,
-        [total_question_count, correct_answer_count]
+const ExamScoreCard: React.FC<ExamScoreCardProps> = React.memo(({data, className = ''}) => {
+    const accuracy = React.useMemo(() =>
+            ((data.correct_answer_count || 0) / (data.total_question_count || 1) * 100).toFixed(2),
+        [data.correct_answer_count, data.total_question_count]
     );
 
-    const getPerformanceLevel = useMemo((): PerformanceLevel => {
-        if (percentage >= 90) return {
-            label: 'Excellent',
-            color: 'bg-emerald-500',
-            bgColor: 'bg-emerald-50',
-            icon: Award
-        };
-        if (percentage >= 75) return {
-            label: 'Great',
-            color: 'bg-blue-500',
-            bgColor: 'bg-blue-50',
-            icon: Star
-        };
-        if (percentage >= 60) return {
-            label: 'Good',
-            color: 'bg-amber-500',
-            bgColor: 'bg-amber-50',
-            icon: ChevronUp
-        };
-        return {
-            label: 'Needs Improvement',
-            color: 'bg-red-500',
-            bgColor: 'bg-red-50',
-            icon: Target
-        };
-    }, [percentage]);
-
-    const PerformanceIcon = getPerformanceLevel.icon;
+    const finalScore = data.final_exam_marks_after_reduction_of_negative_marking_point || 0;
+    const isNegative = finalScore < 0;
+    const accuracyNum = parseFloat(accuracy);
 
     return (
         <article
-            className="w-full max-w-md mx-auto bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300"
-            aria-label={`Score card for ${exam_name}`}
+            className={cn('w-full bg-white rounded-lg border border-gray-200 p-3 sm:p-4 md:p-5 mb-3 sm:mb-4', className)}
+            aria-label={`Exam scores for ${data.exam_name}`}
         >
-            <div
-                className={`${getPerformanceLevel.color} h-2 w-full`}
-                role="presentation"
-                aria-hidden="true"
-            />
+            <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3 sm:mb-4">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 flex-1 leading-tight">
+                    {data.exam_name}
+                </h3>
+                <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-600 border-blue-200 whitespace-nowrap self-start text-xs sm:text-sm"
+                    aria-label={`Quiz type: ${data.type}`}
+                >
+                    {data.type}
+                </Badge>
+            </header>
 
-            <div className="p-4 sm:p-6 md:p-8">
-                <header className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
-                    <div className="flex-1 min-w-0">
-                        <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 break-words mb-2">
-                            {exam_name}
-                        </h2>
-                        {exam_type && (
-                            <Badge variant="secondary" className="text-xs sm:text-sm">
-                                {exam_type}
-                            </Badge>
+            <section
+                className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4"
+                aria-label="Final score section"
+            >
+                <div className="text-xs sm:text-sm text-gray-600 mb-1">Final Score</div>
+                <div className="flex items-baseline gap-1">
+                    <span
+                        className={cn(
+                            "text-xl sm:text-2xl md:text-3xl font-bold",
+                            isNegative ? "text-red-500" : "text-blue-600"
                         )}
-                    </div>
-
-                    <div
-                        className={`${getPerformanceLevel.color} p-2 sm:p-3 rounded-full flex-shrink-0`}
-                        aria-label={`Performance level: ${getPerformanceLevel.label}`}
+                        aria-label={`Score: ${finalScore.toFixed(2)} out of ${data.total_question_count || 0}`}
                     >
-                        <PerformanceIcon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" aria-hidden="true"/>
-                    </div>
-                </header>
-
-                <div className="space-y-4 sm:space-y-6">
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                        <div className="flex items-baseline gap-1 sm:gap-2">
-                            <span
-                                className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900"
-                                aria-label={`Score: ${percentage} percent`}
-                            >
-                                {percentage}
-                            </span>
-                            <span className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-500"
-                                  aria-hidden="true">%</span>
-                        </div>
-                        <Badge
-                            className={`${getPerformanceLevel.color} text-white text-xs sm:text-sm px-2 sm:px-3 py-1`}
-                            aria-label={`Performance: ${getPerformanceLevel.label}`}
-                        >
-                            {getPerformanceLevel.label}
-                        </Badge>
-                    </div>
-
-                    <div
-                        className="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 md:h-3 overflow-hidden"
-                        role="progressbar"
-                        aria-valuenow={percentage}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`Progress: ${percentage} percent complete`}
-                    >
-                        <div
-                            className={`${getPerformanceLevel.color} h-full rounded-full transition-all duration-500 ease-out`}
-                            style={{width: `${percentage}%`}}
-                        />
-                    </div>
-
-                    <dl className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200">
-                        <div className="text-center">
-                            <dt className="text-xs sm:text-sm text-gray-500 mb-1 font-medium">Correct</dt>
-                            <dd className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-600">
-                                {correct_answer_count}
-                            </dd>
-                        </div>
-
-                        <div className="text-center border-x border-gray-300">
-                            <dt className="text-xs sm:text-sm text-gray-500 mb-1 font-medium">Total</dt>
-                            <dd className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700">
-                                {total_question_count}
-                            </dd>
-                        </div>
-
-                        <div className="text-center">
-                            <dt className="text-xs sm:text-sm text-gray-500 mb-1 font-medium">Incorrect</dt>
-                            <dd className="text-lg sm:text-xl md:text-2xl font-bold text-red-500">
-                                {incorrectCount}
-                            </dd>
-                        </div>
-                    </dl>
+                        {finalScore.toFixed(2)}
+                    </span>
+                    <span className="text-sm sm:text-base text-gray-500">
+                        / {data.total_question_count || 0}
+                    </span>
                 </div>
-            </div>
+            </section>
+
+            <section
+                className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4"
+                aria-label="Answer statistics"
+            >
+                <div className="bg-green-50 rounded-lg p-2 sm:p-3 text-center">
+                    <CheckCircle2
+                        className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 mx-auto mb-1"
+                        aria-hidden="true"
+                    />
+                    <div className="text-lg sm:text-xl font-bold text-green-700">
+                        {data.correct_answer_count || 0}
+                    </div>
+                    <div className="text-xs text-green-600">Correct</div>
+                </div>
+                <div className="bg-red-50 rounded-lg p-2 sm:p-3 text-center">
+                    <XCircle
+                        className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 mx-auto mb-1"
+                        aria-hidden="true"
+                    />
+                    <div className="text-lg sm:text-xl font-bold text-red-700">
+                        {data.incorrect_answer_count || 0}
+                    </div>
+                    <div className="text-xs text-red-600">Incorrect</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-2 sm:p-3 text-center">
+                    <MinusCircle
+                        className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 mx-auto mb-1"
+                        aria-hidden="true"
+                    />
+                    <div className="text-lg sm:text-xl font-bold text-gray-700">
+                        {data.missed_answer_count || 0}
+                    </div>
+                    <div className="text-xs text-gray-600">Missed</div>
+                </div>
+            </section>
+
+            <section className="space-y-2 sm:space-y-3">
+                <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs sm:text-sm text-gray-600">Accuracy</span>
+                        <span
+                            className={cn(
+                                "text-xs sm:text-sm font-semibold",
+                                accuracyNum > 50 ? "text-green-600" : "text-red-600"
+                            )}
+                            aria-label={`Accuracy: ${accuracy} percent`}
+                        >
+                            {accuracy}%
+                        </span>
+                    </div>
+                    <Progress
+                        value={accuracyNum}
+                        className={cn(
+                            "h-1.5 sm:h-2",
+                            accuracyNum > 50 ? "[&>div]:bg-green-500" : "[&>div]:bg-red-500"
+                        )}
+                        aria-label={`Accuracy progress: ${accuracy}%`}
+                    />
+                </div>
+
+                {data.is_negative_marking && (
+                    <div
+                        className="flex items-start sm:items-center gap-2 text-xs sm:text-sm"
+                        role="alert"
+                        aria-label="Negative marking deduction"
+                    >
+                        <span className="text-yellow-600 shrink-0" aria-hidden="true">⚠</span>
+                        <span className="text-gray-700">
+                            Deduction: <span className="font-semibold text-red-600">
+                                {data.total_point_reduction_based_on_negative_marking_point?.toFixed(2)} marks
+                            </span>
+                        </span>
+                    </div>
+                )}
+
+                <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-500">
+                    <span className="inline-block w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true">📅</span>
+                    <time dateTime={data.submitted_date || '2025-12-24'}>
+                        Submitted on: {data.submitted_date || '2025/12/24'}
+                    </time>
+                </div>
+            </section>
         </article>
     );
 });
 
-ProfileScoreCard.displayName = 'ProfileScoreCard';
+ExamScoreCard.displayName = 'ExamScoreCard';
 
-export default ProfileScoreCard;
+export default ExamScoreCard;

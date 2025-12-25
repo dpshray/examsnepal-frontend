@@ -4,9 +4,10 @@ import QuizEngine from '@/components/Exams/ExamPaper';
 import mockTestService from '@/services/ExamService/MockTest';
 import {StudentBannerHeader} from '@/components/banner/header';
 import freeQuizServices from '@/services/ExamService/FreeQuiz';
-import { EXAM_DURATION_SECONDS } from '@/lib/examDurations';
-import { toast } from 'sonner';
+import {EXAM_DURATION_SECONDS} from '@/lib/examDurations';
+import {toast} from 'sonner';
 import ExamInterrupted from '@/lib/ExamInterrupted';
+import {useRouter} from "next/navigation";
 
 export default function GetFreeQuizById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
@@ -16,11 +17,12 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
     const [totalQuestions, setTotalQuestions] = useState(0);
-    const tokenRef = useRef<string | null>(null);    
+    const tokenRef = useRef<string | null>(null);
     const [correctAnswers, setCorrectAnswers] = useState(0);
     const [interrupted, setInterrupted] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const router = useRouter();
 
     const hasInitialized = useRef(false);
     const isFetchingRef = useRef(false);
@@ -65,7 +67,7 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
                 params.token = tokenRef.current;
             }
             const response = await freeQuizServices.getFreeQuizById(idNumber, params);
-            console.log(' Response form freequiz',response)
+            console.log(' Response form freequiz', response)
             if (response?.status === 409 || response?.message?.includes("already been completed")) {
                 setInterrupted(true);
                 toast.error("Exam session interrupted");
@@ -92,7 +94,7 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
 
             const total = response?.data?.total || 0;
             setTotalPages(Math.ceil(total / 10));
-        } catch (err:any) {
+        } catch (err: any) {
             console.error('Error fetching Free quiz:', err);
 
             if (err?.status === 409 || err?.response?.status === 409) {
@@ -115,12 +117,17 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
         question_id: string[];
         option_id: string[];
     }) => {
-        try {
-            const res = await mockTestService.submitExam(payload);
-            setCorrectAnswers(res?.data?.correct_answered || 0);
-        } catch (err) {
-            console.error('Error submitting sprint quiz:', err);
-        }
+
+        await mockTestService.submitExam(payload)
+            .then((res) => {
+                console.log('Response from submitExam', res)
+                setIsSubmitted(true);
+                router.push(`/student/scores/${idNumber}`);
+
+            })
+            .catch(err => console.error('Error submitting sprint quiz:', err))
+
+
     };
 
     if (interrupted) {
@@ -136,21 +143,21 @@ export default function GetFreeQuizById({params}: { params: Promise<{ id: number
                 textClassName="text-white"
             />
 
-                <QuizEngine
-                    quiz={quiz}
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    totalQuestions={totalQuestions}
-                    correctAnswers={correctAnswers}
-                    loading={loading}
-                    examId={idNumber}
-                    onNextAction={() => setCurrentPage((prev) => prev + 1)}
-                    onPrevAction={() => setCurrentPage((prev) => prev - 1)}
-                    onSubmitAction={submitQuiz}
-                    setCurrentPageAction={setCurrentPage}
-                    duration={EXAM_DURATION_SECONDS.FREE_TEST}
-                />
-            
+            <QuizEngine
+                quiz={quiz}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalQuestions={totalQuestions}
+                correctAnswers={correctAnswers}
+                loading={loading}
+                examId={idNumber}
+                onNextAction={() => setCurrentPage((prev) => prev + 1)}
+                onPrevAction={() => setCurrentPage((prev) => prev - 1)}
+                onSubmitAction={submitQuiz}
+                setCurrentPageAction={setCurrentPage}
+                duration={EXAM_DURATION_SECONDS.FREE_TEST}
+            />
+
         </div>
     );
 }

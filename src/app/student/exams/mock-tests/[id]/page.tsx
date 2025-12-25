@@ -12,6 +12,9 @@ import {toast} from 'sonner';
 import ExamInterrupted from '@/lib/ExamInterrupted';
 import {MdWarningAmber} from 'react-icons/md';
 import {EXAM_DURATION_SECONDS} from '@/lib/examDurations';
+import {FormatExamTime} from "@/lib/utils";
+import CustomPagination from "@/components/Pagination";
+import {SOLUTIONS_ROUTE} from "@/config/app-constant";
 
 export default function GetMockTestById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
@@ -78,7 +81,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
             }
 
             const response = await mockTestService.getMockTestById(idNumber, params);
-            console.log("fetchMockTest called",response);
+            console.log("fetchMockTest called", response);
 
             if (response?.status === 409 || response?.message?.includes("already been completed")) {
                 setInterrupted(true);
@@ -126,12 +129,6 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         setSelectedAnswers(prev => ({...prev, [qid]: value}));
     };
 
-    const formatTime = (seconds: number) => {
-        const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
-        const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
-        const s = String(seconds % 60).padStart(2, '0');
-        return `${h}:${m}:${s}`;
-    };
 
     const handleNextPage = () => {
         if (currentPage < totalPages) {
@@ -147,11 +144,10 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         }
     };
 
-    const handleViewDetails = () => {
-        setCurrentPage(1);
-        setShowResult(true);
+    const handlePageChange = useCallback((page: number) => {
+        setCurrentPage(page);
         window.scrollTo({top: 0, behavior: 'smooth'});
-    };
+    }, []);
 
     const handleSubmit = useCallback(async () => {
         if (isSubmitted) return;
@@ -186,9 +182,8 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         try {
             const res = await mockTestService.submitExam(payload);
             console.log('Mock Quiz submitted:', res?.data);
-            toast.success('Mock Quiz submitted successfully');
-            setIsSubmitted(true);
-            setCorrectAnswers(res?.data?.correct_answered || 0);
+
+            router.push(`${SOLUTIONS_ROUTE}/${idNumber}`);
         } catch (err) {
             console.error('Error submitting exam:', err);
             toast.error('Failed to submit exam');
@@ -220,11 +215,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
         return () => clearInterval(timer);
     }, [timeLeft, handleSubmit, interrupted]);
 
-    useEffect(() => {
-        if (isSubmitted) {
-            toast.success(`Your Score: ${score} / ${quiz.length}`);
-        }
-    }, [isSubmitted, score, quiz.length]);
+
 
     if (interrupted) {
         return <ExamInterrupted/>;
@@ -278,7 +269,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                             <div className="text-center">
                                 <p className="text-sm text-muted-foreground">Time Left:</p>
                                 <div className="flex items-center justify-center gap-1 font-medium text-xl">
-                                    <span>{formatTime(timeLeft)}</span>
+                                    <span>{FormatExamTime(timeLeft)}</span>
                                 </div>
                             </div>
                             <Image src="/exam.png" alt="Exam visual" width={48} height={48}/>
@@ -307,24 +298,15 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                                     />
                                 ))
                             )}
-                            <div className="flex justify-between mt-4">
-                                <Button
-                                    disabled={currentPage === 1}
-                                    onClick={handlePrevPage}
-                                    variant="destructive"
-                                    className="w-full sm:w-auto"
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    onClick={handleNextPage}
-                                    variant="outline"
-                                    className="w-full sm:w-auto primary-btn"
-                                    disabled={currentPage === totalPages}
-                                >
-                                    Next
-                                </Button>
-                            </div>
+                            {totalPages > 1 && (
+                                <div className="flex justify-center mt-8">
+                                    <CustomPagination
+                                        totalPages={totalPages}
+                                        currentPage={currentPage}
+                                        onPageChangeAction={handlePageChange}
+                                    />
+                                </div>
+                            )}
                             {currentPage === totalPages && !isSubmitted && (
                                 <>
                                     <div className="mt-4 flex items-center">
@@ -354,16 +336,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
                                     </Button>
                                 </>
                             )}
-                            {isSubmitted && (
-                                <div className="mt-6 text-center">
-                                    <h3 className="text-lg font-semibold">
-                                        {correctAnswers} out of {totalQuestions} questions answered correctly!
-                                    </h3>
-                                    <Button className="mt-4 primary-btn" onClick={handleViewDetails}>
-                                        View Details
-                                    </Button>
-                                </div>
-                            )}
+
                         </div>
                     </div>
                 )}

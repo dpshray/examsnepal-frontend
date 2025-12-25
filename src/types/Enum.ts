@@ -3,3 +3,9 @@ export enum EXAM_TYPE {
     SPRINT_QUIZ = 'SPRINT_QUIZ',
     MOCK_TEST = 'MOCK_TEST',
 }
+
+
+export enum EXAM_STATUS {
+    FREE = 'FREE',
+    PAID = 'PAID',
+}

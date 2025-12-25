@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import {Textarea} from "@/components/ui/textarea"
 import doubtsService from "@/services/DoubtService";
-import { toast } from "sonner";
+import {toast} from "sonner";
 
 type Option = {
     label: string | number;

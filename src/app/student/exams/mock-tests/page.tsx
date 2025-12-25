@@ -1,97 +1,102 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { StudentBannerHeader } from "@/components/banner/header";
-import { QuizTestCardSkeleton } from "@/components/Exams/exam-card";
-import { QUIZ_TYPES, QuizType } from "@/lib/Constan";
+import {useEffect, useState} from "react";
+import {useRouter} from "next/navigation";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
+import {StudentBannerHeader} from "@/components/banner/header";
+import {QuizCompletedCard, QuizPendingCard, QuizTestCardSkeleton} from "@/components/Exams/exam-card";
+import {QUIZ_TYPES, QuizType} from "@/lib/Constan";
 import mockTestService from "@/services/ExamService/MockTest";
-import QuizCardList from "@/components/Exams/Quiz";
-import Pagination from "@/components/Pagination";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { CheckCheckIcon, ClockIcon } from "lucide-react";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
+import {CheckCheckIcon, ClockIcon} from "lucide-react";
 import CustomPagination from "@/components/Pagination";
-import { toast } from "sonner";
+import {toast} from "sonner";
+import {MOCK_TEST_ROUTE, SOLUTIONS_ROUTE, STUDENT_SCORE_ROUTE} from "@/config/app-constant";
 
 interface MetaData {
     totalPages: number;
     currentPage: number;
-
     [key: string]: any;
 }
 
 export default function MockTestPage() {
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const queryClient = useQueryClient();
 
+    const [selectedTab, setSelectedTab] = useState<QuizType>(QUIZ_TYPES.PENDING);
+    const [pendingPage, setPendingPage] = useState(1);
+    const [completedPage, setCompletedPage] = useState(1);
 
-    const tabParam = searchParams.get('tab') || QUIZ_TYPES.PENDING;
-    const [selectedTab, setSelectedTab] = useState<QuizType>(
-        tabParam === QUIZ_TYPES.COMPLETED ? QUIZ_TYPES.COMPLETED : QUIZ_TYPES.PENDING
-    );
+    const {data: pendingData, isLoading: isPendingLoading} = useQuery({
+        queryKey: ['pendingQuizzes', pendingPage],
+        queryFn: async () => {
+            const response = await mockTestService.getPendingMockTests(pendingPage);
+            return {
+                data: response.data.data,
+                totalPages: Math.ceil(response?.data?.total / 10),
+                currentPage: pendingPage
+            };
+        },
+        enabled: selectedTab === QUIZ_TYPES.PENDING,
+        staleTime: 0,
+        gcTime: 0,
+    });
 
-    const [pendingQuizzes, setPendingQuizzes] = useState<any[]>([]);
-    const [completedQuizzes, setCompletedQuizzes] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    const [pendingMeta, setPendingMeta] = useState<MetaData>({ totalPages: 1, currentPage: 1 });
-    const [completedMeta, setCompletedMeta] = useState<MetaData>({ totalPages: 1, currentPage: 1 });
-
-    const fetchPendingQuizzes = async (page: number) => {
-        try {
-            const response = await mockTestService.getPendingMockTests(page);
-            const totalPages = Math.ceil(response?.data?.total / 10);
-            setPendingQuizzes(response.data.data);
-            console.log(`Pending Quizzes`, response.data);
-            setPendingMeta({ totalPages, currentPage: page });
-        } catch (error) {
-            console.error('Error fetching pending quizzes:', error);
-        }
-    };
-
-    const fetchCompletedQuizzes = async (page: number) => {
-        try {
-            const response = await mockTestService.getCompletedMockTests(page);
-            const totalPages = Math.ceil(response?.data?.total / 10);
-            setCompletedQuizzes(response.data.data);
-            console.log(`Completed Quizzes`, response);
-            setCompletedMeta({ totalPages, currentPage: page });
-        } catch (error) {
-            console.error('Error fetching completed quizzes:', error);
-        }
-    };
+    const {data: completedData, isLoading: isCompletedLoading} = useQuery({
+        queryKey: ['completedQuizzes', completedPage],
+        queryFn: async () => {
+            const response = await mockTestService.getCompletedMockTests(completedPage);
+            return {
+                data: response.data.data,
+                totalPages: Math.ceil(response?.data?.total / 10),
+                currentPage: completedPage
+            };
+        },
+        enabled: selectedTab === QUIZ_TYPES.COMPLETED,
+        staleTime: 0,
+        gcTime: 0,
+    });
 
     useEffect(() => {
-        setLoading(true);
         if (selectedTab === QUIZ_TYPES.PENDING) {
-            fetchPendingQuizzes(pendingMeta.currentPage).finally(() => setLoading(false));
+            setPendingPage(1);
+            queryClient.invalidateQueries({ queryKey: ['pendingQuizzes'] });
         } else {
-            fetchCompletedQuizzes(completedMeta.currentPage).finally(() => setLoading(false));
+            setCompletedPage(1);
+            queryClient.invalidateQueries({ queryKey: ['completedQuizzes'] });
         }
-    }, [selectedTab, pendingMeta.currentPage, completedMeta.currentPage]);
+    }, [selectedTab, queryClient]);
+
+    useEffect(() => {
+        queryClient.invalidateQueries({ queryKey: ['pendingQuizzes'] });
+        queryClient.invalidateQueries({ queryKey: ['completedQuizzes'] });
+    }, []);
 
     const handleTabChange = (tab: string) => {
         if (tab === QUIZ_TYPES.PENDING || tab === QUIZ_TYPES.COMPLETED) {
-            setSelectedTab(tab);
-            router.push(`?tab=${tab}`);
+            setSelectedTab(tab as QuizType);
         }
     };
 
     const handleViewAllScoresAction = (quizId: number) => {
-        router.push(`${process.env.NEXT_PUBLIC_STUDENT_SCORE_ROUTE}/${quizId}`)
+        router.push(`${STUDENT_SCORE_ROUTE}/${quizId}`);
     };
 
     const handleTakeTestAction = (quizId: number) => {
-        toast.success(`Quiz started successfully`);
-        router.push(`/student/exams/mock-tests/${quizId}`);
+        toast.success('Quiz started successfully');
+        router.push(`${MOCK_TEST_ROUTE}/${quizId}`);
+    };
+
+    const handleViewSolutionAction = (quizId: number) => {
+        router.push(`${SOLUTIONS_ROUTE}/${quizId}`);
     };
 
     const handlePageChange = (page: number) => {
         if (selectedTab === QUIZ_TYPES.PENDING) {
-            setPendingMeta(prev => ({ ...prev, currentPage: page }));
+            setPendingPage(page);
         } else {
-            setCompletedMeta(prev => ({ ...prev, currentPage: page }));
+            setCompletedPage(page);
         }
     };
 
@@ -113,7 +118,7 @@ export default function MockTestPage() {
                 </p>
             </section>
 
-            <div className="flex flex-col gap-6 max-w-7xl mx-auto px-4">
+            <div className="flex flex-col gap-6 max-w-7xl mx-auto px-4 pb-8">
                 <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-4">
                     <ScrollArea>
                         <TabsList
@@ -122,74 +127,94 @@ export default function MockTestPage() {
                                 value={QUIZ_TYPES.PENDING}
                                 className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
                             >
-                                <ClockIcon size={16} className="me-2 opacity-60" />
+                                <ClockIcon size={16} className="me-2 opacity-60"/>
                                 Pending Mock Test
                             </TabsTrigger>
                             <TabsTrigger
                                 value={QUIZ_TYPES.COMPLETED}
                                 className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:bg-green-600 data-[state=active]:text-white"
                             >
-                                <CheckCheckIcon size={16} className="me-2 opacity-60" />
+                                <CheckCheckIcon size={16} className="me-2 opacity-60"/>
                                 Completed Mock Test
                             </TabsTrigger>
                         </TabsList>
-                        <ScrollBar orientation="horizontal" />
+                        <ScrollBar orientation="horizontal"/>
                     </ScrollArea>
 
                     <TabsContent value={QUIZ_TYPES.PENDING}>
-                        {loading ? (
+                        {isPendingLoading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                    <QuizTestCardSkeleton key={index} />
+                                {Array.from({length: 6}).map((_, index) => (
+                                    <QuizTestCardSkeleton key={index}/>
                                 ))}
                             </div>
                         ) : (
                             <>
-                                <QuizCardList
-                                    quizzes={pendingQuizzes}
-                                    selectedTab={QUIZ_TYPES.PENDING}
-                                    onViewAllScoresAction={handleViewAllScoresAction as any}
-                                    onTakeTestAction={handleTakeTestAction}
-                                    onViewSolutionAction={(quizId: number) =>
-                                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
-                                    }
-                                />
-                                <div className="flex justify-center mt-4">
-                                    <CustomPagination
-                                        totalPages={pendingMeta.totalPages}
-                                        currentPage={pendingMeta.currentPage}
-                                        onPageChangeAction={handlePageChange}
-                                    />
-                                </div>
+                                {pendingData?.data && pendingData.data.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {pendingData.data.map((exam: any) => (
+                                            <QuizPendingCard
+                                                key={exam.id}
+                                                exam={exam}
+                                                onViewAllScoresAction={handleViewAllScoresAction}
+                                                onTakeTestAction={handleTakeTestAction}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <p className="text-gray-500 text-lg">No pending mock tests available</p>
+                                    </div>
+                                )}
+
+                                {pendingData && pendingData.totalPages > 1 && (
+                                    <div className="flex justify-center mt-6">
+                                        <CustomPagination
+                                            totalPages={pendingData.totalPages}
+                                            currentPage={pendingData.currentPage}
+                                            onPageChangeAction={handlePageChange}
+                                        />
+                                    </div>
+                                )}
                             </>
                         )}
                     </TabsContent>
 
                     <TabsContent value={QUIZ_TYPES.COMPLETED}>
-                        {loading ? (
+                        {isCompletedLoading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                    <QuizTestCardSkeleton key={index} />
+                                {Array.from({length: 6}).map((_, index) => (
+                                    <QuizTestCardSkeleton key={index}/>
                                 ))}
                             </div>
                         ) : (
                             <>
-                                <QuizCardList
-                                    quizzes={completedQuizzes}
-                                    selectedTab={QUIZ_TYPES.COMPLETED}
-                                    onViewAllScoresAction={handleViewAllScoresAction as any}
-                                    onTakeTestAction={handleTakeTestAction}
-                                    onViewSolutionAction={(quizId: number) =>
-                                    router.push(`${process.env.NEXT_PUBLIC_SOLUTION_API_URL}/${quizId}`)
-                                    }
-                                />
-                                <div className="flex justify-center mt-4">
-                                    <CustomPagination
-                                        totalPages={completedMeta.totalPages}
-                                        currentPage={completedMeta.currentPage}
-                                        onPageChangeAction={handlePageChange}
-                                    />
-                                </div>
+                                {completedData?.data && completedData.data.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {completedData.data.map((exam: any) => (
+                                            <QuizCompletedCard
+                                                key={exam.id}
+                                                exam={exam}
+                                                onViewAllScoresAction={handleViewAllScoresAction}
+                                                onViewSolutionAction={handleViewSolutionAction}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <p className="text-gray-500 text-lg">No completed mock tests available</p>
+                                    </div>
+                                )}
+
+                                {completedData && completedData.totalPages > 1 && (
+                                    <div className="flex justify-center mt-6">
+                                        <CustomPagination
+                                            totalPages={completedData.totalPages}
+                                            currentPage={completedData.currentPage}
+                                            onPageChangeAction={handlePageChange}
+                                        />
+                                    </div>
+                                )}
                             </>
                         )}
                     </TabsContent>

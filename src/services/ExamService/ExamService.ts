@@ -16,29 +16,9 @@ class ExamService extends HttpService {
         }
     }
 
-    async getProfileScore() {
-        try {
-            const response = await this.getRequest({
-                url: `/students/me/exams/scores`,
-                config: {
-                    auth: true,
-                },
-            });
-            return response?.data;
-        } catch (error) {
-            throw error;
-        }
-    }
 
-    async getScore(examId:number){
-        const response = await this.getRequest({
-            url: `/exam-scorers/${examId}`,
-            config:{
-                auth: true,
-            }
-        })
-        return response?.data;
-    }
+
+
 }
 
 
