@@ -22,6 +22,7 @@ export interface Exam {
     id: number;
     exam_name: string;
     status: EXAM_STATUS | string;
+    correct_marking_point: number;
     is_negative_marking?: boolean;
     negative_marking_point?: number;
     questions_count: number;
@@ -73,13 +74,21 @@ export function QuizPendingCard({
                     <p className="font-montserrat text-xs sm:text-sm text-gray-600 truncate">
                         {exam.user.fullname}
                     </p>
-                    {exam.is_negative_marking && (
-                        <div
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 border border-red-200 rounded-md text-xs text-red-700 font-medium">
-                            <FaExclamationTriangle className="flex-shrink-0" aria-hidden="true"/>
-                            <span>Negative Marking: -{exam.negative_marking_point} points</span>
+                    {/* Marking Information */}
+                    <div className="flex flex-wrap gap-2">
+                        {/* Positive Marking */}
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 rounded-md text-xs text-green-700 font-medium">
+                            <span>+{exam.correct_marking_point} per correct</span>
                         </div>
-                    )}
+                        
+                        {/* Negative Marking */}
+                        {exam.is_negative_marking && (
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 border border-red-200 rounded-md text-xs text-red-700 font-medium">
+                                <FaExclamationTriangle className="flex-shrink-0" aria-hidden="true"/>
+                                <span>-{exam.negative_marking_point} per wrong</span>
+                            </div>
+                        )}
+                    </div>
                 </header>
 
                 <footer

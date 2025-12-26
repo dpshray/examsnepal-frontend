@@ -1,124 +1,141 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Card } from "@/components/ui/card"
-
-interface Question {
-  id: string
-  type: "multiple-choice" | "short-answer"
-  text: string
-  options?: string[]
-}
-
-interface Section {
-  id: string
-  title: string
-  questions: Question[]
-}
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Question } from "@/types/CorporateExamTypes"
+import Link from "next/link"
+import Image from "next/image"
 
 interface QuestionDisplayProps {
-  section: Section
   question: Question
   questionNumber: number
-  totalQuestions: number
-  answer: string
-  onAnswerChange: (answer: string) => void
-  onNext: () => void
-  onPrevious: () => void
-  canGoNext: boolean
-  canGoPrevious: boolean
-  answeredCount: number
+  // selectedOptionId: number | null
+  selectedAnswer: number | string | null
+  onAnswerChange: (questionId: number, value: number | string | null) => void
 }
 
 export function QuestionDisplay({
-  section,
   question,
   questionNumber,
-  totalQuestions,
-  answer,
+  selectedAnswer,
   onAnswerChange,
-  onNext,
-  onPrevious,
-  canGoNext,
-  canGoPrevious,
-  answeredCount,
 }: QuestionDisplayProps) {
   return (
-    <main className="flex-1 flex flex-col">
-      <div className="border-b border-border px-8 py-4 bg-muted/30">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Section: {section.title}</p>
-            <p className="text-sm font-medium text-foreground mt-1">
-              Question {questionNumber} of {totalQuestions}
-            </p>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            Answered: {answeredCount} / {totalQuestions}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-auto px-8 py-8">
-        <Card className="max-w-4xl mx-auto p-8">
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-medium text-foreground leading-relaxed">{question.text}</h2>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* HEADER */}
+      <div className="border-b bg-linear-to-r from-blue-50 to-indigo-50 px-6 py-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-3">
+              <span className="inline-flex items-center justify-center h-9 w-9 rounded-full bg-green-600 text-white text-sm font-semibold">
+                {questionNumber}
+              </span>
+              <span className="text-xs font-medium text-green-600 uppercase px-2.5 py-1 bg-indigo-100 rounded-full">
+                {question.question_type}
+              </span>
             </div>
 
-            {question.type === "multiple-choice" && question.options && (
-              <RadioGroup value={answer} onValueChange={onAnswerChange}>
-                <div className="space-y-3">
-                  {question.options.map((option, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
-                    >
-                      <RadioGroupItem value={option} id={`option-${index}`} />
-                      <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer text-base">
-                        {option}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
-            )}
-
-            {question.type === "short-answer" && (
-              <div>
-                <Label htmlFor="answer" className="text-sm text-muted-foreground mb-2">
-                  Your Answer
-                </Label>
-                <Textarea
-                  id="answer"
-                  value={answer}
-                  onChange={(e) => onAnswerChange(e.target.value)}
-                  placeholder="Type your answer here..."
-                  className="min-h-[200px] mt-2 text-base"
-                />
-              </div>
-            )}
+            <div
+              className="prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: question.question }}
+            />
           </div>
-        </Card>
-      </div>
 
-      <div className="border-t border-border px-8 py-4 bg-card">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <Button variant="outline" onClick={onPrevious} disabled={!canGoPrevious} className="gap-2 bg-transparent">
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-
-          <Button onClick={onNext} disabled={!canGoNext} className="gap-2">
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <div className="text-right bg-white rounded-lg px-3 py-2 shadow-sm">
+            <div className="text-sm font-semibold">
+              Marks: <span className="text-green-600">{question.full_marks}</span>
+            </div>
+          </div>
         </div>
       </div>
-    </main>
+
+      {/* BODY */}
+      <div className="p-6">
+        {/* IMAGE */}
+        {question.image_url && (
+          <Image
+            src={question.image_url}
+            alt="Question image"
+            width={800}
+            height={256}
+            className="w-full h-64 object-contain mb-6"
+          />
+        )}
+
+        {/* MCQ */}
+        {question.question_type === "mcq" && (
+  <RadioGroup
+    value={typeof selectedAnswer === "number" ? selectedAnswer.toString() : ""}
+    onValueChange={(val) =>
+      onAnswerChange(question.id, val ? Number(val) : null)
+    }
+  >
+    <div className="space-y-3">
+      {question.options.map((option, index) => {
+        const isSelected = selectedAnswer === option.id
+
+        return (
+          <div
+            key={option.id}
+            onClick={() => onAnswerChange(question.id, option.id)}
+            className={`flex items-center gap-4 rounded-lg border-2 p-4 cursor-pointer transition
+              ${
+                isSelected
+                  ? "border-green-500 bg-green-50"
+                  : "border-gray-200 hover:border-green-300"
+              }`}
+          >
+            {/* VISIBLE RADIO */}
+            <div
+              className={`h-5 w-5 rounded-full border-2 flex items-center justify-center
+                ${
+                  isSelected
+                    ? "border-green-600"
+                    : "border-gray-400"
+                }`}
+            >
+              {isSelected && (
+                <div className="h-3 w-3 rounded-full bg-green-600" />
+              )}
+            </div>
+
+            {/* HIDDEN REAL RADIO */}
+            <RadioGroupItem
+              value={option.id.toString()}
+              id={`q${question.id}-option${option.id}`}
+              className="sr-only"
+            />
+
+            <Label className="flex-1 cursor-pointer">
+              {String.fromCharCode(65 + index)}. {option.option}
+            </Label>
+          </div>
+        )
+      })}
+    </div>
+  </RadioGroup>
+)}
+
+
+        {/* SUBJECTIVE */}
+        {question.question_type === "subjective" && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-gray-700">
+              Your Answer
+            </Label>
+
+            <textarea
+              value={typeof selectedAnswer === "string" ? selectedAnswer : ""}
+              onChange={(e) =>
+                onAnswerChange(question.id, e.target.value)
+              }
+              placeholder="Write your answer here..."
+              rows={6}
+              className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
