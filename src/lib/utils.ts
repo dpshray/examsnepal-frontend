@@ -11,3 +11,14 @@ export const FormatExamTime = (seconds: number) => {
   const s = String(seconds % 60).padStart(2, '0');
   return `${h}:${m}:${s}`;
 };
+
+export const formatTime = (time: string) => {
+  const [h, m] = time.split(':');
+  const date = new Date();
+  date.setHours(Number(h), Number(m));
+
+  return date.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};

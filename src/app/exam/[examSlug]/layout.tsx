@@ -11,26 +11,26 @@ export default function ExamLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-  const { examSlug } = useParams<{ examSlug: string }>();
+  // const pathname = usePathname();
+  // const { examSlug } = useParams<{ examSlug: string }>();
 
-  const isEntryPage = pathname === `/exam/${examSlug}`;
+  // const isEntryPage = pathname === `/exam/${examSlug}`;
 
-  const { data, isLoading: isTypeLoading } = useGetExamType(examSlug!); 
-  const examType = data?.type as "public" | "private" | null;
+  // const { data, isLoading: isTypeLoading } = useGetExamType(examSlug!); 
+  // const examType = data?.type as "public" | "private" | null;
 
-  const { loading: isAccessLoading, authorized } = useExamAccess({
-    skip: isEntryPage || !examType,
-    type: examType || "public",
-  });
+  // const { loading: isAccessLoading, authorized } = useExamAccess({
+  //   skip: isEntryPage || !examType,
+  //   type: examType || "public",
+  // });
 
-  if (isTypeLoading || isAccessLoading) {
-    return <ExamRouteSkeleton />;
-  }
+  // if (isTypeLoading || isAccessLoading) {
+  //   return <ExamRouteSkeleton />;
+  // }
 
-  if (!authorized) {
-    return <ExamRouteSkeleton />;
-  }
+  // if (!authorized) {
+  //   return <ExamRouteSkeleton />;
+  // }
 
   return <>{children}</>;
 }

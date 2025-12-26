@@ -1,5 +1,7 @@
 import type {NextConfig} from "next";
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const nextConfig: NextConfig = {
     /* config options here */
     async redirects() {
@@ -22,6 +24,7 @@ const nextConfig: NextConfig = {
         optimizePackageImports: ['icon-library'],
     },
     images: {
+        dangerouslyAllowLocalIP : isDev,
         remotePatterns: [
             {
                 protocol: 'https',
@@ -49,7 +52,13 @@ const nextConfig: NextConfig = {
                 protocol: "https",
                 hostname: "cdn.dummyjson.com",
                 pathname: "/**",
-            }
+            },
+            {
+                protocol: 'http',
+                hostname: '192.168.100.18',
+                port: '8000',
+                pathname: '/**',
+            },
         ]
     },
 };
