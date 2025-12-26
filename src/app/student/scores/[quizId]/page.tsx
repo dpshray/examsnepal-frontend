@@ -9,6 +9,7 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import CustomPagination from "@/components/Pagination"
 import {useCallback, useMemo, useState} from "react"
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert"
+import {SOLUTIONS_ROUTE} from "@/config/app-constant";
 
 type PlayerScore = {
     id: number
@@ -163,6 +164,10 @@ export default function ScorePage() {
         })
     }, [allScore])
 
+    const handleViewSolution = useCallback((examId: number) => {
+        router.push(`${SOLUTIONS_ROUTE}/${examId}`)
+    }, [])
+
     const scoreData = useMemo(() => {
         if (!ownScore) return null
         return {
@@ -238,7 +243,9 @@ export default function ScorePage() {
                                 </AlertDescription>
                             </Alert>
                         ) : scoreData ? (
-                            <ExamScoreCard data={scoreData}/>
+                            <ExamScoreCard data={scoreData}
+                                           onViewSolutionAction={() => handleViewSolution(scoreData.exam_id)}
+                            />
                         ) : (
                             <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 text-center">
                                 <p className="text-muted-foreground">No score data available</p>
