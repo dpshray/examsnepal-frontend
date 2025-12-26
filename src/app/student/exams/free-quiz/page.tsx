@@ -19,6 +19,7 @@ interface Quiz {
     exam_name: string;
     status: string;
     questions_count: number;
+    correct_marking_point: number;
     is_negative_marking: boolean;
     negative_marking_point: number;
     players: any;
@@ -266,7 +267,7 @@ export default function FreeQuiz() {
                                     No Completed Quizzes
                                 </h3>
                                 <p className="text-sm sm:text-base text-gray-500 max-w-md">
-                                    You haven't completed any quizzes yet. Start taking quizzes to see them here.
+                                    You haven&apos;t completed any quizzes yet. Start taking quizzes to see them here.
                                 </p>
                             </div>
                         )}

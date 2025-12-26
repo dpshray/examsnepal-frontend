@@ -1,104 +1,89 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Check, Circle, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-interface Question {
-  id: string
-  type: "multiple-choice" | "short-answer"
-  text: string
-  options?: string[]
-}
-
-interface Section {
-  id: string
-  title: string
-  questions: Question[]
-}
+import { Button } from "../ui/button"
 
 interface QuestionNavigationProps {
-  sections: Section[]
-  currentSectionIndex: number
+  totalQuestions: number
   currentQuestionIndex: number
-  answers: Record<string, string>
-  onNavigate: (sectionIndex: number, questionIndex: number) => void
-  allowBackNavigation: boolean
+  answeredQuestions: number[]
+  onQuestionClick: (index: number) => void
 }
 
 export function QuestionNavigation({
-  sections,
-  currentSectionIndex,
+  totalQuestions,
   currentQuestionIndex,
-  answers,
-  onNavigate,
-  allowBackNavigation,
+  answeredQuestions,
+  onQuestionClick,
 }: QuestionNavigationProps) {
-  let globalIndex = 0
-  let currentGlobalIndex = 0
-
-  // Calculate current global index
-  for (let i = 0; i < currentSectionIndex; i++) {
-    currentGlobalIndex += sections[i].questions.length
-  }
-  currentGlobalIndex += currentQuestionIndex
-
   return (
-    <aside className="w-80 border-r border-border bg-card">
-      <div className="border-b border-border px-6 py-4">
-        <h2 className="text-lg font-semibold text-foreground">Questions</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          {sections.length} {sections.length === 1 ? "Section" : "Sections"}
-        </p>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="border-b bg-linear-to-r from-blue-50 to-indigo-50 px-6 py-4">
+        <h3 className="text-lg font-semibold text-gray-800">Question Navigator</h3>
       </div>
+      <div className="p-4">
+        <div className="space-y-6">
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-md bg-green-500 shadow-sm" />
+              <span className="text-gray-600 font-medium">Answered</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-md border-2 border-gray-300 shadow-sm" />
+              <span className="text-gray-600 font-medium">Not Answered</span>
+            </div>
+          </div>
 
-      <ScrollArea className="h-[calc(100vh-9rem)]">
-        <div className="p-6 space-y-6">
-          {sections.map((section, sectionIndex) => {
-            const sectionStartIndex = globalIndex
-            globalIndex += section.questions.length
+          <ScrollArea className="max-h-105">
+            <div className="pr-2">
+              <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 p-1">
+                {Array.from({ length: totalQuestions }, (_, i) => {
+                  const questionNumber = i + 1
+                  const isAnswered = answeredQuestions.includes(i)
+                  const isCurrent = i === currentQuestionIndex
 
-            return (
-              <div key={section.id}>
-                <h3 className="text-sm font-medium text-foreground mb-3">{section.title}</h3>
-                <div className="grid grid-cols-5 gap-2">
-                  {section.questions.map((question, questionIndex) => {
-                    const qGlobalIndex = sectionStartIndex + questionIndex
-                    const isAnswered = !!answers[question.id]
-                    const isCurrent = sectionIndex === currentSectionIndex && questionIndex === currentQuestionIndex
-                    const isLocked = !allowBackNavigation && qGlobalIndex < currentGlobalIndex
-
-                    return (
-                      <Button
-                        key={question.id}
-                        variant={isCurrent ? "default" : "outline"}
-                        size="sm"
-                        className={cn(
-                          "h-10 w-full relative",
-                          isAnswered && !isCurrent && "border-green-500 bg-green-500/10",
-                          isLocked && "opacity-50 cursor-not-allowed",
-                        )}
-                        onClick={() => onNavigate(sectionIndex, questionIndex)}
-                        disabled={isLocked}
-                      >
-                        {isLocked && <Lock className="h-3 w-3 absolute top-1 right-1" />}
-                        {isAnswered && !isCurrent && (
-                          <Check className="h-3 w-3 absolute top-1 right-1 text-green-500" />
-                        )}
-                        {!isAnswered && !isCurrent && !isLocked && (
-                          <Circle className="h-3 w-3 absolute top-1 right-1 text-muted-foreground" />
-                        )}
-                        <span>{questionIndex + 1}</span>
-                      </Button>
-                    )
-                  })}
-                </div>
+                  return (
+                    <Button
+                      key={i}
+                      variant="ghost"
+                      onClick={() => onQuestionClick(i)}
+                      className={cn(
+                        "h-10 w-10 rounded-md font-semibold text-sm transition-all",
+                        "flex items-center justify-center",
+                        isAnswered
+                          ? "bg-green-500 text-white hover:bg-green-600 shadow-sm"
+                          : "border border-gray-300 text-gray-700 hover:border-green-400 hover:bg-gray-50",
+                        isCurrent && "ring-2 ring-green-500 ring-offset-2",
+                      )}
+                    >
+                      {questionNumber}
+                    </Button>
+                  )
+                })}
               </div>
-            )
-          })}
+            </div>
+          </ScrollArea>
+
+
+          <div className="pt-4 border-t border-gray-200">
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Total Questions:</span>
+                <span className="font-semibold text-gray-800 text-lg">{totalQuestions}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Answered:</span>
+                <span className="font-semibold text-green-600 text-lg">{answeredQuestions.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600 font-medium">Not Answered:</span>
+                <span className="font-semibold text-orange-600 text-lg">{totalQuestions - answeredQuestions.length}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </ScrollArea>
-    </aside>
+      </div>
+    </div>
   )
 }

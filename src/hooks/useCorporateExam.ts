@@ -1,8 +1,9 @@
 "use client";
 
 import { PrivateExamForm } from "@/app/exam/[examSlug]/page";
-import corporateExamService from "@/services/corporateExamServices";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import corporateExamService, { PageParams } from "@/services/corporateExamServices";
+import { ExamType } from "@/types/CorporateExamTypes";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 type PrivateExamLoginVars = {
@@ -61,14 +62,11 @@ export const usePublicExamLogin = (
     });
 };
 
-export const useGetExamDetails = (onSuccess?: (data: any) => void) => {
-    const router = useRouter();
-    return useMutation({
-        mutationFn: ({  examSlug, type }: {examSlug: string, type: "public" | "private"}) => corporateExamService.getExamDetails(examSlug, type),
-
-        onSuccess: (data) => {
-            onSuccess?.(data);
-        },
+export const useGetExamDetails = (examParams: { examSlug: string; type: ExamType }) => {
+    return useQuery({
+        queryKey: ["participants", examParams],
+        queryFn: () => corporateExamService.getExamDetails(examParams.examSlug, examParams.type),
+        enabled: !!examParams.examSlug && !!examParams.type,
     });
 };
 
@@ -80,3 +78,33 @@ export const useGetExamType = (examSlug: string) => {
     enabled: !!examSlug,     
   });
 };
+
+export const useStartExam = () => {
+    return useMutation({
+        mutationFn: ({examSlug, sectionSlug, type}: {examSlug: string; sectionSlug: string, type: ExamType}) => corporateExamService.startExam(examSlug, sectionSlug, type),
+    });
+};
+
+export const useGetQuestions = (attempt_id: number, type: ExamType, params?: PageParams) => {
+  return useQuery({
+    queryKey: ["questions", attempt_id, type, params],
+    queryFn: () => corporateExamService.getQuestion(attempt_id, type, params),
+  });
+}
+
+export const useSaveAnswer = () => {
+  return useMutation({
+    mutationFn: ({attemptId, data, type}: {attemptId: number, data: any, type: ExamType}) => corporateExamService.saveAnswer(attemptId, data, type),
+  });
+}
+
+export const useSubmitExam = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({attemptId, type }: {attemptId: number, type: ExamType}) => corporateExamService.submitExam(attemptId, type),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["questions"] });
+            localStorage.removeItem(`exam_end_time_${variables.attemptId}`)
+        }
+    });
+}

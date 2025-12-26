@@ -132,8 +132,8 @@ export default function ScorePage() {
         queryKey: ['quizScores', quizId, currentPage],
         queryFn: async () => {
             const res = await scoreService.getAllScore(Number(quizId), {page: currentPage})
-            setCurrentPage(res?.data?.players?.page ?? 1)
-            setTotalPages(res?.data?.players?.total_pages ?? 1)
+            // setCurrentPage(res?.data?.players?.page ?? 1)
+            setTotalPages(res?.data?.players?.last_page ?? 1)
             return res?.data?.players?.data ?? []
         },
         enabled: Boolean(quizId),
