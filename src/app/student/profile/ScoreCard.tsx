@@ -51,12 +51,12 @@ const ExamScoreCard: React.FC<ExamScoreCardProps> = React.memo(({data, onViewSol
     return (
         <article
             className={cn(
-                'w-full rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden',
+                'w-full rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden flex flex-col',
                 className
             )}
             aria-label={`Exam score card for ${data.exam_name}`}
         >
-            <div className="p-4 sm:p-5">
+            <div className="p-4 sm:p-5 flex-1 flex flex-col">
                 <header className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                     <div className="flex-1 min-w-0">
                         <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
@@ -167,7 +167,7 @@ const ExamScoreCard: React.FC<ExamScoreCardProps> = React.memo(({data, onViewSol
                 )}
 
                 {data.submitted_at && (
-                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100 mb-4">
+                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
                         <Calendar className="w-3.5 h-3.5 text-gray-400" aria-hidden="true"/>
                         <time
                             dateTime={data.submitted_at}
@@ -182,13 +182,15 @@ const ExamScoreCard: React.FC<ExamScoreCardProps> = React.memo(({data, onViewSol
                     </div>
                 )}
 
+                <div className="flex-1"></div>
+
                 {onViewSolutionAction && (
-                    <div className="flex justify-end pt-3 border-t border-gray-100">
+                    <div className="flex justify-end pt-3 border-t border-gray-100 mt-auto">
                         <Button
                             onClick={() => onViewSolutionAction(data.exam_id)}
                             variant="default"
                             size="sm"
-                            className="gap-2"
+                            className="gap-2 bg-green-600"
                         >
                             <FileText className="w-4 h-4" />
                             View Solutions

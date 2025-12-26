@@ -14,7 +14,7 @@ import {MdWarningAmber} from 'react-icons/md';
 import {EXAM_DURATION_SECONDS} from '@/lib/examDurations';
 import {FormatExamTime} from "@/lib/utils";
 import CustomPagination from "@/components/Pagination";
-import {SOLUTIONS_ROUTE} from "@/config/app-constant";
+import {SOLUTIONS_ROUTE, STUDENT_SCORE_ROUTE} from "@/config/app-constant";
 
 export default function GetMockTestById({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
@@ -183,7 +183,7 @@ export default function GetMockTestById({params}: { params: Promise<{ id: number
             const res = await mockTestService.submitExam(payload);
             console.log('Mock Quiz submitted:', res?.data);
 
-            router.push(`${SOLUTIONS_ROUTE}/${idNumber}`);
+            router.push(`${STUDENT_SCORE_ROUTE}/${idNumber}`);
         } catch (err) {
             console.error('Error submitting exam:', err);
             toast.error('Failed to submit exam');

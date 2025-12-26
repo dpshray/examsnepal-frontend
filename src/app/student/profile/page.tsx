@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import {useCallback, useEffect, useState} from "react"
 import {useForm} from "react-hook-form"
 import {Button} from "@/components/ui/button"
 import {Card, CardContent} from "@/components/ui/card"
@@ -14,6 +14,8 @@ import {toast} from "sonner"
 import ExamScoreCard from "@/app/student/profile/ScoreCard"
 import scoreService from "@/services/score.service"
 import {AlertCircle, Loader2} from "lucide-react"
+import {useRouter} from "next/navigation";
+import {SOLUTIONS_ROUTE} from "@/config/app-constant";
 
 type ProfileFormData = {
     name: string
@@ -104,6 +106,7 @@ export default function ProfilePage() {
     const [examScores, setExamScores] = useState<ExamScore[]>([])
     const [scoreLoading, setScoreLoading] = useState(true)
     const [scoreError, setScoreError] = useState<string | null>(null)
+    const router = useRouter()
 
     const {
         register,
@@ -194,6 +197,9 @@ export default function ProfilePage() {
         })
         setIsEditing(false)
     }
+    const handleViewSolution = useCallback(async (examId: number) => {
+        router.push(`${SOLUTIONS_ROUTE}/${examId}`)
+    }, [router])
 
     if (loading) {
         return <ProfileSkeleton />
@@ -212,6 +218,7 @@ export default function ProfilePage() {
             </div>
         )
     }
+
 
     return (
         <div className="min-h-screen flex flex-col bg-gray-50">
@@ -397,7 +404,9 @@ export default function ProfilePage() {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                             {examScores.map((exam) => (
-                                <ExamScoreCard key={exam.exam_id} data={exam}/>
+                                <ExamScoreCard key={exam.exam_id}
+                                               onViewSolutionAction={() =>handleViewSolution(exam.exam_id)}
+                                               data={exam}/>
                             ))}
                         </div>
                     )}
