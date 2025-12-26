@@ -19,7 +19,7 @@ import {
 import { useGetExamDetails, useStartExam } from "@/hooks/useCorporateExam";
 import { useGetExamType } from "@/hooks/useCorporateExam";
 import { toast } from "sonner";
-import { formatTime } from "@/lib/utils";
+import { FormatExamTime } from "@/lib/utils";
 
 export default function InstructionsPage() {
   const router = useRouter();
@@ -104,7 +104,7 @@ export default function InstructionsPage() {
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
               <Clock className="h-4 w-4" />
-              <span className="font-medium">{formatTime(examData.start_time)} - {formatTime(examData.end_time)}</span>
+              <span className="font-medium">{FormatExamTime(examData.start_time)} - {FormatExamTime(examData.end_time)}</span>
             </div>
           </div>
         </div>

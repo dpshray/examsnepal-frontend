@@ -8,13 +8,14 @@ const axiosInstance = axios.create({
     timeout: 10000,
     maxRedirects: 5,
 });
+
 axiosInstance.interceptors.request.use(
     (config: any) => {
-        //TODO
+        console.log("➡️ FULL REQUEST URL:", config.baseURL + config.url);
         return config;
     },
     (error: AxiosError) => {
-        console.error("Request Error:", error);
+        console.error("Request Error from axios:", error);
         return Promise.reject(error);
     }
 );

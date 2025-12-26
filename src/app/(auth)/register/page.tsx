@@ -1,17 +1,17 @@
 'use client'
 
-import {ArrowLeft, Loader2} from "lucide-react"
+import { ArrowLeft, Loader2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import {Button} from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 import TextInputField from "@/components/fields/TextInputField"
 import PasswordInputField from "@/components/fields/PasswordInput"
 import SelectInputField from "@/components/fields/SelectInput"
-import {registrationSchema} from "@/schema/authSchema"
-import {useForm} from "react-hook-form"
-import {yupResolver} from "@hookform/resolvers/yup"
-import {authService} from "@/app/(auth)/authService"
-import {useCallback, useEffect, useState} from "react"
+import { registrationSchema } from "@/schema/authSchema"
+import { useForm } from "react-hook-form"
+import { yupResolver } from "@hookform/resolvers/yup"
+import { authService } from "@/app/(auth)/authService"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
@@ -23,7 +23,7 @@ export default function RegistrationForm() {
     const {
         register,
         handleSubmit,
-        formState: {errors, isSubmitting},
+        formState: { errors, isSubmitting },
         setValue,
     } = useForm({
         resolver: yupResolver(registrationSchema),
@@ -38,6 +38,7 @@ export default function RegistrationForm() {
                 router.push("/login")
             }
         } catch (error: any) {
+            console.log(error)
             toast.error(error?.response?.data?.message || "Registration failed")
         }
     }
@@ -77,7 +78,7 @@ export default function RegistrationForm() {
                                 className="gap-2 text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
                                 aria-label="Go back to homepage"
                             >
-                                <ArrowLeft className="h-4 w-4"/>
+                                <ArrowLeft className="h-4 w-4" />
                                 Go Home
                             </Button>
                         </Link>
@@ -149,7 +150,7 @@ export default function RegistrationForm() {
                             aria-label="Submit registration"
                             disabled={isSubmitting}
                         >
-                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : "Register"}
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Register"}
                         </Button>
                     </form>
 
