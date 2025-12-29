@@ -11,7 +11,7 @@ import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert"
 import studentService from "@/services/StudentService"
 import {useLoggedInStudent} from "@/hooks/useLoggedInStudent"
 import {toast} from "sonner"
-import ExamScoreCard from "@/app/student/profile/ScoreCard"
+import ExamScoreCard from "@/app/student/scores/[quizId]/ScoreCard"
 import scoreService from "@/services/score.service"
 import {AlertCircle, Loader2} from "lucide-react"
 import {useRouter} from "next/navigation";
