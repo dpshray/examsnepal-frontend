@@ -4,7 +4,7 @@ import {useParams, useRouter} from 'next/navigation'
 import {useQuery} from '@tanstack/react-query'
 import {AlertCircle, Award, Medal, TrendingUp, Trophy} from 'lucide-react'
 import scoreService from '@/services/score.service'
-import ExamScoreCard from '@/app/student/profile/ScoreCard'
+import ExamScoreCard from '@/app/student/scores/[quizId]/ScoreCard'
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import CustomPagination from "@/components/Pagination"
 import {useCallback, useMemo, useState} from "react"
@@ -38,6 +38,8 @@ type OwnScore = {
     full_marks?: number
 }
 
+const PAGE_SIZE = 10
+
 const getRankIcon = (rank: number) => {
     const icons = {
         1: <Trophy className="w-5 h-5 text-yellow-500" aria-label="First place"/>,
@@ -47,17 +49,23 @@ const getRankIcon = (rank: number) => {
     return icons[rank as keyof typeof icons] || null
 }
 
-const PlayerScoreCard = ({player, rank}: { player: PlayerScore; rank: number }) => {
+const PlayerScoreCard = ({player, rank, isTopThree}: { player: PlayerScore; rank: number; isTopThree?: boolean }) => {
     const marks = player.solutions?.marks ?? 0
     const fullMarks = player.solutions?.full_marks ?? 100
 
     return (
         <article
-            className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-white rounded-lg border border-gray-200 hover:border-primary/50 hover:shadow-md transition-all duration-200"
+            className={`flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border transition-all duration-200 ${
+                isTopThree
+                    ? 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 shadow-md'
+                    : 'bg-white border-gray-200 hover:border-primary/50 hover:shadow-md'
+            }`}
             aria-label={`${player.name} - Rank ${rank}`}
         >
             <div
-                className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-muted font-semibold text-sm sm:text-base shrink-0"
+                className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full font-semibold text-sm sm:text-base shrink-0 ${
+                    isTopThree ? 'bg-white shadow-sm' : 'bg-muted'
+                }`}
                 aria-label={`Rank ${rank}`}
             >
                 {rank <= 3 ? getRankIcon(rank) : rank}
@@ -128,11 +136,25 @@ export default function ScorePage() {
         setCurrentPage(page)
     }, [])
 
+    const {data: topThreeData, isLoading: topThreeLoading} = useQuery<PlayerScore[]>({
+        queryKey: ['topThreeScores', quizId],
+        queryFn: async () => {
+            const res = await scoreService.getAllScore(Number(quizId), {page: 1})
+            const allPlayers = res?.data?.players?.data ?? []
+            const sorted = [...allPlayers].sort((a, b) => {
+                const marksA = a.solutions?.marks ?? 0
+                const marksB = b.solutions?.marks ?? 0
+                return marksB - marksA
+            })
+            return sorted.slice(0, 3)
+        },
+        enabled: Boolean(quizId),
+    })
+
     const {data: allScore, isLoading: leaderboardLoading} = useQuery<PlayerScore[]>({
         queryKey: ['quizScores', quizId, currentPage],
         queryFn: async () => {
             const res = await scoreService.getAllScore(Number(quizId), {page: currentPage})
-            // setCurrentPage(res?.data?.players?.page ?? 1)
             setTotalPages(res?.data?.players?.last_page ?? 1)
             return res?.data?.players?.data ?? []
         },
@@ -164,9 +186,18 @@ export default function ScorePage() {
         })
     }, [allScore])
 
+    const displayScores = useMemo(() => {
+        if (currentPage === 1) {
+            return sortedScores
+        }
+
+        const topThreeIds = new Set(topThreeData?.map(p => p.id) ?? [])
+        return sortedScores.filter(player => !topThreeIds.has(player.id))
+    }, [currentPage, sortedScores, topThreeData])
+
     const handleViewSolution = useCallback((examId: number) => {
         router.push(`${SOLUTIONS_ROUTE}/${examId}`)
-    }, [])
+    }, [router])
 
     const scoreData = useMemo(() => {
         if (!ownScore) return null
@@ -189,6 +220,8 @@ export default function ScorePage() {
             full_marks: ownScore.full_marks,
         }
     }, [ownScore])
+
+    const isLoadingAny = topThreeLoading || leaderboardLoading
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100/50">
@@ -275,14 +308,36 @@ export default function ScorePage() {
                         </header>
 
                         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm">
-                            {leaderboardLoading ? (
+                            {isLoadingAny ? (
                                 <LoadingSkeleton/>
-                            ) : sortedScores.length > 0 ? (
+                            ) : (topThreeData && topThreeData.length > 0) || displayScores.length > 0 ? (
                                 <>
                                     <div className="space-y-3 sm:space-y-4" role="list">
-                                        {sortedScores.map((player, index) => (
-                                            <PlayerScoreCard key={player.id} player={player} rank={index + 1}/>
+                                        {topThreeData && topThreeData.map((player, index) => (
+                                            <PlayerScoreCard
+                                                key={`top-${player.id}`}
+                                                player={player}
+                                                rank={index + 1}
+                                                isTopThree={true}
+                                            />
                                         ))}
+
+                                        {currentPage === 1 && topThreeData && topThreeData.length > 0 && displayScores.length > 0 && (
+                                            <div className="border-t border-gray-200 my-4" />
+                                        )}
+
+                                        {displayScores.map((player, index) => {
+                                            const absoluteRank = currentPage === 1
+                                                ? (topThreeData?.length ?? 0) + index + 1
+                                                : (currentPage - 1) * PAGE_SIZE + index + 4
+                                            return (
+                                                <PlayerScoreCard
+                                                    key={player.id}
+                                                    player={player}
+                                                    rank={absoluteRank}
+                                                />
+                                            )
+                                        })}
                                     </div>
                                     {totalPages > 1 && (
                                         <nav className="mt-6" aria-label="Leaderboard pagination">
