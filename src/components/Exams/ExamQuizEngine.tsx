@@ -35,7 +35,7 @@ interface QuizResponse {
     total: number
     last_page: number
     duration?: number
-    total_choosed_questions?: number
+    total_choosed_options?: number
     status?: boolean
     message?: string
 }
@@ -86,11 +86,13 @@ export default function ExamQuizEngine({
         if (data?.duration) setTime(data.duration * 60)
     }, [data?.duration])
 
+    console.log('Data',data)
     const questions = useMemo(() => data?.data ?? [], [data])
     const totalPages = data?.last_page ?? 1
     const totalQuestions = data?.total ?? 0
+    const answered = (data?.total_choosed_options ?? 0) + Object.keys(answers).length
 
-    const answered = (data?.total_choosed_questions ?? 0) + Object.keys(answers).length
+    console.log('Answer', answered)
     const progress = totalQuestions ? Math.round((answered / totalQuestions) * 100) : 0
 
     const selectOption = useCallback((qid: number, oid: number) => {
@@ -134,6 +136,7 @@ export default function ExamQuizEngine({
             autoSaveLock.current = false
         }, 500)
     }, [answered, submit])
+
 
     useEffect(() => {
         const interval = setInterval(() => {
