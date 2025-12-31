@@ -9,7 +9,7 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import CustomPagination from "@/components/Pagination"
 import {useCallback, useMemo, useState} from "react"
 import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert"
-import {SOLUTIONS_ROUTE} from "@/config/app-constant";
+import {SOLUTIONS_ROUTE} from "@/config/app-constant"
 
 type PlayerScore = {
     id: number
@@ -313,31 +313,41 @@ export default function ScorePage() {
                             ) : (topThreeData && topThreeData.length > 0) || displayScores.length > 0 ? (
                                 <>
                                     <div className="space-y-3 sm:space-y-4" role="list">
-                                        {topThreeData && topThreeData.map((player, index) => (
-                                            <PlayerScoreCard
-                                                key={`top-${player.id}`}
-                                                player={player}
-                                                rank={index + 1}
-                                                isTopThree={true}
-                                            />
-                                        ))}
+                                        <div className="flex flex-col space-y-3 sm:space-y-4">
+                                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                                                Top 3 Score Board
+                                            </h2>
+                                            {topThreeData && topThreeData.map((player, index) => (
+                                                <PlayerScoreCard
+                                                    key={`top-${player.id}`}
+                                                    player={player}
+                                                    rank={index + 1}
+                                                    isTopThree={true}
+                                                />
+                                            ))}
+                                        </div>
 
                                         {currentPage === 1 && topThreeData && topThreeData.length > 0 && displayScores.length > 0 && (
                                             <div className="border-t border-gray-200 my-4" />
                                         )}
 
-                                        {displayScores.map((player, index) => {
-                                            const absoluteRank = currentPage === 1
-                                                ? (topThreeData?.length ?? 0) + index + 1
-                                                : (currentPage - 1) * PAGE_SIZE + index + 4
-                                            return (
-                                                <PlayerScoreCard
-                                                    key={player.id}
-                                                    player={player}
-                                                    rank={absoluteRank}
-                                                />
-                                            )
-                                        })}
+                                        <div className="flex flex-col space-y-3 sm:space-y-4">
+                                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                                                Leaderboard
+                                            </h3>
+                                            {displayScores.map((player, index) => {
+                                                const absoluteRank = currentPage === 1
+                                                    ? (topThreeData?.length ?? 0) + index + 1
+                                                    : (currentPage - 1) * PAGE_SIZE + index + 4
+                                                return (
+                                                    <PlayerScoreCard
+                                                        key={player.id}
+                                                        player={player}
+                                                        rank={absoluteRank}
+                                                    />
+                                                )
+                                            })}
+                                        </div>
                                     </div>
                                     {totalPages > 1 && (
                                         <nav className="mt-6" aria-label="Leaderboard pagination">
