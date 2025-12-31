@@ -1,21 +1,21 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { AlertCircle, CheckCircle2, Clock, Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import {useCallback, useEffect, useMemo, useRef, useState} from "react"
+import {useQuery} from "@tanstack/react-query"
+import {AlertCircle, CheckCircle2, Clock, Loader2} from "lucide-react"
+import {useRouter} from "next/navigation"
 
-import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
+import {Button} from "@/components/ui/button"
+import {Progress} from "@/components/ui/progress"
+import {Checkbox} from "@/components/ui/checkbox"
+import {Label} from "@/components/ui/label"
+import {cn} from "@/lib/utils"
 import CustomPagination from "@/components/Pagination"
 import ExamQuestionCard from "@/app/student/exams/free-quiz/[id]/ExamQuestionCard"
 import ExamQuestionSkeleton from "@/app/student/exams/free-quiz/[id]/ExamQuestionSkeleton"
 import mockTestService from "@/services/ExamService/MockTest"
-import { toast } from "sonner"
-import { STUDENT_SCORE_ROUTE } from "@/config/app-constant"
+import {toast} from "sonner"
+import {STUDENT_SCORE_ROUTE} from "@/config/app-constant"
 
 export interface QuizOption {
     question_id: number
@@ -35,6 +35,7 @@ interface QuizResponse {
     total: number
     last_page: number
     duration?: number
+    total_choosed_questions?: number
     status?: boolean
     message?: string
 }
@@ -55,14 +56,14 @@ interface ExamQuizEngineProps {
 }
 
 export default function ExamQuizEngine({
-    examId,
-    title,
-    subtitle,
-    duration = 30,
-    termsRoute,
-    onFetchQuestionsAction,
-    onSubmitAction
-}: ExamQuizEngineProps) {
+                                           examId,
+                                           title,
+                                           subtitle,
+                                           duration = 30,
+                                           termsRoute,
+                                           onFetchQuestionsAction,
+                                           onSubmitAction
+                                       }: ExamQuizEngineProps) {
     const router = useRouter()
     const [page, setPage] = useState(1)
     const [answers, setAnswers] = useState<Record<number, number>>({})
@@ -73,12 +74,12 @@ export default function ExamQuizEngine({
     const autoSaveLock = useRef(false)
     const finalSubmitted = useRef(false)
 
-    const { data, isLoading, isError, error } = useQuery<QuizResponse>({
+    const {data, isLoading, isError, error} = useQuery<QuizResponse>({
         queryKey: ["exam-quiz", examId, page],
         queryFn: () => onFetchQuestionsAction(examId, page),
         enabled: Number.isFinite(examId),
         retry: 1,
-        staleTime: 5 * 60 * 1000
+        refetchOnWindowFocus: true,
     })
 
     useEffect(() => {
@@ -89,11 +90,11 @@ export default function ExamQuizEngine({
     const totalPages = data?.last_page ?? 1
     const totalQuestions = data?.total ?? 0
 
-    const answered = Object.keys(answers).length
+    const answered = (data?.total_choosed_questions ?? 0) + Object.keys(answers).length
     const progress = totalQuestions ? Math.round((answered / totalQuestions) * 100) : 0
 
     const selectOption = useCallback((qid: number, oid: number) => {
-        setAnswers(prev => ({ ...prev, [qid]: oid }))
+        setAnswers(prev => ({...prev, [qid]: oid}))
     }, [])
 
     const submit = useCallback(
@@ -157,7 +158,7 @@ export default function ExamQuizEngine({
 
     const handlePageChange = useCallback((p: number) => {
         setPage(p)
-        window.scrollTo({ top: 0, behavior: "smooth" })
+        window.scrollTo({top: 0, behavior: "smooth"})
     }, [])
 
     const formatTime = useCallback((seconds: number) => {
@@ -176,28 +177,28 @@ export default function ExamQuizEngine({
             <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
                 <header className="bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow">
                     <div className="max-w-7xl mx-auto px-4 py-6">
-                        <div className="h-7 w-64 bg-white/20 rounded animate-pulse mb-2" />
-                        <div className="h-4 w-48 bg-white/20 rounded animate-pulse" />
+                        <div className="h-7 w-64 bg-white/20 rounded animate-pulse mb-2"/>
+                        <div className="h-4 w-48 bg-white/20 rounded animate-pulse"/>
                     </div>
                 </header>
 
                 <div className="bg-white border-b">
                     <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row gap-4">
                         <div className="flex gap-3 items-center">
-                            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
-                            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"/>
+                            <div className="h-8 w-20 bg-gray-200 rounded animate-pulse"/>
                         </div>
                         <div className="flex-1 flex items-center">
-                            <div className="h-2 flex-1 bg-gray-200 rounded animate-pulse" />
+                            <div className="h-2 flex-1 bg-gray-200 rounded animate-pulse"/>
                         </div>
                     </div>
                 </div>
 
                 <main className="max-w-7xl mx-auto px-4 py-6 space-y-4" role="main" aria-busy="true"
-                    aria-label="Loading exam questions">
-                    <ExamQuestionSkeleton />
-                    <ExamQuestionSkeleton />
-                    <ExamQuestionSkeleton />
+                      aria-label="Loading exam questions">
+                    <ExamQuestionSkeleton/>
+                    <ExamQuestionSkeleton/>
+                    <ExamQuestionSkeleton/>
                 </main>
             </div>
         )
@@ -210,8 +211,8 @@ export default function ExamQuizEngine({
             <div
                 className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4">
                 <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center space-y-4" role="alert"
-                    aria-live="assertive">
-                    <AlertCircle className="h-12 w-12 text-red-600 mx-auto" aria-hidden="true" />
+                     aria-live="assertive">
+                    <AlertCircle className="h-12 w-12 text-red-600 mx-auto" aria-hidden="true"/>
                     <h2 className="text-xl font-bold text-gray-900">Exam Not Available</h2>
                     <p className="text-sm text-gray-600">{errorMessage}</p>
                     <Button onClick={() => window.history.back()} className="w-full bg-green-600 hover:bg-green-700">
@@ -235,12 +236,13 @@ export default function ExamQuizEngine({
                 <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row gap-4">
                     <div className="flex gap-3 items-center">
                         <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded border" role="status"
-                            aria-label={`${answered} of ${totalQuestions} questions answered`}>
-                            <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
+                             aria-label={`${answered} of ${totalQuestions} questions answered`}>
+                            <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true"/>
                             <span className="text-sm font-semibold">
                                 {answered}/{totalQuestions}
                             </span>
                         </div>
+
                         <div
                             className={cn(
                                 "flex items-center gap-2 px-3 py-1.5 rounded border",
@@ -251,7 +253,7 @@ export default function ExamQuizEngine({
                             aria-live="polite"
                         >
                             <Clock className={cn("h-4 w-4", isLowTime ? "text-red-600" : "text-gray-600")}
-                                aria-hidden="true" />
+                                   aria-hidden="true"/>
                             <span className="font-mono font-bold text-sm">
                                 {formatTime(time)}
                             </span>
@@ -259,11 +261,10 @@ export default function ExamQuizEngine({
                     </div>
                     <div className="flex-1">
                         <Progress value={progress}
-                            className={cn("h-3 rounded-full",
-                                '[&>div]:bg-green-500'
-
-                            )}
-                            aria-label={`Exam progress: ${progress}%`} />
+                                  className={cn("h-3 rounded-full",
+                                      '[&>div]:bg-green-500'
+                                  )}
+                                  aria-label={`Exam progress: ${progress}%`}/>
                     </div>
                 </div>
             </div>
@@ -275,9 +276,9 @@ export default function ExamQuizEngine({
                         questionNumber={i + 1 + (page - 1) * questions.length}
                         questionText={q.question}
                         options={q.options}
-                        selectedValue={answers[q.id]}
+                        selectedValue={answers[q.id] ?? q.user_choosed}
                         onSelectAction={v => selectOption(q.id, v)}
-                        user_choosed={q.user_choosed}
+
                     />
                 ))}
 
@@ -296,7 +297,7 @@ export default function ExamQuizEngine({
                             <Label htmlFor="terms-checkbox" id="terms-label" className="text-sm cursor-pointer">
                                 I agree to the{" "}
                                 <a href={termsRoute} target="_blank" rel="noopener noreferrer"
-                                    className="underline text-green-600 hover:text-green-700">
+                                   className="underline text-green-600 hover:text-green-700">
                                     terms of service
                                 </a>
                             </Label>
@@ -309,7 +310,7 @@ export default function ExamQuizEngine({
                         >
                             {submitting ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
+                                    <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true"/>
                                     <span>Submitting...</span>
                                 </>
                             ) : (
