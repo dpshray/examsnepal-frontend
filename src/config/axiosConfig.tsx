@@ -1,4 +1,4 @@
-import axios, {AxiosError} from "axios";
+import axios, { AxiosError } from "axios";
 
 const axiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -11,7 +11,11 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     (config: any) => {
-        console.log("➡️ FULL REQUEST URL:", config.baseURL + config.url);
+        const params = config.params
+        const query = params
+            ? `?${new URLSearchParams(params).toString()}`
+            : ""
+        console.log("➡️ FULL REQUEST URL:", config.baseURL + config.url + query);
         return config;
     },
     (error: AxiosError) => {
@@ -25,6 +29,13 @@ axiosInstance.interceptors.response.use(
         return config;
     },
     (error: any) => {
+        console.error("Response Error from axios:", error);
+        if (error.status === 401 && typeof window !== "undefined") {
+            localStorage.removeItem("_at");
+            localStorage.removeItem("_role");
+            window.location.href = "/login";
+
+        }
 
         return Promise.reject(error?.response);
     }

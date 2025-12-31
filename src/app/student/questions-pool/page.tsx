@@ -3,14 +3,14 @@
 import {useEffect, useRef, useState} from 'react';
 import {toast} from 'sonner';
 import {StudentBannerHeader} from '@/components/banner/header';
-import {QuestionCard, QuestionCardSkeleton} from '@/components/Exams/QuestionCard';
+import {QuestionCardSkeleton, QuestionSolutionCard} from '@/components/Exams/QuestionCard';
 import {Button} from '@/components/ui/button';
 import {Progress} from '@/components/ui/progress';
 import studentService from '@/services/StudentService';
 import StudentScoreCard from '@/components/card/StudentScoreCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, CreditCard, TrendingUp } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {AlertTriangle, CreditCard, TrendingUp} from 'lucide-react';
+import {Alert, AlertDescription} from '@/components/ui/alert';
 import Link from 'next/link';
 
 interface Option {
@@ -48,37 +48,37 @@ const ErrorComponent = ({
                         }: ErrorComponentProps) => (
     <section className=" w-full max-w-7xl mx-auto font-poppins text-center">
         <Card className="border-destructive/20 bg-destructive/5">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              <AlertTriangle className="size-12 text-destructive" />
-            </div>
-            <CardTitle className="text-2xl font-bold text-destructive">{title}</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center space-y-6">
-            <Alert>
-              <AlertTriangle className="size-4" />
-              <AlertDescription className="text-base">{message}</AlertDescription>
-            </Alert>
+            <CardHeader className="text-center">
+                <div className="flex justify-center mb-4">
+                    <AlertTriangle className="size-12 text-destructive"/>
+                </div>
+                <CardTitle className="text-2xl font-bold text-destructive">{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-6">
+                <Alert>
+                    <AlertTriangle className="size-4"/>
+                    <AlertDescription className="text-base">{message}</AlertDescription>
+                </Alert>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={onViewScoreAction}
-                disabled={isScoreLoading || allStudentsScore.length > 0}
-                size="lg"
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <TrendingUp className="size-4" />
-                {isScoreLoading ? "Loading..." : "View Score"}
-              </Button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Button
+                        onClick={onViewScoreAction}
+                        disabled={isScoreLoading || allStudentsScore.length > 0}
+                        size="lg"
+                        className="bg-green-600 hover:bg-green-700"
+                    >
+                        <TrendingUp className="size-4"/>
+                        {isScoreLoading ? "Loading..." : "View Score"}
+                    </Button>
 
-              <Button asChild variant="outline" size="lg">
-                <Link href="/student/subscription">
-                  <CreditCard className="size-4" />
-                  Upgrade Subscription
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
+                    <Button asChild variant="outline" size="lg">
+                        <Link href="/student/subscription">
+                            <CreditCard className="size-4"/>
+                            Upgrade Subscription
+                        </Link>
+                    </Button>
+                </div>
+            </CardContent>
         </Card>
 
 
@@ -242,7 +242,7 @@ export default function QuestionsPool() {
                     <QuestionCardSkeleton/>
                 ) : question ? (
                     <div className="shadow-md p-4 bg-white">
-                        <QuestionCard
+                        <QuestionSolutionCard
                             className="bg-transparent border-none shadow-none"
                             questionNumber={questionCount}
                             questionText={question.question}

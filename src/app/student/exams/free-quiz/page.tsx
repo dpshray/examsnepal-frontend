@@ -200,6 +200,7 @@ export default function FreeQuiz() {
                                 {currentData.last_page > 1 && (
                                     <div className="flex justify-center mt-8">
                                         <CustomPagination
+                                            className={'justify-end'}
                                             totalPages={currentData.last_page}
                                             currentPage={currentPage}
                                             onPageChangeAction={setCurrentPage}
@@ -250,6 +251,7 @@ export default function FreeQuiz() {
                                 {currentData.last_page > 1 && (
                                     <div className="flex justify-center mt-8">
                                         <CustomPagination
+                                            className={'justify-end'}
                                             totalPages={currentData.last_page}
                                             currentPage={currentPage}
                                             onPageChangeAction={setCurrentPage}
