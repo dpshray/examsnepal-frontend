@@ -1,111 +1,137 @@
-"use client"
-import React from "react"
+"use client";
+
+import {
+    ChevronFirstIcon,
+    ChevronLastIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+} from "lucide-react";
+
 import {
     Pagination,
     PaginationContent,
     PaginationEllipsis,
     PaginationItem,
     PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination"
-import {cn} from "@/lib/utils";
+} from "@/components/ui/pagination";
+import { memo, useCallback } from "react";
+import { usePagination } from "@/hooks/usePagination";
 
 interface CustomPaginationProps {
-    currentPage: number
-    totalPages: number
-    onPageChangeAction: (page: number) => void
-    maxPagesToShow?: number
-    className?: string
+    currentPage: number;
+    totalPages: number;
+    onPageChangeAction: (page: number) => void;
+    maxPagesToShow?: number;
+    className?: string;
 }
 
-export default function CustomPagination({
-                                             currentPage,
-                                             totalPages,
-                                             onPageChangeAction,
-                                             maxPagesToShow = 5,
-                                             className
-                                         }: CustomPaginationProps) {
-    const getPageNumbers = () => {
-        const pageNumbers: number[] = []
-        let startPage = Math.max(1, currentPage - Math.floor(maxPagesToShow / 2))
-        const endPage = Math.min(totalPages, startPage + maxPagesToShow - 1)
+const CustomPagination = memo(function CustomPagination({
+                                                            currentPage,
+                                                            totalPages,
+                                                            onPageChangeAction,
+                                                            maxPagesToShow = 5,
+                                                            className = "",
+                                                        }: CustomPaginationProps) {
+    const { pages, showLeftEllipsis, showRightEllipsis } = usePagination({
+        currentPage,
+        paginationItemsToDisplay: maxPagesToShow,
+        totalPages,
+    });
 
-        if (endPage - startPage + 1 < maxPagesToShow) {
-            startPage = Math.max(1, endPage - maxPagesToShow + 1)
-        }
+    const handlePageClick = useCallback(
+        (page: number) => {
+            if (page !== currentPage && page >= 1 && page <= totalPages) {
+                onPageChangeAction(page);
+            }
+        },
+        [currentPage, totalPages, onPageChangeAction]
+    );
 
-        for (let i = startPage; i <= endPage; i++) {
-            pageNumbers.push(i)
-        }
-        return pageNumbers
+    if (totalPages <= 1) {
+        return null;
     }
 
-    const pageNumbers = getPageNumbers()
+    const isFirstPage = currentPage === 1;
+    const isLastPage = currentPage === totalPages;
 
     return (
-        <Pagination className={cn('justify-end', className)}>
-            <PaginationContent>
+        <Pagination className={className}>
+            <PaginationContent className="flex-wrap gap-2">
                 <PaginationItem>
-                    <PaginationPrevious
-                        onClick={() => {
-                            if (currentPage > 1) onPageChangeAction(currentPage - 1)
-                        }}
-                        aria-disabled={currentPage === 1}
-                        aria-label="Previous page"
-                        tabIndex={currentPage === 1 ? -1 : undefined}
-                    />
+                    <PaginationLink
+                        aria-disabled={isFirstPage}
+                        aria-label="Go to first page"
+                        className="aria-disabled:pointer-events-none aria-disabled:opacity-40 hover:bg-green-50 hover:border-green-500 aria-disabled:hover:bg-transparent aria-disabled:hover:border-gray-300 h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg transition-all duration-200"
+                        onClick={() => handlePageClick(1)}
+                        tabIndex={isFirstPage ? -1 : 0}
+                    >
+                        <ChevronFirstIcon aria-hidden="true" className="h-4 w-4" />
+                    </PaginationLink>
                 </PaginationItem>
 
-                {pageNumbers[0] > 1 && (
-                    <>
-                        <PaginationItem>
-                            <PaginationLink onClick={() => onPageChangeAction(1)}>1</PaginationLink>
-                        </PaginationItem>
-                        {pageNumbers[0] > 2 && (
-                            <PaginationItem>
-                                <PaginationEllipsis/>
-                            </PaginationItem>
-                        )}
-                    </>
+                <PaginationItem>
+                    <PaginationLink
+                        aria-disabled={isFirstPage}
+                        aria-label="Go to previous page"
+                        className="aria-disabled:pointer-events-none aria-disabled:opacity-40 hover:bg-green-50 hover:border-green-500 aria-disabled:hover:bg-transparent aria-disabled:hover:border-gray-300 h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg transition-all duration-200"
+                        onClick={() => handlePageClick(currentPage - 1)}
+                        tabIndex={isFirstPage ? -1 : 0}
+                    >
+                        <ChevronLeftIcon aria-hidden="true" className="h-4 w-4" />
+                    </PaginationLink>
+                </PaginationItem>
+
+                {showLeftEllipsis && (
+                    <PaginationItem>
+                        <PaginationEllipsis className="h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg flex items-center justify-center" />
+                    </PaginationItem>
                 )}
 
-                {pageNumbers.map((page) => (
+                {pages.map((page) => (
                     <PaginationItem key={page}>
                         <PaginationLink
-                            onClick={() => onPageChangeAction(page)}
-                            isActive={currentPage === page}
-                            aria-current={currentPage === page ? "page" : undefined}
+                            isActive={page === currentPage}
+                            onClick={() => handlePageClick(page)}
+                            aria-current={page === currentPage ? "page" : undefined}
+                            className="h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg hover:bg-green-50 hover:border-green-500 data-[active=true]:bg-green-500 data-[active=true]:text-white data-[active=true]:border-green-500 data-[active=true]:hover:bg-green-600 transition-all duration-200 font-medium"
                         >
                             {page}
                         </PaginationLink>
                     </PaginationItem>
                 ))}
 
-                {pageNumbers[pageNumbers.length - 1] < totalPages && (
-                    <>
-                        {pageNumbers[pageNumbers.length - 1] < totalPages - 1 && (
-                            <PaginationItem>
-                                <PaginationEllipsis/>
-                            </PaginationItem>
-                        )}
-                        <PaginationItem>
-                            <PaginationLink onClick={() => onPageChangeAction(totalPages)}>{totalPages}</PaginationLink>
-                        </PaginationItem>
-                    </>
+                {showRightEllipsis && (
+                    <PaginationItem>
+                        <PaginationEllipsis className="h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg flex items-center justify-center" />
+                    </PaginationItem>
                 )}
 
                 <PaginationItem>
-                    <PaginationNext
-                        onClick={() => {
-                            if (currentPage < totalPages) onPageChangeAction(currentPage + 1)
-                        }}
-                        aria-disabled={currentPage === totalPages}
-                        aria-label="Next page"
-                        tabIndex={currentPage === totalPages ? -1 : undefined}
-                    />
+                    <PaginationLink
+                        aria-disabled={isLastPage}
+                        aria-label="Go to next page"
+                        className="aria-disabled:pointer-events-none aria-disabled:opacity-40 hover:bg-green-50 hover:border-green-500 aria-disabled:hover:bg-transparent aria-disabled:hover:border-gray-300 h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg transition-all duration-200"
+                        onClick={() => handlePageClick(currentPage + 1)}
+                        tabIndex={isLastPage ? -1 : 0}
+                    >
+                        <ChevronRightIcon aria-hidden="true" className="h-4 w-4" />
+                    </PaginationLink>
+                </PaginationItem>
+
+                <PaginationItem>
+                    <PaginationLink
+                        aria-disabled={isLastPage}
+                        aria-label="Go to last page"
+                        className="aria-disabled:pointer-events-none aria-disabled:opacity-40 hover:bg-green-50 hover:border-green-500 aria-disabled:hover:bg-transparent aria-disabled:hover:border-gray-300 h-9 w-9 sm:h-10 sm:w-10 border border-gray-300 rounded-lg transition-all duration-200"
+                        onClick={() => handlePageClick(totalPages)}
+                        tabIndex={isLastPage ? -1 : 0}
+                    >
+                        <ChevronLastIcon aria-hidden="true" className="h-4 w-4" />
+                    </PaginationLink>
                 </PaginationItem>
             </PaginationContent>
         </Pagination>
-    )
-}
+    );
+});
+
+export default CustomPagination;

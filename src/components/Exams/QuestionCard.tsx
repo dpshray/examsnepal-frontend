@@ -43,19 +43,19 @@ type QuestionCardProps = {
 };
 
 
-export const QuestionCard = ({
-                                 questionNumber,
-                                 questionText,
-                                 options,
-                                 onSelect,
-                                 selectedValue,
-                                 showFeedback,
-                                 correctAnswers,
-                                 explanation,
-                                 disabled = false,
-                                 id,
-                                 className
-                             }: QuestionCardProps) => {
+export const QuestionSolutionCard = ({
+                                         questionNumber,
+                                         questionText,
+                                         options,
+                                         onSelect,
+                                         selectedValue,
+                                         showFeedback,
+                                         correctAnswers,
+                                         explanation,
+                                         disabled = false,
+                                         id,
+                                         className
+                                     }: QuestionCardProps) => {
     const questionId = `question-${questionNumber}`;
     const [explanationVisible, setExplanationVisible] = useState(false);
     const handleExplanation = () => {

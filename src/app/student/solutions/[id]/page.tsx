@@ -1,11 +1,12 @@
 'use client';
 import {use, useCallback, useEffect, useState} from "react";
 import examService from "@/services/ExamService/ExamService";
-import {QuestionCard} from "@/components/Exams/QuestionCard";
+
 import {StudentBannerHeader} from "@/components/banner/header";
 import {Button} from "@/components/ui/button";
 import {router} from "next/client";
 import LogoLoading from "@/lib/LogoLoading";
+import {QuestionSolutionCard} from "@/components/Exams/QuestionCard";
 
 export default function ViewSolution({params}: { params: Promise<{ id: number }> }) {
     const {id} = use(params);
@@ -93,7 +94,7 @@ export default function ViewSolution({params}: { params: Promise<{ id: number }>
                                     ? String(question.user_choosed)
                                     : undefined;
                                 return (
-                                    <QuestionCard key={question.id} questionNumber={(currentPage - 1) * 10 + index + 1}
+                                    <QuestionSolutionCard key={question.id} questionNumber={(currentPage - 1) * 10 + index + 1}
                                                   questionText={question?.question}
                                                   options={options}
                                                   selectedValue={selectedAnswer}
