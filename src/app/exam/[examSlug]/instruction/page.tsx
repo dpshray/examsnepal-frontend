@@ -5,9 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Clock,
-  FileText,
   AlertCircle,
-  Loader2,
   ClipboardList,
   RotateCcw,
   ShieldCheck,
@@ -15,11 +13,14 @@ import {
   Info,
   BookOpen,
   ArrowRight,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { useGetExamDetails, useStartExam } from "@/hooks/useCorporateExam";
 import { useGetExamType } from "@/hooks/useCorporateExam";
 import { toast } from "sonner";
-import { FormatExamTime } from "@/lib/utils";
+import { formatStudentExamTime } from "@/lib/utils";
+import InstructionsSkeleton from "@/components/skeleton/InstructionsSkeleton";
 
 export default function InstructionsPage() {
   const router = useRouter();
@@ -49,9 +50,9 @@ export default function InstructionsPage() {
 
     startExam({ examSlug, sectionSlug: selectedSection, type: examType },  {
       onSuccess: (response) => {
-        console.log("Success response:", response);
+        // console.log("Success response:", response);
         const attemptId = response.data.attempt_id;
-        console.log("attemptId", attemptId);
+        // console.log("attemptId", attemptId);
         router.push(`/exam/${examSlug}/attempt/${attemptId}`);
         toast.success("Exam started successfully!");
       },
@@ -64,14 +65,7 @@ export default function InstructionsPage() {
   const isLoading = isLoadingType || isLoadingDetails;
 
   if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-green-600 mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading exam details...</p>
-        </div>
-      </div>
-    );
+    return <InstructionsSkeleton />
   }
 
   if (!examData) {
@@ -102,10 +96,12 @@ export default function InstructionsPage() {
                 <p className="text-sm text-gray-600">{examData.description}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
-              <Clock className="h-4 w-4" />
-              <span className="font-medium">{FormatExamTime(examData.start_time)} - {FormatExamTime(examData.end_time)}</span>
-            </div>
+            {examData.start_time && examData.end_time && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
+                <Clock className="h-4 w-4" />
+                <span className="font-medium">{formatStudentExamTime(examData.start_time)} - {formatStudentExamTime(examData.end_time)}</span>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -115,32 +111,32 @@ export default function InstructionsPage() {
         <div className="container mx-auto max-w-7xl px-4 py-6 space-y-6">
           {/* Compact Info Grid */}
           <div className="">
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <Clock className="h-4 w-4" />
-                  <span className="text-2xl font-bold">{examData.duration}</span>
+                  <span className="text-base sm:text-2xl font-bold">{examData.duration}</span>
                 </div>
                 <span className="text-xs text-gray-600 uppercase tracking-wider">Minutes</span>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <RotateCcw className="h-4 w-4" />
-                  <span className="text-2xl font-bold">{examData.limit_attempts ?? "Unlimited"}</span>
+                  <span className="text-base sm:text-2xl font-bold">{examData.limit_attempts ?? "Unlimited"}</span>
                 </div>
                 <span className="text-xs text-gray-600 uppercase tracking-wider">Attempts</span>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <ShieldCheck className="h-4 w-4" />
-                  <span className="text-2xl font-bold capitalize">{examData.exam_type}</span>
+                  <span className="text-base sm:text-2xl font-bold capitalize">{examData.exam_type}</span>
                 </div>
                 <span className="text-xs text-gray-600 uppercase tracking-wider">Type</span>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <Layers className="h-4 w-4" />
-                  <span className="text-2xl font-bold">{examData.sections.length}</span>
+                  <span className="text-base sm:text-2xl font-bold">{examData.sections.length}</span>
                 </div>
                 <span className="text-xs text-gray-600 uppercase tracking-wider">Sections</span>
               </div>
@@ -153,7 +149,7 @@ export default function InstructionsPage() {
                   <Info className="h-4 w-4" />
                   Instructions
                 </h2>
-                <p className="text-sm text-gray-700 leading-relaxed border-l-3 border-green-500 pl-4">
+                <p className="text-sm text-gray-700 leading-relaxed border-l-3 border-green-500 pl-4 wrap-break-word">
                   {parseInstructions(examData.instructions)}
                 </p>
               </div>
@@ -210,16 +206,18 @@ export default function InstructionsPage() {
 
       {/* Fixed Footer with Start Button */}
       <footer className="border-t shadow-lg">
-        <div className="container mx-auto max-w-6xl px-6 py-4">
+        <div className="container mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="text-sm">
               {selectedSection ? (
-                <p className="text-green-700 font-medium">
-                  ✓ section selected
+                <p className="flex items-center gap-1.5 text-green-700 font-medium">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Section selected
                 </p>
               ) : (
-                <p className="text-amber-600 font-medium">
-                  ⚠ Please select a section to continue
+                <p className="flex items-center gap-1.5 text-amber-600 font-medium">
+                  <AlertTriangle className="h-4 w-4" />
+                  Please select a section to continue
                 </p>
               )}
             </div>

@@ -36,6 +36,7 @@ export interface QuestionOption {
 
 export interface Question {
   id: number
+  number: number
   section_id: number
   question_type: "mcq" | string
   question: string

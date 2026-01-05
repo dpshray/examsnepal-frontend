@@ -97,7 +97,8 @@ class CorporateExamService extends HttpServices {
             })
             return response?.data
         } catch (error) {
-            console.error(error);
+            console.error("getQuestion error:", error)
+            throw error
         }
     }
 
