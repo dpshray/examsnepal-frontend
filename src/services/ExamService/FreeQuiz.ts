@@ -30,9 +30,9 @@ class FreeQuizServices extends HttpService {
         }
     }
 
-    getFreeQuizById = async (examId:number,params?:any) => {
+    getFreeQuizById = async (examId: number, params?: any) => {
         try {
-            
+
 
             const response = await this.getRequest({
                 url: `/free-quiz/questions/${examId}`,
@@ -44,7 +44,8 @@ class FreeQuizServices extends HttpService {
 
             return response?.data;
         } catch (error: any) {
-            throw error;
+            console.log('getFreeQuizById', error?.data)
+            throw error?.data;
         }
     };
 

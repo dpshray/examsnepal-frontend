@@ -17,6 +17,7 @@ import {MOCK_TEST_ROUTE, SOLUTIONS_ROUTE, STUDENT_SCORE_ROUTE} from "@/config/ap
 interface MetaData {
     totalPages: number;
     currentPage: number;
+
     [key: string]: any;
 }
 
@@ -32,9 +33,10 @@ export default function MockTestPage() {
         queryKey: ['pendingQuizzes', pendingPage],
         queryFn: async () => {
             const response = await mockTestService.getPendingMockTests(pendingPage);
+            console.log(response.data?.last_page);
             return {
                 data: response.data.data,
-                totalPages: Math.ceil(response?.data?.total / 10),
+                totalPages: response.data?.last_page || 1,
                 currentPage: pendingPage
             };
         },
@@ -49,7 +51,7 @@ export default function MockTestPage() {
             const response = await mockTestService.getCompletedMockTests(completedPage);
             return {
                 data: response.data.data,
-                totalPages: Math.ceil(response?.data?.total / 10),
+                totalPages: response.data?.last_page || 1,
                 currentPage: completedPage
             };
         },
@@ -61,16 +63,16 @@ export default function MockTestPage() {
     useEffect(() => {
         if (selectedTab === QUIZ_TYPES.PENDING) {
             setPendingPage(1);
-            queryClient.invalidateQueries({ queryKey: ['pendingQuizzes'] });
+            queryClient.invalidateQueries({queryKey: ['pendingQuizzes']});
         } else {
             setCompletedPage(1);
-            queryClient.invalidateQueries({ queryKey: ['completedQuizzes'] });
+            queryClient.invalidateQueries({queryKey: ['completedQuizzes']});
         }
     }, [selectedTab, queryClient]);
 
     useEffect(() => {
-        queryClient.invalidateQueries({ queryKey: ['pendingQuizzes'] });
-        queryClient.invalidateQueries({ queryKey: ['completedQuizzes'] });
+        queryClient.invalidateQueries({queryKey: ['pendingQuizzes']});
+        queryClient.invalidateQueries({queryKey: ['completedQuizzes']});
     }, []);
 
     const handleTabChange = (tab: string) => {
@@ -170,6 +172,7 @@ export default function MockTestPage() {
                                 {pendingData && pendingData.totalPages > 1 && (
                                     <div className="flex justify-center mt-6">
                                         <CustomPagination
+                                            className={'justify-end'}
                                             totalPages={pendingData.totalPages}
                                             currentPage={pendingData.currentPage}
                                             onPageChangeAction={handlePageChange}
@@ -209,6 +212,7 @@ export default function MockTestPage() {
                                 {completedData && completedData.totalPages > 1 && (
                                     <div className="flex justify-center mt-6">
                                         <CustomPagination
+                                            className={'justify-end'}
                                             totalPages={completedData.totalPages}
                                             currentPage={completedData.currentPage}
                                             onPageChangeAction={handlePageChange}

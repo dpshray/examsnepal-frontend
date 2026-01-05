@@ -4,7 +4,7 @@ import {GiStethoscope, GiTooth} from 'react-icons/gi';
 import {FaHeartbeat, FaTools} from 'react-icons/fa';
 import {useEffect, useState} from 'react';
 import BannerHeader from '@/components/banner/header';
-import {QuestionCard} from '@/components/Exams/QuestionCard';
+import {QuestionSolutionCard} from '@/components/Exams/QuestionCard';
 import mcqService from '@/services/McqService';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -137,7 +137,7 @@ export default function FindMcq() {
 
                                 return (
                                     <div key={mcq.id} className="">
-                                        <QuestionCard
+                                        <QuestionSolutionCard
                                             questionNumber={mcq.id}
                                             questionText={mcq.question}
                                             options={mcq.options.map((option, idx) => ({

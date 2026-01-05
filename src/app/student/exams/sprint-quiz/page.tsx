@@ -25,9 +25,10 @@ export default function SprintQuiz() {
         queryKey: ['pendingSprintQuizzes', pendingPage],
         queryFn: async () => {
             const res = await sprintQuizServices.getPendingSprintQuizzes(pendingPage);
+            console.log(res.data?.last_page);
             return {
                 data: res.data.data || [],
-                totalPages: res.data.meta?.totalPages || 1,
+                totalPages: res.data?.last_page || 1,
                 currentPage: pendingPage
             };
         },
@@ -41,7 +42,7 @@ export default function SprintQuiz() {
             const res = await sprintQuizServices.getCompleteSprintQuizzes(completedPage);
             return {
                 data: res.data.data || [],
-                totalPages: res.data.meta?.totalPages || 1,
+                totalPages: res.data?.last_page || 1,
                 currentPage: completedPage
             };
         },
@@ -152,8 +153,9 @@ export default function SprintQuiz() {
                                 )}
 
                                 {pendingData && pendingData.totalPages > 1 && (
-                                    <div className="flex justify-center mt-6">
+                                    <div className="flex justify-end mt-8">
                                         <CustomPagination
+                                            className={'justify-end'}
                                             totalPages={pendingData.totalPages}
                                             currentPage={pendingData.currentPage}
                                             onPageChangeAction={handlePageChange}
@@ -190,8 +192,9 @@ export default function SprintQuiz() {
                                 )}
 
                                 {completedData && completedData.totalPages > 1 && (
-                                    <div className="flex justify-center mt-6">
+                                    <div className="flex justify-end mt-8">
                                         <CustomPagination
+                                            className={'justify-end'}
                                             totalPages={completedData.totalPages}
                                             currentPage={completedData.currentPage}
                                             onPageChangeAction={handlePageChange}
