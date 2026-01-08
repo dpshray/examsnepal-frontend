@@ -21,6 +21,7 @@ import { useGetExamType } from "@/hooks/useCorporateExam";
 import { toast } from "sonner";
 import { formatStudentExamTime } from "@/lib/utils";
 import InstructionsSkeleton from "@/components/skeleton/InstructionsSkeleton";
+import { ExamTimer } from "@/components/studentExam/ExamTimer";
 
 export default function InstructionsPage() {
   const router = useRouter();
@@ -39,6 +40,14 @@ export default function InstructionsPage() {
 
   const { mutate: startExam, isPending } = useStartExam();
 
+  // Check if exam has been started by checking localStorage
+  const STORAGE_KEY = `exam_end_time_${examSlug}`;
+  const hasExamStarted = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY) !== null;
+  
+  const examDuration = examData?.duration 
+    ? examData.duration * 60 
+    : 60 * 60;
+
   const handleSectionClick = (sectionSlug: string) => {
     setSelectedSection(sectionSlug);
   };
@@ -50,9 +59,7 @@ export default function InstructionsPage() {
 
     startExam({ examSlug, sectionSlug: selectedSection, type: examType },  {
       onSuccess: (response) => {
-        // console.log("Success response:", response);
         const attemptId = response.data.attempt_id;
-        // console.log("attemptId", attemptId);
         router.push(`/exam/${examSlug}/attempt/${attemptId}`);
         toast.success("Exam started successfully!");
       },
@@ -60,6 +67,11 @@ export default function InstructionsPage() {
         toast.error(err?.data?.message || "Error starting the exam!");
       },
     });
+  };
+
+  const handleTimeUp = () => {
+    toast.error("Time's up! The exam has ended.");
+    // Optionally redirect or take other action
   };
 
   const isLoading = isLoadingType || isLoadingDetails;
@@ -96,12 +108,24 @@ export default function InstructionsPage() {
                 <p className="text-sm text-gray-600">{examData.description}</p>
               </div>
             </div>
-            {examData.start_time && examData.end_time && (
-              <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
-                <Clock className="h-4 w-4" />
-                <span className="font-medium">{formatStudentExamTime(examData.start_time)} - {formatStudentExamTime(examData.end_time)}</span>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Show timer only if exam has started */}
+              {hasExamStarted ? (
+                <ExamTimer 
+                  examSlug={examSlug} 
+                  initialTime={examDuration}
+                  onTimeUp={handleTimeUp}
+                />
+              ) : (
+                // Show original time range if exam hasn't started
+                examData.start_time && examData.end_time && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
+                    <Clock className="h-4 w-4" />
+                    <span className="font-medium">{formatStudentExamTime(examData.start_time)} - {formatStudentExamTime(examData.end_time)}</span>
+                  </div>
+                )
+              )}
+            </div>
           </div>
         </div>
       </header>

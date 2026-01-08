@@ -246,7 +246,7 @@ export default function ExamAttemptPage() {
                 Page {currentPageApi} of {totalPages} · Total {totalQuestions} questions
               </p>
             </div>
-            <ExamTimer attemptId={attemptId} initialTime={examDuration} onTimeUp={handleTimeUp} />
+            <ExamTimer examSlug={examSlug} initialTime={examDuration} onTimeUp={handleTimeUp} />
           </div>
         </div>
       </header>
