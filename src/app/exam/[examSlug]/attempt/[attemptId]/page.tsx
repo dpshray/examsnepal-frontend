@@ -246,7 +246,7 @@ export default function ExamAttemptPage() {
                 Page {currentPageApi} of {totalPages} · Total {totalQuestions} questions
               </p>
             </div>
-            <ExamTimer examSlug={examSlug} initialTime={examDuration} onTimeUp={handleTimeUp} />
+            {/* <ExamTimer attemptId={attemptId} initialTime={examDuration} onTimeUp={handleTimeUp} /> */}
           </div>
         </div>
       </header>
@@ -347,7 +347,7 @@ export default function ExamAttemptPage() {
         </div>
       </div>
 
-      <SubmissionDialog
+      {/* <SubmissionDialog
         open={showSubmitDialog}
         onOpenChange={setShowSubmitDialog}
         attemptId={attemptId}
@@ -357,7 +357,7 @@ export default function ExamAttemptPage() {
         type={examTypeData}
         examSlug={examSlug}
         isTimeUp={isTimeUp}
-      />
+      /> */}
     </div>
   )
 }

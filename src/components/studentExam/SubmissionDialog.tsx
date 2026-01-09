@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { useRouter } from "next/navigation"
 import {
   Dialog,
   DialogContent,
@@ -26,7 +25,9 @@ interface SubmissionDialogProps {
   answers: Map<number, number | string | null>
   type: ExamType
   examSlug: string
-  isTimeUp?: boolean 
+  isTimeUp?: boolean
+  tabSwitchCount: number
+  onSectionSubmitted: () => void
 }
 
 export function SubmissionDialog({
@@ -39,8 +40,9 @@ export function SubmissionDialog({
   type,
   examSlug,
   isTimeUp = false,
+  tabSwitchCount,
+  onSectionSubmitted,
 }: SubmissionDialogProps) {
-  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [autoSubmitCountdown, setAutoSubmitCountdown] = useState(5)
   const submitExamMutation = useSubmitExam()
@@ -57,23 +59,33 @@ export function SubmissionDialog({
     setIsSubmitting(true)
     
     try {
-      await submitExamMutation.mutateAsync({ attemptId, type })
+      // Submit with tab switch count
+      await submitExamMutation.mutateAsync({ 
+        attemptId, 
+        type,
+        data: {
+          tab_switch_count: tabSwitchCount
+        }
+      })
       
-      // Clean up storage after successful submission
-      const timeUpKey = `exam_time_up_${attemptId}`
-      const endTimeKey = `exam_end_time_${attemptId}`
+      toast.success("Section submitted successfully!")
+      
+      // Clean up time up flag for this section
+      const timeUpKey = `exam_time_up_${examSlug}`
       sessionStorage.removeItem(timeUpKey)
-      localStorage.removeItem(endTimeKey)
       
-      router.push(`/exam/${examSlug}/completed`)
-      toast.success("Exam submitted successfully!")
+      // Call the callback to handle section completion
+      onSectionSubmitted()
+      
+      // Close dialog
+      onOpenChange(false)
     } catch (error) {
-      console.error("Failed to submit exam:", error)
-      toast.error("Failed to submit exam. Please try again.")
+      console.error("Failed to submit section:", error)
+      toast.error("Failed to submit section. Please try again.")
       hasSubmittedRef.current = false
       setIsSubmitting(false)
     }
-  }, [attemptId, type, router, submitExamMutation, examSlug, isSubmitting])
+  }, [attemptId, type, tabSwitchCount, submitExamMutation, onSectionSubmitted, onOpenChange, isSubmitting, examSlug])
 
   useEffect(() => {
     if (isTimeUp && open && !hasSubmittedRef.current) {
@@ -106,12 +118,12 @@ export function SubmissionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isTimeUp && <Clock className="h-5 w-5 text-red-600" />}
-            {isTimeUp ? "Time's Up!" : "Submit Exam?"}
+            {isTimeUp ? "Time's Up!" : "Submit Section?"}
           </DialogTitle>
           <DialogDescription>
             {isTimeUp
-              ? "Your exam time has expired. Your exam will be automatically submitted."
-              : "Are you sure you want to submit your exam? This action cannot be undone."}
+              ? "Your exam time has expired. This section will be automatically submitted."
+              : "Are you sure you want to submit this section? You cannot return to it after submission."}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,6 +148,15 @@ export function SubmissionDialog({
             </div>
           </div>
 
+          {tabSwitchCount > 0 && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Tab switches detected: <span className="font-bold">{tabSwitchCount}</span>
+              </AlertDescription>
+            </Alert>
+          )}
+
           {unansweredCount > 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -147,7 +168,7 @@ export function SubmissionDialog({
           )}
 
           <div className="rounded-lg bg-muted p-4 text-sm text-muted-foreground">
-            Once submitted, you will not be able to change your answers or return to the exam.
+            Once submitted, you will not be able to change your answers or return to this section.
           </div>
         </div>
 

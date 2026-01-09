@@ -1,3 +1,4 @@
+import { StorageKeys } from "@/types/CorporateExamTypes";
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -36,3 +37,17 @@ export const formatStudentExamTime = (time: string) => {
       hour12: true,
     });
 };
+
+export const getStorageKeys = (examSlug: string): StorageKeys => ({
+  selectedSection: `exam_${examSlug}_selected_section`,
+  attemptIds: `exam_${examSlug}_attempt_ids`,
+  answers: `exam_${examSlug}_answers`,
+  currentPage: `exam_${examSlug}_current_page`,
+  tabSwitchCount: `exam_${examSlug}_tab_switch_count`,
+  submittedSections: `exam_${examSlug}_submitted_sections`,
+})
+
+export const getTimerKeys = (examSlug: string) => ({
+  endTime: `exam_end_time_${examSlug}`,
+  timeUp: `exam_time_up_${examSlug}`,
+})

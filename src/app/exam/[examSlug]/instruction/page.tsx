@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,22 +12,16 @@ import {
   Info,
   BookOpen,
   ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
 } from "lucide-react";
-import { useGetExamDetails, useStartExam } from "@/hooks/useCorporateExam";
+import { useGetExamDetails } from "@/hooks/useCorporateExam";
 import { useGetExamType } from "@/hooks/useCorporateExam";
-import { toast } from "sonner";
 import { formatStudentExamTime } from "@/lib/utils";
 import InstructionsSkeleton from "@/components/skeleton/InstructionsSkeleton";
-import { ExamTimer } from "@/components/studentExam/ExamTimer";
 
 export default function InstructionsPage() {
   const router = useRouter();
   const params = useParams();
   const examSlug = params?.examSlug as string;
-
-  const [selectedSection, setSelectedSection] = useState<string>("");
 
   // Get exam type
   const { data: examTypeData, isLoading: isLoadingType } = useGetExamType(examSlug);
@@ -38,40 +31,9 @@ export default function InstructionsPage() {
   const { data: getExamDetails, isPending: isLoadingDetails } = useGetExamDetails({examSlug: examSlug, type: examType});
   const examData = getExamDetails?.data;
 
-  const { mutate: startExam, isPending } = useStartExam();
-
-  // Check if exam has been started by checking localStorage
-  const STORAGE_KEY = `exam_end_time_${examSlug}`;
-  const hasExamStarted = typeof window !== 'undefined' && localStorage.getItem(STORAGE_KEY) !== null;
-  
-  const examDuration = examData?.duration 
-    ? examData.duration * 60 
-    : 60 * 60;
-
-  const handleSectionClick = (sectionSlug: string) => {
-    setSelectedSection(sectionSlug);
-  };
-
   const handleStartExam = () => {
-    if (!selectedSection) {
-      return;
-    }
-
-    startExam({ examSlug, sectionSlug: selectedSection, type: examType },  {
-      onSuccess: (response) => {
-        const attemptId = response.data.attempt_id;
-        router.push(`/exam/${examSlug}/attempt/${attemptId}`);
-        toast.success("Exam started successfully!");
-      },
-      onError: (err: any) => {
-        toast.error(err?.data?.message || "Error starting the exam!");
-      },
-    });
-  };
-
-  const handleTimeUp = () => {
-    toast.error("Time's up! The exam has ended.");
-    // Optionally redirect or take other action
+    // Navigate to exam page (we'll use examSlug as route parameter)
+    router.push(`/exam/${examSlug}/attempt`);
   };
 
   const isLoading = isLoadingType || isLoadingDetails;
@@ -109,21 +71,12 @@ export default function InstructionsPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              {/* Show timer only if exam has started */}
-              {hasExamStarted ? (
-                <ExamTimer 
-                  examSlug={examSlug} 
-                  initialTime={examDuration}
-                  onTimeUp={handleTimeUp}
-                />
-              ) : (
-                // Show original time range if exam hasn't started
-                examData.start_time && examData.end_time && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
-                    <Clock className="h-4 w-4" />
-                    <span className="font-medium">{formatStudentExamTime(examData.start_time)} - {formatStudentExamTime(examData.end_time)}</span>
-                  </div>
-                )
+              {/* Show original time range */}
+              {examData.start_time && examData.end_time && (
+                <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
+                  <Clock className="h-4 w-4" />
+                  <span className="font-medium">{formatStudentExamTime(examData.start_time)} - {formatStudentExamTime(examData.end_time)}</span>
+                </div>
               )}
             </div>
           </div>
@@ -168,7 +121,7 @@ export default function InstructionsPage() {
 
             {/* Instructions */}
             {examData.instructions && (
-              <div className="p-5  border-green-100">
+              <div className="p-5 border-green-100">
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-green-700 mb-3 uppercase tracking-wide">
                   <Info className="h-4 w-4" />
                   Instructions
@@ -180,33 +133,19 @@ export default function InstructionsPage() {
             )}
           </div>
 
-          {/* Section Selection - All in One Card */}
+          {/* Section List - Display Only (No Selection) */}
           <div className="bg-white rounded-lg shadow-sm border">
             <div className="p-5 border-b border-gray-200">
               <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
-                Select One Section to Begin
+                Available Sections
               </h2>
             </div>
             <div className="divide-y divide-gray-200">
               {examData.sections.map((section: any, index: number) => (
                 <div
                   key={section.slug}
-                  onClick={() => handleSectionClick(section.slug)}
-                  className={`flex items-start gap-4 p-5 cursor-pointer transition-all duration-200 ${
-                    selectedSection === section.slug.toString()
-                      ? "bg-green-50"
-                      : "hover:bg-green-50/50"
-                  }`}
+                  className="flex items-start gap-4 p-5"
                 >
-                  <div className={`mt-0.5 h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors shrink-0 ${
-                    selectedSection === section.slug.toString()
-                      ? "border-green-600 bg-green-600"
-                      : "border-gray-300"
-                  }`}>
-                    {selectedSection === section.slug.toString() && (
-                      <div className="h-2 w-2 rounded-full bg-white"></div>
-                    )}
-                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-1">
                       <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
@@ -233,26 +172,17 @@ export default function InstructionsPage() {
         <div className="container mx-auto max-w-7xl px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="text-sm">
-              {selectedSection ? (
-                <p className="flex items-center gap-1.5 text-green-700 font-medium">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Section selected
-                </p>
-              ) : (
-                <p className="flex items-center gap-1.5 text-amber-600 font-medium">
-                  <AlertTriangle className="h-4 w-4" />
-                  Please select a section to continue
-                </p>
-              )}
+              <p className="text-gray-600">
+                Click &quot;Start Exam&quot; to begin. You can select sections once inside.
+              </p>
             </div>
             <Button
               onClick={handleStartExam}
               variant="green"
-              disabled={!selectedSection || isPending}
               className="gap-2"
             >
-              {isPending ? "Starting..." : "Start Exam"}
-              {!isPending && <ArrowRight className="h-5 w-5" />}
+              Start Exam
+              <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
         </div>

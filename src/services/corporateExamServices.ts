@@ -119,7 +119,7 @@ class CorporateExamService extends HttpServices {
         }
     }
 
-    submitExam = async (attempt_id: number, type: ExamType) => {
+    submitExam = async (attempt_id: number, type: ExamType, data: any) => {
         try {
             const token =getTokenType(type);
             const response = await this.postRequest({
@@ -127,7 +127,8 @@ class CorporateExamService extends HttpServices {
                 config: {
                     auth: true,
                     useToken: token as string,
-                }
+                },
+                data,
            })
             return response?.data
         } catch (error) {
