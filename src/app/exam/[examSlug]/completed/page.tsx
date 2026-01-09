@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { CheckCircle, Clock, FileText, TrendingUp } from "lucide-react"
+import { CheckCircle } from "lucide-react"
 
 export default function ExamCompletedPage() {
   const router = useRouter()
@@ -35,7 +35,7 @@ export default function ExamCompletedPage() {
 
           <div className="flex gap-4 justify-center pt-4">
             <Button variant="green" onClick={() => router.push(`/exam/${examSlug}/instruction`)}>
-              Back to Instructions
+              Back to exam
             </Button>
           </div>
         </div>

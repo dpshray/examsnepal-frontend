@@ -6,6 +6,8 @@ export interface ExamSection {
   slug: string;
   detail: string;
   question_count?: number;
+  attempts_count?: number;
+  is_completed?: boolean;
 }
 
 export interface ExamDetails {
@@ -36,6 +38,7 @@ export interface QuestionOption {
 
 export interface Question {
   id: number
+  number: number
   section_id: number
   question_type: "mcq" | string
   question: string
@@ -51,5 +54,25 @@ export interface Question {
 
   created_at: string
   updated_at: string 
+}
+
+export type AnswerValue = number | string | null
+
+export interface ExamState {
+  selectedSection: string | null
+  attemptIds: Map<string, number>
+  answers: Map<string, Map<number, AnswerValue>>
+  currentPage: number
+  tabSwitchCount: number
+  submittedSections: Set<string>
+}
+
+export interface StorageKeys {
+  selectedSection: string
+  attemptIds: string
+  answers: string
+  currentPage: string
+  tabSwitchCount: string
+  submittedSections: string
 }
 

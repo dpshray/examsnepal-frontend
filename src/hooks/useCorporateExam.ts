@@ -89,6 +89,7 @@ export const useGetQuestions = (attempt_id: number, type: ExamType, params?: Pag
   return useQuery({
     queryKey: ["questions", attempt_id, type, params],
     queryFn: () => corporateExamService.getQuestion(attempt_id, type, params),
+    enabled: !!attempt_id,
   });
 }
 
@@ -101,9 +102,10 @@ export const useSaveAnswer = () => {
 export const useSubmitExam = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({attemptId, type }: {attemptId: number, type: ExamType}) => corporateExamService.submitExam(attemptId, type),
+        mutationFn: ({attemptId, type, data }: {attemptId: number, type: ExamType, data: any}) => corporateExamService.submitExam(attemptId, type, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ["questions"] });
+            queryClient.invalidateQueries({ queryKey: ["participants"] });
             localStorage.removeItem(`exam_end_time_${variables.attemptId}`)
         }
     });
