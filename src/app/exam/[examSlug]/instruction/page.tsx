@@ -13,8 +13,8 @@ import {
   BookOpen,
   ArrowRight,
 } from "lucide-react";
-import { useGetExamDetails } from "@/hooks/useCorporateExam";
-import { useGetExamType } from "@/hooks/useCorporateExam";
+import { useGetExamDetails } from "@/hooks/corporate/useCorporateExam";
+import { useGetExamType } from "@/hooks/corporate/useCorporateExam";
 import { formatStudentExamTime } from "@/lib/utils";
 import InstructionsSkeleton from "@/components/skeleton/InstructionsSkeleton";
 

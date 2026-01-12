@@ -4,7 +4,7 @@ import { usePathname, useParams } from "next/navigation";
 import { useState } from "react";
 import ExamRouteSkeleton from "@/components/skeleton/ExamRouteSkeleton";
 import useExamAccess from "@/hooks/useExamAccess";
-import { useGetExamType } from "@/hooks/useCorporateExam";
+import { useGetExamType } from "@/hooks/corporate/useCorporateExam";
 
 export default function ExamLayout({
   children,

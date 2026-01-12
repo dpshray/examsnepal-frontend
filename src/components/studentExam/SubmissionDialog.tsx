@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Loader2, Clock } from "lucide-react"
 import { toast } from "sonner"
-import { useSubmitExam } from "@/hooks/useCorporateExam"
+import { useSubmitExam } from "@/hooks/corporate/useCorporateExam"
 import { ExamType } from "@/types/CorporateExamTypes"
 
 interface SubmissionDialogProps {

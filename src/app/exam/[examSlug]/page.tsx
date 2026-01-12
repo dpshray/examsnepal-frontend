@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Lock, User, Mail, Phone } from "lucide-react";
 import TextInputField from "@/components/fields/TextInputField";
 import PasswordInputField from "@/components/fields/PasswordInput";
-import { usePrivateExamLogin, usePublicExamLogin } from "@/hooks/useCorporateExam";
+import { usePrivateExamLogin, usePublicExamLogin } from "@/hooks/corporate/useCorporateExam";
 import { toast } from "sonner";
 
 const PublicExamSchema = z.object({
