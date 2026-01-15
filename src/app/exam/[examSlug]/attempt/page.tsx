@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Save, X } from "lucide-react"
+import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Save, X, XCircle } from "lucide-react"
 import { Question } from "@/types/CorporateExamTypes"
 import { useGetExamDetails, useGetExamType, useGetQuestions, useSaveAnswer, useStartExam } from "@/hooks/corporate/useCorporateExam"
 import { SubmissionDialog } from "@/components/studentExam/SubmissionDialog"
@@ -79,6 +79,9 @@ export default function ExamAttemptPage() {
   const totalPages = questionsData?.data?.last_page || 1
   const totalQuestions = questionsData?.data?.total || 0
   const examDuration = examData?.duration ? examData.duration * 60 : DEFAULT_EXAM_DURATION
+
+  // Check if attempts limit exists
+  const hasAttemptsLimit = examData?.limit_attempts !== null && examData?.limit_attempts !== undefined
 
   // Sync URL with current page
   useEffect(() => {
@@ -161,26 +164,39 @@ export default function ExamAttemptPage() {
     if (isStartingExam) return
 
     const sectionData = examData?.sections?.find((s: any) => s.slug === sectionSlug)
-    const isSubmittedInBackend = sectionData?.is_completed === true
+    
+    // Check if section is completed (in current session submission)
     const isSubmittedInState = submittedSections.has(sectionSlug)
+    
+    // Check if user has reached attempt limit for this section
+    const hasReachedLimit = hasAttemptsLimit && 
+      sectionData?.attempts_count >= examData.limit_attempts
 
-    if (isSubmittedInBackend || isSubmittedInState) {
-      toast.error("This section has already been submitted")
+    if (isSubmittedInState) {
+      toast.error("This section has already been submitted in this session")
       return
     }
 
+    if (hasReachedLimit) {
+      toast.error(`You have reached the maximum number of attempts (${examData.limit_attempts}) for this section`)
+      return
+    }
+
+    // If section already has an active attempt in this session, load it
     if (attemptIds.has(sectionSlug)) {
       updateState({ selectedSection: sectionSlug, currentPage: 1 })
       toast.success("Section loaded!")
       return
     }
 
+    // Reset timer for first section attempt
     if (attemptIds.size === 0) {
       const { endTime, timeUp } = getTimerKeys(examSlug)
       localStorage.removeItem(endTime)
       sessionStorage.removeItem(timeUp)
     }
 
+    // Start new attempt
     startExam(
       { examSlug, sectionSlug, type: examTypeData },
       {
@@ -201,14 +217,14 @@ export default function ExamAttemptPage() {
             answers: newAnswers
           })
           
-          toast.success("Section loaded successfully!")
+          toast.success("Section started successfully!")
         },
         onError: (err: any) => {
-          toast.error(err?.data?.message || "Error loading section!")
+          toast.error(err?.data?.message || "Error starting section!")
         },
       }
     )
-  }, [isStartingExam, submittedSections, attemptIds, answers, examSlug, examTypeData, startExam, updateState, examData?.sections])
+  }, [isStartingExam, submittedSections, attemptIds, answers, examSlug, examTypeData, startExam, updateState, examData, hasAttemptsLimit])
 
   const handlePageChange = useCallback((page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -283,7 +299,16 @@ export default function ExamAttemptPage() {
     updateState({ submittedSections: newSubmittedSections })
 
     const totalSections = examData?.sections?.length || 0
-    if (newSubmittedSections.size === totalSections) {
+    
+    // Check if all sections are now either submitted or at attempt limit
+    const allSectionsCompleted = examData?.sections?.every((section: any) => {
+      const isSubmittedInSession = newSubmittedSections.has(section.slug)
+      const hasReachedLimit = hasAttemptsLimit && 
+        section.attempts_count + 1 >= examData.limit_attempts
+      return isSubmittedInSession || hasReachedLimit
+    })
+
+    if (allSectionsCompleted) {
       setIsExamComplete(true)
       
       setTimeout(() => {
@@ -292,10 +317,10 @@ export default function ExamAttemptPage() {
       }, 100)
     } else {
       updateState({ selectedSection: null })
-      toast.success("Section submitted! Please complete remaining sections.")
+      toast.success("Section submitted! You can now select another section.")
       resetSaveStatus()
     }
-  }, [selectedSection, submittedSections, examData, clearStorage, router, examSlug, updateState, resetSaveStatus])
+  }, [selectedSection, submittedSections, examData, clearStorage, router, examSlug, updateState, resetSaveStatus, hasAttemptsLimit])
 
   const handleTimeUp = useCallback(() => {
     const { timeUp } = getTimerKeys(examSlug)
@@ -379,6 +404,7 @@ export default function ExamAttemptPage() {
                 submittedSections={submittedSections}
                 isStartingExam={isStartingExam}
                 onSectionSelect={handleSectionSelect}
+                limitAttempts={examData?.limit_attempts}
               />
             ) : (
               <>
@@ -480,35 +506,55 @@ export default function ExamAttemptPage() {
               />
             ) : (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Sections</h3>
+                <div className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Sections</h3>
+                  {hasAttemptsLimit && (
+                    <p className="text-xs text-gray-600 mt-1">
+                      Max {examData.limit_attempts} {examData.limit_attempts === 1 ? 'attempt' : 'attempts'} per section
+                    </p>
+                  )}
+                </div>
                 <div className="space-y-2">
                   {examData?.sections.map((section: any, index: number) => {
-                    const isSubmittedInBackend = section.is_completed === true
                     const isSubmittedInState = submittedSections.has(section.slug)
-                    const isSubmitted = isSubmittedInBackend || isSubmittedInState
+                    const hasReachedLimit = hasAttemptsLimit && 
+                      section.attempts_count >= examData.limit_attempts
+                    const attemptsCount = section.attempts_count || 0
                     
                     return (
                       <button
                         key={section.slug}
                         onClick={() => handleSectionSelect(section.slug)}
-                        disabled={isStartingExam || isSubmitted}
+                        disabled={isStartingExam || isSubmittedInState || hasReachedLimit}
                         className={`w-full text-left p-3 border rounded-lg transition-all disabled:cursor-not-allowed ${
                           selectedSection === section.slug
                             ? "border-green-500 bg-green-50"
-                            : isSubmitted
+                            : isSubmittedInState
                             ? "border-green-300 bg-green-50 opacity-75"
+                            : hasReachedLimit
+                            ? "border-red-300 bg-red-50 opacity-75"
                             : "border-gray-200 hover:border-green-300"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
-                              {String(index + 1).padStart(2, "0")}
-                            </span>
-                            <span className="text-sm font-medium">{section.title}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+                                {String(index + 1).padStart(2, "0")}
+                              </span>
+                              <span className="text-sm font-medium truncate">{section.title}</span>
+                            </div>
+                            {hasAttemptsLimit && (
+                              <p className="text-xs ml-9 text-gray-500">
+                                {attemptsCount} / {examData.limit_attempts}
+                              </p>
+                            )}
                           </div>
-                          {isSubmitted && (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          {isSubmittedInState && (
+                            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          )}
+                          {hasReachedLimit && !isSubmittedInState && (
+                            <XCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
                           )}
                         </div>
                       </button>
