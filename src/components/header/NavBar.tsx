@@ -15,14 +15,15 @@ import {
     NavigationMenuList
 } from "@/components/ui/navigation-menu";
 import {cn} from "@/lib/utils";
+import { CREATE_EXAM_ROUTE } from "@/config/app-constant";
 
 const NAV_ITEMS = [
     {label: "Home", link: "/"},
     {label: "About Us", link: "/about"},
     {label: "Find MCQs", link: "/find-mcq"},
-    {label: "Create Exams", link: "#"},
     {label: "Blogs", link: "/blog"},
     {label: "Contact Us", link: "/contact-us"},
+    {label: "Create Exams", link: CREATE_EXAM_ROUTE},
 ];
 
 export default function NavBar() {
@@ -122,21 +123,44 @@ export default function NavBar() {
                 {/* Desktop Navigation */}
                 <NavigationMenu className="hidden md:flex" aria-label="Desktop Navigation">
                     <NavigationMenuList>
-                        {NAV_ITEMS.map(({label, link}) => (
-                            <NavigationMenuItem key={label}>
-                                <NavigationMenuLink
-                                    asChild
-                                    className={cn(
-                                        "font-poppins rounded-md text-center  px-4 py-2  text-sm  font-normal transition-colors",
-                                        pathname === link
-                                            ? "!bg-green-600 !text-white hover:bg-green-700"
-                                            : "text-muted-foreground hover:bg-gray-100 hover:text-black"
-                                    )}
-                                >
-                                    <Link href={link}>{label}</Link>
-                                </NavigationMenuLink>
-                            </NavigationMenuItem>
-                        ))}
+                        {NAV_ITEMS.map(({ label, link }) => {
+                            const isExternal = link.startsWith("http")
+
+                            if (isExternal) {
+                                return (
+                                    <NavigationMenuItem key={label}>
+                                        <a
+                                            href={link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={cn(
+                                                "font-poppins rounded-md px-4 py-2 text-sm font-normal transition-colors",
+                                                "text-muted-foreground hover:bg-gray-100 hover:text-black"
+                                            )}
+                                        >
+                                            {label}
+                                        </a>
+                                    </NavigationMenuItem>
+                                )
+                            }
+
+                            return (
+                                <NavigationMenuItem key={label}>
+                                    <NavigationMenuLink
+                                        asChild
+                                        className={cn(
+                                            "font-poppins rounded-md text-center  px-4 py-2  text-sm  font-normal transition-colors",
+                                            pathname === link
+                                                ? "!bg-green-600 !text-white hover:bg-green-700"
+                                                : "text-muted-foreground hover:bg-gray-100 hover:text-black"
+                                        )}
+                                    >
+                                        <Link href={link}>{label}</Link>
+                                    </NavigationMenuLink>
+                                </NavigationMenuItem>
+                            )
+                        })}
+
                     </NavigationMenuList>
                 </NavigationMenu>
 
