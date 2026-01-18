@@ -1,23 +1,22 @@
-
 "use client"
 
 import { useParams, useRouter, useSearchParams } from "next/navigation"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, Save, X } from "lucide-react"
 import { Question } from "@/types/CorporateExamTypes"
-import { useGetExamType, useGetQuestions, useSaveAnswer } from "@/hooks/useCorporateExam"
+import { useGetExamType, useGetQuestions, useSaveAnswer } from "@/hooks/corporate/useCorporateExam"
 import { SubmissionDialog } from "@/components/studentExam/SubmissionDialog"
 import { ExamTimer } from "@/components/studentExam/ExamTimer"
 import { QuestionDisplay } from "@/components/studentExam/QuestionDisplay"
 import { QuestionNavigation } from "@/components/studentExam/QuestionNavigation"
 import { toast } from "sonner"
-import { usePreventUnload } from "@/hooks/usePreventUnload"
-import { useClipboardProtection } from "@/hooks/useClipboardProtection"
-import { useTabSwitchDetection } from "@/hooks/useTabSwitchDetection"
+import { usePreventUnload } from "@/hooks/corporate/usePreventUnload"
+import { useClipboardProtection } from "@/hooks/corporate/useClipboardProtection"
+import { useTabSwitchDetection } from "@/hooks/corporate/useTabSwitchDetection"
+import { ExamLoadingSkeleton } from "@/components/skeleton/ExamLoadingSkeleton"
 
 type AnswerValue = number | string | null
-
 
 export default function ExamAttemptPage() {
   const params = useParams()
@@ -30,21 +29,24 @@ export default function ExamAttemptPage() {
   const pageFromUrl = Number(searchParams.get('page')) || 1
   const [currentPage, setCurrentPage] = useState(pageFromUrl)
   const [answers, setAnswers] = useState<Map<number, AnswerValue>>(new Map())
+  const [questionNumberMap, setQuestionNumberMap] = useState<Map<number, number>>(new Map())
   const [showSubmitDialog, setShowSubmitDialog] = useState(false)
-  const [preventBack] = useState(true)
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0)
   const [tabSwitchCount, setTabSwitchCount] = useState(0)
   const [showTabWarning, setShowTabWarning] = useState(false)
   const [isAnswersSaved, setIsAnswersSaved] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [isTimeUp, setIsTimeUp] = useState(false)
   const questionRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
   const { data: examType } = useGetExamType(examSlug)
   const examTypeData = examType?.exam_type 
-  const { data: questionsData, isLoading, isError } = useGetQuestions(attemptId, examTypeData, { page: currentPage, per_page: QUESTIONS_PER_PAGE })
+  const { data: questionsData, isLoading, isError, error } = useGetQuestions(attemptId, examTypeData, { page: currentPage, per_page: QUESTIONS_PER_PAGE })
   const saveAnswerMutation = useSaveAnswer()
 
-  const questions = questionsData?.data?.data || []
+  // Memoize questions to prevent dependency changes
+  const questions = useMemo(() => questionsData?.data?.data || [], [questionsData?.data?.data])
+  
   const sectionName = questionsData?.data?.title || ""
   const currentPageApi = questionsData?.data?.current_page || 1
   const totalPages = questionsData?.data?.last_page || 1
@@ -52,6 +54,31 @@ export default function ExamAttemptPage() {
   const examDuration = questionsData?.data?.duration 
     ? questionsData.data.duration * 60 
     : 60 * 60 
+
+  useEffect(() => {
+    const timeUpKey = `exam_time_up_${attemptId}`
+    const savedTimeUpState = sessionStorage.getItem(timeUpKey)
+    
+    if (savedTimeUpState === 'true') {
+      setIsTimeUp(true)
+      setShowSubmitDialog(true)
+    }
+  }, [attemptId])
+
+  // Store question numbers in the map when questions load
+  useEffect(() => {
+    if (questions.length > 0) {
+      setQuestionNumberMap((prevMap) => {
+        const newMap = new Map(prevMap)
+        questions.forEach((question: Question) => {
+          if (question.number && question.id) {
+            newMap.set(question.id, question.number)
+          }
+        })
+        return newMap
+      })
+    }
+  }, [questions])
 
   useEffect(() => {
     const url = new URL(window.location.href)
@@ -66,10 +93,6 @@ export default function ExamAttemptPage() {
     onSwitch: () => {
       setTabSwitchCount(prev => prev + 1)
       setShowTabWarning(true)
-
-      // setTimeout(() => {
-      //   setShowTabWarning(false)
-      // }, 5000)
     },
   })
 
@@ -83,7 +106,6 @@ export default function ExamAttemptPage() {
     }
   }, [activeQuestionIndex, currentPage])
 
-
   const handleAnswerChange = (questionId: number, value: number | string | null) => {
     setAnswers(new Map(answers.set(questionId, value)))
     setHasUnsavedChanges(true)
@@ -93,13 +115,13 @@ export default function ExamAttemptPage() {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page)
-      setActiveQuestionIndex((page - 1) * questions.length)
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   const handleQuestionJump = (questionIndex: number) => {
-    const page = Math.floor(questionIndex / questions.length) + 1
+    const page = Math.floor(questionIndex / QUESTIONS_PER_PAGE) + 1
+    
     setCurrentPage(page)
     setActiveQuestionIndex(questionIndex)
   }
@@ -111,18 +133,18 @@ export default function ExamAttemptPage() {
     }
 
     try {
-      // Transform answers to match the API format
       const formattedAnswers = Array.from(answers.entries()).map(([questionId, value]) => {
-        // Find the question to determine if it's MCQ or subjective
-        const question = questions.find((q: Question) => q.id === questionId)
-        const isSubjective = question?.question_type === 'subjective'
+        const isSubjective = typeof value === 'string'
+        const isOption = typeof value === 'number'
 
         return {
           question_id: questionId,
-          option_id: isSubjective ? null : (typeof value === 'number' ? value : null),
-          subjective_answer: isSubjective ? (typeof value === 'string' ? value : null) : null
+          option_id: isOption ? value : null,
+          subjective_answer: isSubjective ? value : null
         }
-      })
+      }).filter(answer => 
+        answer.option_id !== null || answer.subjective_answer !== null
+      )
 
       await saveAnswerMutation.mutateAsync({
         attemptId: attemptId,
@@ -148,6 +170,11 @@ export default function ExamAttemptPage() {
   }
 
   const handleTimeUp = () => {
+    // Persist time up state to survive reloads
+    const timeUpKey = `exam_time_up_${attemptId}`
+    sessionStorage.setItem(timeUpKey, 'true')
+    
+    setIsTimeUp(true)
     if (hasUnsavedChanges && answers.size > 0) {
       handleSaveAnswers().then(() => {
         setShowSubmitDialog(true)
@@ -157,18 +184,32 @@ export default function ExamAttemptPage() {
     }
   }
 
+  const answeredQuestionIndices = useMemo(() => {
+    const indices: number[] = []
+    
+    answers.forEach((value, questionId) => {
+      if (value !== null && value !== '') {
+        const questionNumber = questionNumberMap.get(questionId)
+        if (questionNumber) {
+          // Convert to 0-based index for the navigation component
+          indices.push(questionNumber - 1)
+        }
+      }
+    })
+    
+    return indices
+  }, [answers, questionNumberMap])
+
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading exam...</div>
-      </div>
-    )
+    return <ExamLoadingSkeleton />
   }
 
   if (isError) {
+    const errorMessage = (error as any)?.data?.message
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex flex-col items-center justify-center min-h-screen">
         <div className="text-lg">Failed to load exam. Please try again.</div>
+        <div className="text-red-500 mt-2">{errorMessage}</div>
       </div>
     )
   }
@@ -195,6 +236,7 @@ export default function ExamAttemptPage() {
           </div>
         </div>
       )}
+      
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -204,7 +246,7 @@ export default function ExamAttemptPage() {
                 Page {currentPageApi} of {totalPages} · Total {totalQuestions} questions
               </p>
             </div>
-            <ExamTimer attemptId={attemptId} initialTime={examDuration} onTimeUp={handleTimeUp} />
+            {/* <ExamTimer attemptId={attemptId} initialTime={examDuration} onTimeUp={handleTimeUp} /> */}
           </div>
         </div>
       </header>
@@ -212,20 +254,20 @@ export default function ExamAttemptPage() {
       <div className="container mx-auto px-4 py-6">
         <div className="grid lg:grid-cols-[1fr_320px] gap-6">
           <div className="space-y-6">
-            {questions.map((question: Question, index: number) => {
-              const absoluteIndex =
-                (currentPageApi - 1) * questions.length + index
+            {questions.map((question: Question) => {
+              const questionIndex = question.number - 1
 
               return (
                 <div
                   key={question.id}
                   ref={(el) => {
-                    questionRefs.current[absoluteIndex] = el
+                    questionRefs.current[questionIndex] = el
                   }}
+                  className="scroll-mt-28"
                 >
                   <QuestionDisplay
                     question={question}
-                    questionNumber={absoluteIndex + 1}
+                    questionNumber={question.number}
                     selectedAnswer={answers.get(question.id) || null}
                     onAnswerChange={handleAnswerChange}
                   />
@@ -233,7 +275,6 @@ export default function ExamAttemptPage() {
               )
             })}
 
-            {/* PAGINATION */}
             {totalPages > 1 && (
               <div className="p-4 flex justify-between items-center">
                 <Button
@@ -299,14 +340,14 @@ export default function ExamAttemptPage() {
             <QuestionNavigation
               totalQuestions={totalQuestions}
               currentQuestionIndex={activeQuestionIndex}
-              answeredQuestions={Array.from(answers.keys()).map((id) => questions.findIndex((q: Question) => q.id === id))}
+              answeredQuestions={answeredQuestionIndices}
               onQuestionClick={handleQuestionJump}
             />
           </div>
         </div>
       </div>
 
-      <SubmissionDialog
+      {/* <SubmissionDialog
         open={showSubmitDialog}
         onOpenChange={setShowSubmitDialog}
         attemptId={attemptId}
@@ -315,7 +356,8 @@ export default function ExamAttemptPage() {
         answers={answers}
         type={examTypeData}
         examSlug={examSlug}
-      />
+        isTimeUp={isTimeUp}
+      /> */}
     </div>
   )
 }

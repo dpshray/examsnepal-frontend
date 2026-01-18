@@ -18,8 +18,18 @@ class McqService extends HttpServices {
         }
     }
 
+    searchMcqWithoutAuth = async (keyword: string, page: number = 1) => {
+        try {
+            const encodedKeyword = encodeURIComponent(keyword);
+            const response = await this.getRequest({
 
-
+                url: `/free/search-questions?page=${page}&keyword=${encodedKeyword}`,
+            });
+            return response?.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 const mcqService = new McqService();

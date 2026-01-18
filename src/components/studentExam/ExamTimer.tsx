@@ -5,17 +5,30 @@ import { Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 interface ExamTimerProps {
-  attemptId: number
+  examSlug: string  // Changed from attemptId to examSlug
   initialTime: number 
   onTimeUp?: () => void
 }
 
-export function ExamTimer({ attemptId, initialTime, onTimeUp }: ExamTimerProps) {
-  const STORAGE_KEY = `exam_end_time_${attemptId}`
+export function ExamTimer({ examSlug, initialTime, onTimeUp }: ExamTimerProps) {
+  // Use examSlug instead of attemptId for storage keys
+  const STORAGE_KEY = `exam_end_time_${examSlug}`
+  const TIME_UP_KEY = `exam_time_up_${examSlug}`
   const [timeLeft, setTimeLeft] = useState<number>(initialTime)
   const hasTriggeredTimeUp = useRef(false)
 
   useEffect(() => {
+    // Check if time was already up before
+    const wasTimeUp = sessionStorage.getItem(TIME_UP_KEY)
+    if (wasTimeUp === 'true') {
+      setTimeLeft(0)
+      if (!hasTriggeredTimeUp.current && onTimeUp) {
+        hasTriggeredTimeUp.current = true
+        onTimeUp()
+      }
+      return
+    }
+
     let endTime = localStorage.getItem(STORAGE_KEY)
 
     // First load → set end time
@@ -32,12 +45,14 @@ export function ExamTimer({ attemptId, initialTime, onTimeUp }: ExamTimerProps) 
 
       if (remaining <= 0) {
         clearInterval(interval)
-        localStorage.removeItem(STORAGE_KEY)
+        
+        // Mark time as up in sessionStorage
+        sessionStorage.setItem(TIME_UP_KEY, 'true')
         setTimeLeft(0)
 
-        if (!hasTriggeredTimeUp.current) {
+        if (!hasTriggeredTimeUp.current && onTimeUp) {
           hasTriggeredTimeUp.current = true
-          onTimeUp?.()
+          onTimeUp()
         }
       } else {
         setTimeLeft(remaining)
@@ -45,7 +60,7 @@ export function ExamTimer({ attemptId, initialTime, onTimeUp }: ExamTimerProps) 
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [attemptId, initialTime, onTimeUp])
+  }, [examSlug, initialTime, onTimeUp, STORAGE_KEY, TIME_UP_KEY])
 
   const hours = Math.floor(timeLeft / 3600)
   const minutes = Math.floor((timeLeft % 3600) / 60)
@@ -65,7 +80,7 @@ export function ExamTimer({ attemptId, initialTime, onTimeUp }: ExamTimerProps) 
           : "bg-green-100 hover:bg-green-200 text-green-800 border-green-300"
       }`}
     >
-      <Clock className="h-5 w-5 mr-2" />
+      <Clock className="h-5 w-5 mr-2" />  
       <span className="font-mono text-xl font-semibold tabular-nums">
         {hours > 0 && `${String(hours).padStart(2, "0")}:`}
         {String(minutes).padStart(2, "0")}:

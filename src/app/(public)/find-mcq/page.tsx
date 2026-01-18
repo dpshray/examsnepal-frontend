@@ -8,6 +8,7 @@ import {QuestionSolutionCard} from '@/components/Exams/QuestionCard';
 import mcqService from '@/services/McqService';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import CustomPagination from '@/components/Pagination';
 
 interface CategoryCardProps {
     icon: React.ElementType;
@@ -53,22 +54,15 @@ export default function FindMcq() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
     const [page, setPage] = useState<number>(1);
-
-    // const categories = [
-    //     {title: 'Dental NMCLE / Loksewa / MDS', icon: GiTooth, questions: '200+'},
-    //     {title: 'Medical NMCLE / Loksewa / MDMS', icon: GiStethoscope, questions: '200+'},
-    //     {title: 'MBBS Entrance and Bachelor Level', icon: FaHeartbeat, questions: '200+'},
-    //     {title: 'Engineering entrance and bachelor level', icon: FaTools, questions: '200+'},
-    //     {title: 'Nursing entrance and bachelor level', icon: GiStethoscope, questions: '200+'},
-    //     {title: 'Pharmacy entrance and bachelor level', icon: FaTools, questions: '200+'},
-    // ];
+    const [totalPages, setTotalPages] = useState<number>(1);
 
     useEffect(() => {
         const fetchMcqs = async () => {
             setLoading(true);
             try {
-                const response = await mcqService.searchMcq(query, page);
+                const response = await mcqService.searchMcqWithoutAuth(query, page);
                 setMcqs(response?.data?.data || []);
+                setTotalPages(response?.data?.last_page || 1);
                 setError('');
             } catch (err: any) {
                 const message =
@@ -93,6 +87,11 @@ export default function FindMcq() {
         setPage(1);
     };
 
+    const handlePageChange = (newPage: number) => {
+        setPage(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     return (
         <section className="min-h-screen bg-gray-50">
             <BannerHeader
@@ -103,18 +102,7 @@ export default function FindMcq() {
             />
 
             <div className="max-w-6xl mx-auto px-4 py-8">
-                {/* <div className="flex flex-col items-center text-center mb-8">
-                    <h2 className="text-2xl font-bold font-montserrat text-gray-900 mb-6">
-                        Find MCQ by Category
-                    </h2>
-                    <p className="text-muted-foreground font-montserrat mb-4 max-w-2xl">
-                        Browse through our extensive collection of MCQs categorized by subject and exam type. Whether
-                        you&#39;re preparing
-                        for a medical, engineering, or other entrance exam, we have the right practice material for you.
-                    </p>
-                </div> */}
-
-                {/* Loading/Error Messages */}
+                
                 {loading && (
                     <div>
                         <Skeleton className="h-6 w-1/3 mb-4 mx-auto" />
@@ -152,16 +140,24 @@ export default function FindMcq() {
                                             correctAnswers={correctAnswers}
                                             explanation={mcq.explanation}
                                             id={mcq.id}
+                                            raiseDoubt={false}
                                         />
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* Pagination Placeholder */}
-                        <div className="flex justify-center mt-8">
-                            {/* <Pagination page={page} setPage={setPage} total={totalPages} /> */}
-                        </div>
+                       
+                        {totalPages > 1 && (
+                            <div className="flex justify-center mt-8">
+                                <CustomPagination
+                                    currentPage={page}
+                                    totalPages={totalPages}
+                                    onPageChangeAction={handlePageChange}
+                                    maxPagesToShow={5}
+                                />
+                            </div>
+                        )}
                     </>
                 ) : (
                         !query && !loading && (
