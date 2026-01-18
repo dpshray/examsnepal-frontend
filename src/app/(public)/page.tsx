@@ -196,40 +196,40 @@ export default function Home() {
             </section>
 
             <section className="w-full">
-    <div className="flex flex-col items-center text-center mb-8 max-w-3xl container mx-auto">
-        <h2 className="text-3xl font-bold font-montserrat sm:text-4xl lg:text-5xl">
-            Conduct Your Own Test
-        </h2>
-        <span className="font-montserrat text-gray-600 mt-4 text-sm font-light sm:text-base md:font-normal">
-            Register as a teacher and create your own online exams with ease.
-        </span>
-        <p className="text-sm font-light text-muted-foreground sm:text-base md:font-normal">
-            Manage questions, set time limits, and invite students to take your tests — all from one platform. Perfect for teachers, institutions, and coaching centers who want to assess and guide their learners effectively.
-        </p>
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link 
-                href={CREATE_EXAM_REGISTER_ROUTE} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                aria-label="Register as Teacher (opens in new tab)"
-            >
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                    Register as Teacher
-                </Button>
-            </Link>
-            <Link 
-                href={CREATE_EXAM_LOGIN_ROUTE} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                aria-label="Teacher Login (opens in new tab)"
-            >
-                <Button className="bg-green-600 hover:bg-green-700 text-white">
-                    Already a teacher? Login
-                </Button>
-            </Link>
-        </div>
-    </div>
-</section>
+                <div className="flex flex-col items-center text-center mb-8 max-w-3xl container mx-auto">
+                    <h2 className="text-3xl font-bold font-montserrat sm:text-4xl lg:text-5xl">
+                        Conduct Your Own Test
+                    </h2>
+                    <span className="font-montserrat text-gray-600 mt-4 text-sm font-light sm:text-base md:font-normal">
+                        Register as a teacher and create your own online exams with ease.
+                    </span>
+                    <p className="text-sm font-light text-muted-foreground sm:text-base md:font-normal">
+                        Manage questions, set time limits, and invite students to take your tests — all from one platform. Perfect for teachers, institutions, and coaching centers who want to assess and guide their learners effectively.
+                    </p>
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <Link 
+                            href={CREATE_EXAM_REGISTER_ROUTE} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            aria-label="Register as Teacher (opens in new tab)"
+                        >
+                            <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                Register as Teacher
+                            </Button>
+                        </Link>
+                        <Link 
+                            href={CREATE_EXAM_LOGIN_ROUTE} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            aria-label="Teacher Login (opens in new tab)"
+                        >
+                            <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                Already a teacher? Login
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </section>
         </main>
     );
 }
