@@ -40,6 +40,7 @@ type QuestionCardProps = {
     disabled?: boolean;
     className?: string
     id?: number
+    raiseDoubt?: boolean
 };
 
 
@@ -54,7 +55,8 @@ export const QuestionSolutionCard = ({
                                          explanation,
                                          disabled = false,
                                          id,
-                                         className
+                                         className,
+                                         raiseDoubt=true
                                      }: QuestionCardProps) => {
     const questionId = `question-${questionNumber}`;
     const [explanationVisible, setExplanationVisible] = useState(false);
@@ -165,7 +167,7 @@ export const QuestionSolutionCard = ({
                             <span className="font-bold text-muted-900">Explanation:</span>
                             <p dangerouslySetInnerHTML={{__html: explanation}}/>
                         </div>
-                        <RaiseDoubtModal questionId={id}/>
+                        {raiseDoubt && <RaiseDoubtModal questionId={id}/>}
                     </div>
 
                 )
@@ -203,12 +205,12 @@ export const QuestionCardSkeleton = () => {
     );
 };
 
-export function RaiseDoubtModal({questionId}: { questionId?: number }) {
+export function RaiseDoubtModal({questionId }: { questionId?: number }) {
     const [open, setOpen] = useState(false);
     const [doubt, setDoubt] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    console.log("questionId", questionId)
+    // console.log("questionId", questionId)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -279,15 +281,15 @@ export function RaiseDoubtModal({questionId}: { questionId?: number }) {
                         disabled={loading}
                     />
                     {error && <p className="text-red-500 text-sm">{error}</p>}
-                    <div className="flex flex-col sm:flex-row sm:justify-end">
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-amber-600 hover:bg-amber-700 text-white"
-                        >
-                            {loading ? "Sending..." : "Send Doubt"}
-                        </Button>
-                    </div>
+                        <div className="flex flex-col sm:flex-row sm:justify-end">
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-amber-600 hover:bg-amber-700 text-white"
+                            >
+                                {loading ? "Sending..." : "Send Doubt"}
+                            </Button>
+                        </div>
                 </form>
             </DialogContent>
         </Dialog>

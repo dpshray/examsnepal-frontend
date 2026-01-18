@@ -60,7 +60,7 @@ export default function FindMcq() {
         const fetchMcqs = async () => {
             setLoading(true);
             try {
-                const response = await mcqService.searchMcq(query, page);
+                const response = await mcqService.searchMcqWithoutAuth(query, page);
                 setMcqs(response?.data?.data || []);
                 setTotalPages(response?.data?.last_page || 1);
                 setError('');
@@ -140,6 +140,7 @@ export default function FindMcq() {
                                             correctAnswers={correctAnswers}
                                             explanation={mcq.explanation}
                                             id={mcq.id}
+                                            raiseDoubt={false}
                                         />
                                     </div>
                                 );

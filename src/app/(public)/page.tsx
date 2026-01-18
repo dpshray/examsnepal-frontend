@@ -12,6 +12,8 @@ import subscriptionService from '@/services/SubscriptionService';
 import { redirectToConnectIPS } from '@/lib/connectIps';
 import { toast } from 'sonner';
 import { featuredSteps } from '@/lib/data';
+import Link from 'next/link';
+import { CREATE_EXAM_LOGIN_ROUTE, CREATE_EXAM_REGISTER_ROUTE } from '@/config/app-constant';
 
 const data = [
     {
@@ -194,17 +196,38 @@ export default function Home() {
             </section>
 
             <section className="w-full">
-                <div className={' flex flex-col items-center text-center mb-8 max-w-3xl container mx-auto'}>
-                    <h2 className="text-3xl font-bold text-black  font-montserrat sm:text-4xl lg:text-5xl">
+                <div className="flex flex-col items-center text-center mb-8 max-w-3xl container mx-auto">
+                    <h2 className="text-3xl font-bold font-montserrat sm:text-4xl lg:text-5xl">
                         Conduct Your Own Test
                     </h2>
-                    <span className={'font-montserrat text-gray-600 mt-4 text-sm font-light sm:text-base md:font-normal'}>
+                    <span className="font-montserrat text-gray-600 mt-4 text-sm font-light sm:text-base md:font-normal">
                         Register as a teacher and create your own online exams with ease.
                     </span>
-                    <p className=" text-sm font-light text-muted-foreground sm:text-base md:font-normal">
+                    <p className="text-sm font-light text-muted-foreground sm:text-base md:font-normal">
                         Manage questions, set time limits, and invite students to take your tests — all from one platform. Perfect for teachers, institutions, and coaching centers who want to assess and guide their learners effectively.
                     </p>
-                    <Button className={'mt-4 text-white bg-green-600 hover:bg-green-700'}>Register as Teacher</Button>
+                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+                        <Link 
+                            href={CREATE_EXAM_REGISTER_ROUTE} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            aria-label="Register as Teacher (opens in new tab)"
+                        >
+                            <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                Register as Teacher
+                            </Button>
+                        </Link>
+                        <Link 
+                            href={CREATE_EXAM_LOGIN_ROUTE} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            aria-label="Teacher Login (opens in new tab)"
+                        >
+                            <Button className="bg-green-600 hover:bg-green-700 text-white">
+                                Already a teacher? Login
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </section>
         </main>
