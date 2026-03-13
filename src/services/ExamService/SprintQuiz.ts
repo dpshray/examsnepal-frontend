@@ -1,10 +1,11 @@
 import HttpService from "@/services/ExamService/http.service";
 
 class SprintQuizServices extends HttpService {
-    getCompleteSprintQuizzes = async (page: number = 1) => {
+    getCompleteSprintQuizzes = async (page: number = 1, tag?: string) => {
         try {
+            const url = `/sprint-quiz/completed?page=${page}${tag ? `&tag=${tag}` : ""}`
             const response = await this.getRequest({
-                url: `/sprint-quiz/completed?page=${page}`,
+                url,
                 config: {
                     auth: true,
                 },
@@ -14,10 +15,12 @@ class SprintQuizServices extends HttpService {
             throw error;
         }
     }
-    getPendingSprintQuizzes = async (page: number = 1) => {
+
+    getPendingSprintQuizzes = async (page: number = 1, tag?: string) => {
         try {
+            const url = `/sprint-quiz/pending?page=${page}${tag ? `&tag=${tag}` : ""}`
             const response = await this.getRequest({
-                url: `/sprint-quiz/pending?page=${page}`,
+                url,
                 config: {
                     auth: true,
                 },

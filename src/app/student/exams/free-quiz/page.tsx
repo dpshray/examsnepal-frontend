@@ -1,6 +1,6 @@
 'use client';
 
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {useRouter} from 'next/navigation';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {StudentBannerHeader} from '@/components/banner/header';
@@ -13,6 +13,9 @@ import CustomPagination from '@/components/Pagination';
 import {CheckCheckIcon, ClockIcon} from 'lucide-react';
 import {toast} from 'sonner';
 import {FREE_QUIZ_ROUTE} from "@/config/app-constant";
+import { useExamTagByExamType } from '@/hooks/useExamTag';
+import { useLoggedInStudent } from '@/hooks/useLoggedInStudent';
+import SelectInputField from '@/components/fields/SelectInput';
 
 interface Quiz {
     id: number;
@@ -43,16 +46,29 @@ export default function FreeQuiz() {
     const [selectedTab, setSelectedTab] = useState<QuizType>(QUIZ_TYPES.PENDING);
     const [pendingPage, setPendingPage] = useState(1);
     const [completedPage, setCompletedPage] = useState(1);
+    const [selectedTag, setSelectedTag] = useState<string>("all")
+
+    const { student } = useLoggedInStudent()
+    const { data: examTagsData } = useExamTagByExamType(student?.exam_type_id, {
+        enabled: !!student?.exam_type_id,
+    })
+
+    const examTagOptions = useMemo(() => [
+        { label: "All", value: "all" },
+        ...(examTagsData?.data?.map((tag: any) => ({
+            label: tag.name,
+            value: tag.slug,
+        })) ?? []),
+    ], [examTagsData])
 
     const {
         data: pendingData,
         isLoading: pendingLoading,
         error: pendingError,
-        refetch: refetchPendingData
     } = useQuery<QuizResponse>({
-        queryKey: ['pendingQuizzes', pendingPage],
+        queryKey: ['pendingQuizzes', pendingPage, selectedTag],
         queryFn: async () => {
-            const res = await freeQuizServices.getPendingFreeQuizzes(pendingPage);
+            const res = await freeQuizServices.getPendingFreeQuizzes(pendingPage, selectedTag === "all" ? "" : selectedTag);
             return res.data;
         },
         enabled: selectedTab === QUIZ_TYPES.PENDING,
@@ -64,12 +80,10 @@ export default function FreeQuiz() {
         data: completedData,
         isLoading: completedLoading,
         error: completedError,
-        refetch: refetchCompletedData
     } = useQuery<QuizResponse>({
-        queryKey: ['completedQuizzes', completedPage],
+        queryKey: ['completedQuizzes', completedPage, selectedTag],
         queryFn: async () => {
-            const res = await freeQuizServices.getCompleteFreeQuizzes(completedPage);
-            return res.data;
+            const res = await freeQuizServices.getCompleteFreeQuizzes(completedPage, selectedTag === "all" ? "" : selectedTag);            return res.data;
         },
         enabled: selectedTab === QUIZ_TYPES.COMPLETED,
         staleTime: 0,
@@ -111,6 +125,13 @@ export default function FreeQuiz() {
         }
     };
 
+    const handleTagChange = (val: string | number) => {
+        const tag = val === "all" ? "" : val as string
+        setSelectedTag(tag)
+        setPendingPage(1)
+        setCompletedPage(1)
+    }
+
     const handleViewAllScores = (quizId: number) => {
         router.push(`${process.env.NEXT_PUBLIC_STUDENT_SCORE_ROUTE}/${quizId}`);
     };
@@ -128,6 +149,8 @@ export default function FreeQuiz() {
     const currentData = isPending ? pendingData : completedData;
     const currentPage = isPending ? pendingPage : completedPage;
     const setCurrentPage = isPending ? setPendingPage : setCompletedPage;
+
+    const quizList = currentData?.data ?? []
 
     return (
         <main className="w-full min-h-screen">
@@ -149,7 +172,18 @@ export default function FreeQuiz() {
             </section>
 
             <div className="flex flex-col gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-                <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-4 w-full">
+                <div className="flex items-center gap-3">
+                    <div className="w-56">
+                        <SelectInputField
+                            placeholder="Filter by tag"
+                            options={examTagOptions}
+                            value={selectedTag}
+                            onChangeAction={handleTagChange}
+                        />
+                    </div>
+                </div>
+
+                <Tabs value={selectedTab} onValueChange={handleTabChange} className="mt-2 w-full">
                     <ScrollArea className="w-full">
                         <TabsList
                             className="before:bg-border relative mb-4 md:mb-6 h-auto w-full gap-0.5 bg-transparent p-0 before:absolute before:inset-x-0 before:bottom-0 before:h-px">
@@ -184,11 +218,10 @@ export default function FreeQuiz() {
                                     <QuizTestCardSkeleton key={`pending-skeleton-${index}`}/>
                                 ))}
                             </div>
-                        ) : currentData?.data && currentData.data.length > 0 ? (
+                        ) : quizList.length > 0 ? (
                             <>
-                                <div
-                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-                                    {currentData.data.map((quiz) => (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+                                    {quizList.map((quiz) => (
                                         <QuizPendingCard
                                             key={`pending-${quiz.id}`}
                                             exam={quiz}
@@ -197,11 +230,11 @@ export default function FreeQuiz() {
                                         />
                                     ))}
                                 </div>
-                                {currentData.last_page > 1 && (
+                                {(currentData?.last_page ?? 0) > 1 && (
                                     <div className="flex justify-center mt-8">
                                         <CustomPagination
                                             className={'justify-end'}
-                                            totalPages={currentData.last_page}
+                                            totalPages={currentData?.last_page ?? 1}
                                             currentPage={currentPage}
                                             onPageChangeAction={setCurrentPage}
                                         />
@@ -235,11 +268,10 @@ export default function FreeQuiz() {
                                     <QuizTestCardSkeleton key={`completed-skeleton-${index}`}/>
                                 ))}
                             </div>
-                        ) : currentData?.data && currentData.data.length > 0 ? (
+                        ) : quizList.length > 0 ? (
                             <>
-                                <div
-                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-                                    {currentData.data.map((quiz) => (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+                                    {quizList.map((quiz) => (
                                         <QuizCompletedCard
                                             key={`completed-${quiz.id}`}
                                             exam={quiz}
@@ -248,11 +280,11 @@ export default function FreeQuiz() {
                                         />
                                     ))}
                                 </div>
-                                {currentData.last_page > 1 && (
+                                {(currentData?.last_page ?? 0) > 1 && (
                                     <div className="flex justify-center mt-8">
                                         <CustomPagination
                                             className={'justify-end'}
-                                            totalPages={currentData.last_page}
+                                            totalPages={currentData?.last_page ?? 1}
                                             currentPage={currentPage}
                                             onPageChangeAction={setCurrentPage}
                                         />

@@ -16,9 +16,19 @@ class ExamService extends HttpService {
         }
     }
 
-
-
-
+    getExamTagByExamType = async (examTypeId: number) => {
+        try {
+            const response = await this.getRequest({
+                url: `exam-tag/${examTypeId}`,
+                config: {
+                    auth: true,
+                },
+            });
+            return response?.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 
