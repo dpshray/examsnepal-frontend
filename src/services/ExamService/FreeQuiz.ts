@@ -3,10 +3,11 @@ import HttpService from "@/services/ExamService/http.service";
 class FreeQuizServices extends HttpService {
 
 
-    getCompleteFreeQuizzes = async (page: number = 1) => {
+   getCompleteFreeQuizzes = async (page: number = 1, tag?: string) => {
         try {
+            const url = `/free-quiz/completed?page=${page}${tag ? `&tag=${tag}` : ""}`
             const response = await this.getRequest({
-                url: `/free-quiz/completed?page=${page}`,
+                url,
                 config: {
                     auth: true,
                 },
@@ -16,10 +17,12 @@ class FreeQuizServices extends HttpService {
             throw error;
         }
     }
-    getPendingFreeQuizzes = async (page: number = 1) => {
+
+    getPendingFreeQuizzes = async (page: number = 1, tag?: string) => {
         try {
+            const url = `/free-quiz/pending?page=${page}${tag ? `&tag=${tag}` : ""}`
             const response = await this.getRequest({
-                url: `/free-quiz/pending?page=${page}`,
+                url,
                 config: {
                     auth: true,
                 },

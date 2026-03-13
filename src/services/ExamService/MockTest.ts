@@ -1,10 +1,11 @@
 import HttpService from "@/services/ExamService/http.service";
 
 class MockTest extends HttpService {
-    getPendingMockTests = async (page: number = 1) => {
+    getPendingMockTests = async (page: number = 1, tag?: string) => {
         try {
+            const url = `/mock-test/pending?page=${page}${tag ? `&tag=${tag}` : ""}`
             const response = await this.getRequest({
-                url: `/mock-test/pending?page=${page}`,
+                url,
                 config: {
                     auth: true,
                 },
@@ -14,10 +15,12 @@ class MockTest extends HttpService {
             throw error;
         }
     }
-    getCompletedMockTests = async (page: number = 1) => {
+
+    getCompletedMockTests = async (page: number = 1, tag?: string) => {
         try {
+            const url = `/mock-test/completed?page=${page}${tag ? `&tag=${tag}` : ""}`
             const response = await this.getRequest({
-                url: `/mock-test/completed?page=${page}`,
+                url,
                 config: {
                     auth: true,
                 },
@@ -27,6 +30,7 @@ class MockTest extends HttpService {
             throw error;
         }
     }
+    
     getMockTestById = async (examId:number,params?:any) => {
         try {
            

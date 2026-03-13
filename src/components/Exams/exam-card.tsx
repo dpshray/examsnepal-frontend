@@ -19,6 +19,11 @@ export interface ExamUser {
     fullname: string;
 }
 
+export interface ExamTag {
+    name: string
+    slug: string
+}
+
 export interface Exam {
     id: number;
     exam_name: string;
@@ -30,6 +35,7 @@ export interface Exam {
     user: ExamUser;
     is_interrupted?: boolean;
     is_exam_completed?: boolean;
+    exam_tags?: ExamTag[]
 }
 
 interface QuizPendingCardProps extends BaseQuizCardProps {
@@ -81,6 +87,19 @@ export function QuizPendingCard({
                             </Badge>
                         )}
                     </div>
+                    {exam.exam_tags && exam.exam_tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                            {exam.exam_tags.map((tag) => (
+                                <Badge
+                                    key={tag.slug}
+                                    variant="secondary"
+                                    className="text-xs bg-blue-50 text-blue-700 border border-blue-200"
+                                >
+                                    {tag.name}
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
                     <p className="font-montserrat text-xs sm:text-sm text-gray-600 truncate">
                         Created by {exam.user.fullname}
                     </p>
@@ -165,6 +184,19 @@ export function QuizCompletedCard({
                     <h3 className="font-montserrat text-base sm:text-lg md:text-xl font-bold text-gray-900 line-clamp-2 break-words">
                         {exam.exam_name}
                     </h3>
+                    {exam.exam_tags && exam.exam_tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                            {exam.exam_tags.map((tag) => (
+                                <Badge
+                                    key={tag.slug}
+                                    variant="secondary"
+                                    className="text-xs bg-blue-50 text-blue-700 border border-blue-200"
+                                >
+                                    {tag.name}
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
                     <p className="font-montserrat text-xs sm:text-sm text-gray-600 truncate">
                         Created by {exam.user.fullname}
                     </p>

@@ -44,7 +44,7 @@ export default function ExamAttemptPage() {
   const [isExamComplete, setIsExamComplete] = useState(false) 
   const [questionNumberMap, setQuestionNumberMap] = useState<Map<number, number>>(new Map())
   const questionRefs = useRef<Record<number, HTMLDivElement | null>>({})
-  const QUESTIONS_PER_PAGE = 2
+  const QUESTIONS_PER_PAGE = 10
   const DEFAULT_EXAM_DURATION = 60 * 60 
 
   // API hooks
