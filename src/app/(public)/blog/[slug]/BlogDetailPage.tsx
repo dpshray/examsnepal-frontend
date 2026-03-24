@@ -42,12 +42,12 @@ interface BlogDetail {
 
 function BlogHeader({ image, title }: { image: string; title: string }) {
     return (
-        <div className="relative w-full h-[400px] overflow-hidden bg-muted">
+        <div className="relative w-full aspect-[16/6] overflow-hidden bg-muted">
             <Image
                 src={image || "/placeholder.svg"}
                 alt={title}
                 fill
-                className="object-cover "
+                className="object-contain"
                 priority
                 sizes="100vw"
             />

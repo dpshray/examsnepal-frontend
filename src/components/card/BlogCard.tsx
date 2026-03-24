@@ -42,9 +42,9 @@ export const BlogCard: FC<BlogCardProps> = ({
     const formattedDate = format(new Date(published_date), "MMM d, yyyy")
 
     return (
-        <Link href={`/blog/${slug}`} className="group block">
+        <Link href={`/blog/${slug}`} className="group block h-full">
             <article
-                className="w-full rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100 flex flex-col cursor-pointer hover:shadow-md transition duration-300 ease-in-out focus-within:ring-2 focus-within:ring-teal-400"
+                className="w-full h-full rounded-xl overflow-hidden bg-white shadow-sm border border-gray-100 flex flex-col cursor-pointer hover:shadow-md transition duration-300 ease-in-out focus-within:ring-2 focus-within:ring-teal-400"
                 aria-label={`Read blog post: ${title}`}
             >
                 {/* Image */}
