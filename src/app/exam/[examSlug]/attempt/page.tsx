@@ -196,34 +196,63 @@ export default function ExamAttemptPage() {
       sessionStorage.removeItem(timeUp)
     }
 
+    if (!attemptIds.has(sectionSlug)) {
+      clearStorage() // wipe previous session's data before starting new
+    }
+
     // Start new attempt
+    // startExam(
+    //   { examSlug, sectionSlug, type: examTypeData },
+    //   {
+    //     onSuccess: (response) => {
+    //       const newAttemptId = response.data.attempt_id
+    //       const newAttemptIds = new Map(attemptIds)
+    //       newAttemptIds.set(sectionSlug, newAttemptId)
+          
+    //       const newAnswers = new Map(answers)
+    //       if (!newAnswers.has(sectionSlug)) {
+    //         newAnswers.set(sectionSlug, new Map())
+    //       }
+          
+    //       updateState({ 
+    //         attemptIds: newAttemptIds,
+    //         selectedSection: sectionSlug,
+    //         currentPage: 1,
+    //         answers: newAnswers
+    //       })
+          
+    //       toast.success("Section started successfully!")
+    //     },
+    //     onError: (err: any) => {
+    //       toast.error(err?.data?.message || "Error starting section!")
+    //     },
+    //   }
+    // )
     startExam(
-      { examSlug, sectionSlug, type: examTypeData },
-      {
-        onSuccess: (response) => {
-          const newAttemptId = response.data.attempt_id
-          const newAttemptIds = new Map(attemptIds)
-          newAttemptIds.set(sectionSlug, newAttemptId)
-          
-          const newAnswers = new Map(answers)
-          if (!newAnswers.has(sectionSlug)) {
-            newAnswers.set(sectionSlug, new Map())
-          }
-          
-          updateState({ 
-            attemptIds: newAttemptIds,
-            selectedSection: sectionSlug,
-            currentPage: 1,
-            answers: newAnswers
-          })
-          
-          toast.success("Section started successfully!")
-        },
-        onError: (err: any) => {
-          toast.error(err?.data?.message || "Error starting section!")
-        },
-      }
-    )
+  { examSlug, sectionSlug, type: examTypeData },
+  {
+    onSuccess: (response) => {
+      const newAttemptId = response.data.attempt_id
+
+      // ✅ Always use fresh attempt ID from API, clear old ones first
+      const newAttemptIds = new Map() // clear all old attempt IDs
+      newAttemptIds.set(sectionSlug, newAttemptId)
+
+      const newAnswers = new Map()
+      newAnswers.set(sectionSlug, new Map())
+
+      updateState({
+        attemptIds: newAttemptIds,  // ✅ fresh map, not merged with old
+        selectedSection: sectionSlug,
+        currentPage: 1,
+        answers: newAnswers,
+        submittedSections: new Set(), // ✅ clear submitted sections too
+      })
+
+      toast.success("Section started successfully!")
+    },
+  }
+)
   }, [isStartingExam, submittedSections, attemptIds, answers, examSlug, examTypeData, startExam, updateState, examData, hasAttemptsLimit])
 
   const handlePageChange = useCallback((page: number) => {
