@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
 export function useExamStorage(examSlug: string) {
-  const storageKeys = getStorageKeys(examSlug)
   const isClearing = useRef(false)
   
   const [state, setState] = useState<ExamState>({
@@ -23,6 +22,8 @@ export function useExamStorage(examSlug: string) {
     if (typeof window === 'undefined') return
 
     try {
+      // ✅ Compute fresh keys at load time
+      const storageKeys = getStorageKeys(examSlug)
       const loadedState: Partial<ExamState> = {}
 
       const savedSection = localStorage.getItem(storageKeys.selectedSection)
@@ -31,7 +32,7 @@ export function useExamStorage(examSlug: string) {
       const savedAttemptIds = localStorage.getItem(storageKeys.attemptIds)
       if (savedAttemptIds) {
         const parsed = JSON.parse(savedAttemptIds)
-        loadedState.attemptIds = new Map(Object.entries(parsed))
+        loadedState.attemptIds = new Map(Object.entries(parsed).map(([k, v]) => [k, Number(v)]))
       }
 
       const savedAnswers = localStorage.getItem(storageKeys.answers)
@@ -65,11 +66,12 @@ export function useExamStorage(examSlug: string) {
   // Persist state to localStorage
   useEffect(() => {
     if (typeof window === 'undefined') return
-    
-    // Don't persist if we're clearing storage
-    if (isClearing.current) return
+    if (isClearing.current) return  // skip persist while clearing
 
     try {
+      // ✅ Compute fresh keys at persist time
+      const storageKeys = getStorageKeys(examSlug)
+
       if (state.selectedSection) {
         localStorage.setItem(storageKeys.selectedSection, state.selectedSection)
       }
@@ -90,43 +92,36 @@ export function useExamStorage(examSlug: string) {
       console.error("Error saving exam state to localStorage:", error)
       toast.error("Failed to save progress")
     }
-  }, [state, storageKeys])
+  }, [state, examSlug])
 
   const updateState = useCallback((updates: Partial<ExamState>) => {
     setState(prev => ({ ...prev, ...updates }))
   }, [])
 
   const clearStorage = useCallback(() => {
-    // Set flag to prevent persistence effect from running
     isClearing.current = true
-    
+
     try {
-      // Clear all exam state storage items
-      Object.values(storageKeys).forEach(key => {
-        localStorage.removeItem(key)
-      })
-      
-      // Clear timer keys from localStorage
-      const timerKeys = getTimerKeys(examSlug)
-      localStorage.removeItem(timerKeys.endTime)
-      
-      // Clear timer keys from sessionStorage
-      sessionStorage.removeItem(timerKeys.timeUp)
-      
-      // console.log('Storage cleared successfully for exam:', examSlug)
-      // console.log('Cleared keys:', {
-      //   storage: Object.values(storageKeys),
-      //   timer: [timerKeys.endTime, timerKeys.timeUp]
-      // })
+      // ✅ Nuclear clear — wipe everything related to this exam slug
+      // This catches ALL key formats (old, new, scoped, unscoped)
+      Object.keys(localStorage)
+        .filter(key => key.includes(examSlug))
+        .forEach(key => localStorage.removeItem(key))
+
+      // Clear timer from sessionStorage too
+      Object.keys(sessionStorage)
+        .filter(key => key.includes(examSlug))
+        .forEach(key => sessionStorage.removeItem(key))
+
     } catch (error) {
       console.error('Error clearing storage:', error)
     }
-    
-    // Reset flag after a brief delay
+
+    // ✅ Keep flag true longer to prevent persist effect re-writing data
     setTimeout(() => {
       isClearing.current = false
-    }, 100)
-  }, [examSlug, storageKeys])
+    }, 500) // increased from 100ms
+  }, [examSlug])
 
   return { state, updateState, clearStorage }
 }
