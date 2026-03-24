@@ -337,18 +337,44 @@ export default function ExamAttemptPage() {
       return isSubmittedInSession || hasReachedLimit
     })
 
-    if (allSectionsCompleted) {
-      setIsExamComplete(true)
+    // if (allSectionsCompleted) {
+    //   setIsExamComplete(true)
       
-      setTimeout(() => {
-        clearStorage()
-        router.replace(`/exam/${examSlug}/completed`)
-      }, 100)
-    } else {
-      updateState({ selectedSection: null })
-      toast.success("Section submitted! You can now select another section.")
-      resetSaveStatus()
-    }
+    //   setTimeout(() => {
+    //     clearStorage()
+    //     router.replace(`/exam/${examSlug}/completed`)
+    //   }, 100)
+    // } else {
+    //   updateState({ selectedSection: null })
+    //   toast.success("Section submitted! You can now select another section.")
+    //   resetSaveStatus()
+    // }
+    if (allSectionsCompleted) {
+    setIsExamComplete(true)
+    clearStorage()
+
+    // ✅ Reset in-memory state so useGetQuestions stops firing
+    updateState({
+      selectedSection: null,
+      attemptIds: new Map(),
+      answers: new Map(),
+      submittedSections: new Set(),
+      currentPage: 1,
+    })
+
+    setTimeout(() => {
+      router.replace(`/exam/${examSlug}/completed`)
+    }, 100)
+  } else {
+    // ✅ Clear selected section AND attemptId so query doesn't re-fire
+    updateState({ 
+      selectedSection: null,
+      attemptIds: new Map(), // ✅ wipe attempt IDs so currentAttemptId becomes null
+      answers: new Map(),
+    })
+    toast.success("Section submitted! You can now select another section.")
+    resetSaveStatus()
+  }
   }, [selectedSection, submittedSections, examData, clearStorage, router, examSlug, updateState, resetSaveStatus, hasAttemptsLimit])
 
   const handleTimeUp = useCallback(() => {
