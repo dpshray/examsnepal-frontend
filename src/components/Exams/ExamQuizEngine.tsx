@@ -78,7 +78,7 @@ export default function ExamQuizEngine({
         queryKey: ["exam-quiz", examId, page],
         queryFn: () => onFetchQuestionsAction(examId, page),
         enabled: Number.isFinite(examId),
-        retry: 1,
+        retry: false,
         refetchOnWindowFocus: true,
     })
 
@@ -86,13 +86,11 @@ export default function ExamQuizEngine({
         if (data?.duration) setTime(data.duration * 60)
     }, [data?.duration])
 
-    console.log('Data',data)
     const questions = useMemo(() => data?.data ?? [], [data])
     const totalPages = data?.last_page ?? 1
     const totalQuestions = data?.total ?? 0
     const answered = (data?.total_choosed_options ?? 0) + Object.keys(answers).length
 
-    console.log('Answer', answered)
     const progress = totalQuestions ? Math.round((answered / totalQuestions) * 100) : 0
 
     const selectOption = useCallback((qid: number, oid: number) => {

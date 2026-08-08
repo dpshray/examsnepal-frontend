@@ -73,7 +73,7 @@ export function StudentBannerHeader({
                                         subtitle = 'Trusted by 20,000+ students',
                                         imageSrc = '/images/exams.png',
                                         className,
-                                        textClassName = 'text-white',
+                                        textClassName = 'text-gray-900',
                                     }: StudentBannerHeaderProps) {
     const ref = useRef(null);
     const inView = useInView(ref, {amount: 0.4});

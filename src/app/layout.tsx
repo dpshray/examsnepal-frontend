@@ -19,9 +19,6 @@ const poppins = Poppins({
 export const metadata: Metadata = {
     title: "Exams Nepal",
     description: "Exams Nepal is a platform for online exams and practice questions.",
-    icons: {
-        icon: "/logo.svg",
-    },
 };
 
 export default function RootLayout({

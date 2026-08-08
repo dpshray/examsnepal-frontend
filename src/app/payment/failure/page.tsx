@@ -2,6 +2,8 @@
 
 import { XCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import subscriptionService from "@/services/SubscriptionService"
@@ -22,11 +24,6 @@ export default function PaymentFailurePage() {
     }, [txnId]);
 
 
-    // const handleRetryPayment = () => {
-    //     // Redirect to payment page or retry logic
-    //     window.location.href = "/payment"
-    // }
-
     return (
         <div className="h-screen bg-gradient-to-br from-red-50 to-pink-50 flex items-center justify-center p-4">
             <Card className="w-full max-w-md mx-auto shadow-xl rounded-2xl">
@@ -46,6 +43,15 @@ export default function PaymentFailurePage() {
                         <p className="text-gray-600">
                             {loading ? "Verifying payment status…" : "Oops! Something went wrong while processing your payment. Please try again."}
                         </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <Button asChild className="w-full bg-red-600 hover:bg-red-700 text-white">
+                            <Link href="/student/subscription">Try Again</Link>
+                        </Button>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/student/dashboard">Go to Dashboard</Link>
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

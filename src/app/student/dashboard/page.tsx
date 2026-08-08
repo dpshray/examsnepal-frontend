@@ -16,10 +16,14 @@ import {Alert, AlertDescription} from "@/components/ui/alert";
 import RepliesCardSkeleton, {AnalyticsCard, RepliesCard} from "@/components/card/card";
 import {StudentBannerHeader} from "@/components/banner/header";
 import studentService from "@/services/StudentService";
+import pinsService from "@/services/pinsService";
+import mockTestService from "@/services/ExamService/MockTest";
 import {ExamData} from "@/types/types";
 import useMockCompletedQuizzes from "@/hooks/useMockCompletedQuizzes";
 import CustomPagination from "@/components/Pagination";
 import { toast } from "sonner";
+import Link from "next/link";
+import {MOCK_TEST_ROUTE} from "@/config/app-constant";
 
 interface Answer {
     id: number;
@@ -238,6 +242,56 @@ export default function StudentDashboard() {
 
 
     const {completedMockQuizzes} = useMockCompletedQuizzes();
+
+    const [pinnedQuestions, setPinnedQuestions] = useState<{ id: number; text: string }[]>([]);
+    const [pinnedLoading, setPinnedLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPinnedQuestions = async () => {
+            try {
+                setPinnedLoading(true);
+                const response = await pinsService.getMyPins(1);
+                const list = response?.data?.data ?? [];
+                setPinnedQuestions(
+                    list.slice(0, 3).map((pin: any) => ({
+                        id: pin.question_id,
+                        text: pin?.question?.question ?? "Untitled question",
+                    }))
+                );
+            } catch (error) {
+                console.error("Failed to fetch pinned questions:", error);
+                setPinnedQuestions([]);
+            } finally {
+                setPinnedLoading(false);
+            }
+        };
+        fetchPinnedQuestions();
+    }, []);
+
+    const [upcomingMockTests, setUpcomingMockTests] = useState<{ id: number; exam_name: string }[]>([]);
+    const [mockTestsLoading, setMockTestsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchUpcomingMockTests = async () => {
+            try {
+                setMockTestsLoading(true);
+                const response = await mockTestService.getPendingMockTests(1);
+                const list = response?.data?.data ?? [];
+                setUpcomingMockTests(
+                    list.slice(0, 3).map((exam: any) => ({
+                        id: exam.id,
+                        exam_name: exam.exam_name,
+                    }))
+                );
+            } catch (error) {
+                console.error("Failed to fetch upcoming mock tests:", error);
+                setUpcomingMockTests([]);
+            } finally {
+                setMockTestsLoading(false);
+            }
+        };
+        fetchUpcomingMockTests();
+    }, []);
 
     const EmptyState = ({type}: { type: 'all' | 'solved' | 'unsolved' }) => {
         const config = {
@@ -563,11 +617,30 @@ export default function StudentDashboard() {
                                 View All
                             </Button>
                         </div>
-                        <ul className="space-y-2 text-xs sm:text-sm font-poppins font-medium text-gray-700">
-                            <li className="p-2 bg-white rounded-md">Lok Sewa General Awareness and Aptitude Quiz</li>
-                            <li className="p-2 bg-white rounded-md">Nursing quiz for MN - Adult Health Nursing</li>
-                            <li className="p-2 bg-white rounded-md">Nursing MCQs Quiz</li>
-                        </ul>
+                        {pinnedLoading ? (
+                            <div className="space-y-2">
+                                {Array.from({length: 3}).map((_, i) => (
+                                    <div key={i} className="h-9 bg-gray-200 rounded-md animate-pulse"/>
+                                ))}
+                            </div>
+                        ) : pinnedQuestions.length === 0 ? (
+                            <p className="text-xs sm:text-sm text-gray-500 p-2">
+                                You haven&apos;t pinned any questions yet.
+                            </p>
+                        ) : (
+                            <ul className="space-y-2 text-xs sm:text-sm font-poppins font-medium text-gray-700">
+                                {pinnedQuestions.map((pin) => (
+                                    <li key={pin.id}>
+                                        <Link
+                                            href="/student/pins"
+                                            className="block p-2 bg-white rounded-md truncate hover:text-green-600 transition-colors"
+                                        >
+                                            {pin.text}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </motion.div>
 
                     <motion.div
@@ -587,11 +660,30 @@ export default function StudentDashboard() {
                                 View All
                             </Button>
                         </div>
-                        <ul className="space-y-2 text-xs sm:text-sm font-poppins font-medium text-gray-700">
-                            <li className="p-2 bg-white rounded-md">Lok Sewa General Awareness and Aptitude Quiz</li>
-                            <li className="p-2 bg-white rounded-md">Nursing quiz for MN - Adult Health Nursing</li>
-                            <li className="p-2 bg-white rounded-md">Nursing MCQs Quiz</li>
-                        </ul>
+                        {mockTestsLoading ? (
+                            <div className="space-y-2">
+                                {Array.from({length: 3}).map((_, i) => (
+                                    <div key={i} className="h-9 bg-gray-200 rounded-md animate-pulse"/>
+                                ))}
+                            </div>
+                        ) : upcomingMockTests.length === 0 ? (
+                            <p className="text-xs sm:text-sm text-gray-500 p-2">
+                                No mock tests available right now.
+                            </p>
+                        ) : (
+                            <ul className="space-y-2 text-xs sm:text-sm font-poppins font-medium text-gray-700">
+                                {upcomingMockTests.map((exam) => (
+                                    <li key={exam.id}>
+                                        <Link
+                                            href={`${MOCK_TEST_ROUTE}/${exam.id}`}
+                                            className="block p-2 bg-white rounded-md truncate hover:text-green-600 transition-colors"
+                                        >
+                                            {exam.exam_name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </motion.div>
 
                     {/* <motion.div

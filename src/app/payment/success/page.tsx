@@ -2,6 +2,8 @@
 
 import {CheckCircle} from "lucide-react"
 import {Card, CardContent} from "@/components/ui/card"
+import {Button} from "@/components/ui/button"
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import subscriptionService from "@/services/SubscriptionService";
@@ -46,6 +48,10 @@ export default function PaymentSuccessPage() {
                             {loading ? "Verifying your payment…" : "Your payment has been processed."}
                         </p>
                     </div>
+
+                    <Button asChild className="w-full bg-green-600 hover:bg-green-700 text-white">
+                        <Link href="/student/dashboard">Go to Dashboard</Link>
+                    </Button>
                 </CardContent>
             </Card>
         </div>
