@@ -6,7 +6,7 @@ import {Button} from "@/components/ui/button";
 
 export const HeroSection = () => {
     return (
-        <section className="py-3 my-4 flex items-center justify-center max-h-[600px]">
+        <section className="py-3 my-4 flex items-center justify-center lg:max-h-[600px]">
             <div
                 className="container mx-auto flex flex-col lg:flex-row lg:justify-between items-center gap-10 px-6 md:px-12">
 
@@ -31,7 +31,7 @@ export const HeroSection = () => {
                             variant="default"
                             className="bg-green-600 text-white hover:bg-green-700 transition duration-300 shadow-md"
                         >
-                            <Link href="/blog">
+                            <Link href="/register">
                                 Get Started
                             </Link>
                         </Button>

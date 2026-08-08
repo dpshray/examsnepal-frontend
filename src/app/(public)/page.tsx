@@ -64,6 +64,11 @@ export default function Home() {
     const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
 
     useEffect(() => {
+        if (!localStorage.getItem("_at")) {
+            setLoading(false);
+            return;
+        }
+
         const fetchUserSubscription = async () => {
             try {
                 const data = await subscriptionService.getSubscriptionTypes();

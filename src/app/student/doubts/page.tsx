@@ -186,8 +186,7 @@ export default function Doubts() {
                             <div className="space-y-4 sm:space-y-6">
                                 {solvedDoubts.map(
                                     (doubt, index) =>
-                                        doubt.question &&
-                                        doubt.solved_by && (
+                                        doubt.question && (
                                             <motion.div
                                                 key={`solved-doubt-${index}`}
                                                 initial={{opacity: 0, y: 20}}

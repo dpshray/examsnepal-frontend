@@ -62,18 +62,18 @@ const Footer = () => {
                     </div>
 
                     {/* Footer Columns */}
-                    <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="md:w-2/3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         {/* Contact Info */}
-                        <div>
+                        <div className="min-w-0">
                             <h3 className="text-lg font-semibold mb-3">Contact Us</h3>
                             <ul>
                                 {contactData.map(({icon: Icon, text, href}, index) => (
                                     <li
                                         key={index}
-                                        className="flex items-start gap-2 mt-2 text-sm text-gray-300 hover:text-white transition"
+                                        className="flex items-start gap-2 mt-2 text-sm text-gray-300 hover:text-white transition min-w-0"
                                     >
                                         <Icon size={20} className="mt-1 shrink-0"/>
-                                        <a href={href} className="hover:underline">{text}</a>
+                                        <a href={href} className="hover:underline break-words min-w-0">{text}</a>
                                     </li>
                                 ))}
 

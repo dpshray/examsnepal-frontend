@@ -44,7 +44,7 @@ export interface DoubtSolvedCardProps {
         id: number;
         fullname: string;
         username: string;
-    };
+    } | null;
 
 }
 
@@ -102,7 +102,7 @@ export function DoubtSolvedCard({
                 <div className={' flex justify-between items-center'}>
                     <div className={'flex flex-col space-y-1'}>
                         <p className="text-sm text-black/90 ">
-                            Solved by {solved_by.fullname} (@{solved_by.username})
+                            {solved_by ? `Solved by ${solved_by.fullname} (@${solved_by.username})` : "Solved"}
                         </p>
                         <p className="text-xs text-black/90 ">
                             Updated on: {new Date(updated_at).toLocaleDateString()}
