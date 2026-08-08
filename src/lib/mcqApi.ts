@@ -28,8 +28,6 @@ export interface PaginatedMcqs {
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 
-export const MCQ_REVALIDATE_SECONDS = 3600;
-
 export async function getExamCategories(): Promise<ExamCategory[]> {
     try {
         // cache: 'no-store' - Vercel's Data Cache persists across deployments,
@@ -53,9 +51,12 @@ export async function getExamCategories(): Promise<ExamCategory[]> {
 }
 
 export async function getCategoryQuestions(categorySlug: string, page: number): Promise<PaginatedMcqs> {
+    // cache: 'no-store' - same Data Cache staleness risk as getExamCategories
+    // above (a cached response can outlive backend/schema changes for up to
+    // the revalidate window, or the life of the dev server).
     const res = await fetch(
         `${API_URL}/free/exam-categories/${categorySlug}/questions?page=${page}`,
-        { next: { revalidate: MCQ_REVALIDATE_SECONDS } }
+        { cache: 'no-store' }
     );
 
     if (res.status === 404) {
@@ -71,9 +72,10 @@ export async function getCategoryQuestions(categorySlug: string, page: number): 
 }
 
 export async function searchQuestions(query: string, page: number): Promise<PaginatedMcqs> {
+    // cache: 'no-store' - same reasoning as getCategoryQuestions above.
     const res = await fetch(
         `${API_URL}/free/search-questions?page=${page}&keyword=${encodeURIComponent(query)}`,
-        { next: { revalidate: MCQ_REVALIDATE_SECONDS } }
+        { cache: 'no-store' }
     );
 
     if (res.status === 404) {
