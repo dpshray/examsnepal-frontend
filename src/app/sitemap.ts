@@ -37,7 +37,11 @@ export async function generateSitemaps() {
 
 async function getCategoryRoutes(): Promise<MetadataRoute.Sitemap> {
     try {
-        const res = await fetch(`${API_URL}/free/exam-categories`, { next: { revalidate: 3600 } });
+        // cache: 'no-store' - Vercel's Data Cache persists across deployments,
+        // so a `next: {revalidate}` fetch here can keep baking a stale/bad
+        // result (e.g. slug: null from a backend outage) into every generated
+        // sitemap for up to the revalidate window, even after a redeploy.
+        const res = await fetch(`${API_URL}/free/exam-categories`, { cache: 'no-store' });
         if (!res.ok) return [];
 
         const json = await res.json();
@@ -57,7 +61,8 @@ async function getCategoryRoutes(): Promise<MetadataRoute.Sitemap> {
 // filters draft ones out of these list endpoints).
 async function getExamGuideRoutes(): Promise<MetadataRoute.Sitemap> {
     try {
-        const res = await fetch(`${API_URL}/free/exam-guides/categories`, { next: { revalidate: 3600 } });
+        // cache: 'no-store' - same Data Cache persistence risk as getCategoryRoutes above.
+        const res = await fetch(`${API_URL}/free/exam-guides/categories`, { cache: 'no-store' });
         if (!res.ok) return [];
 
         const json = await res.json();
