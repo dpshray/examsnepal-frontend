@@ -20,6 +20,7 @@ import { CREATE_EXAM_ROUTE } from "@/config/app-constant";
 const NAV_ITEMS = [
     {label: "Home", link: "/"},
     {label: "About Us", link: "/about"},
+    {label: "Exams", link: "/exams"},
     {label: "Find MCQs", link: "/find-mcq"},
     {label: "Blogs", link: "/blog"},
     {label: "Contact Us", link: "/contact-us"},
