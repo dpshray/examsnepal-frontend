@@ -32,8 +32,13 @@ export const MCQ_REVALIDATE_SECONDS = 3600;
 
 export async function getExamCategories(): Promise<ExamCategory[]> {
     try {
+        // cache: 'no-store' - Vercel's Data Cache persists across deployments,
+        // so a `next: {revalidate}` fetch here can keep serving a stale/bad
+        // result (e.g. from a backend outage) for up to the revalidate window
+        // even after a fresh redeploy. This list is small and cheap to fetch,
+        // so always get it live rather than risk another silent stale-data bug.
         const res = await fetch(`${API_URL}/free/exam-categories`, {
-            next: { revalidate: MCQ_REVALIDATE_SECONDS },
+            cache: 'no-store',
         });
 
         if (!res.ok) {
