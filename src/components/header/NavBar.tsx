@@ -22,6 +22,7 @@ const NAV_ITEMS = [
     {label: "About Us", link: "/about"},
     {label: "Exams", link: "/exams"},
     {label: "Find MCQs", link: "/find-mcq"},
+    {label: "Institutes", link: "/institutes"},
     {label: "Blogs", link: "/blog"},
     {label: "Contact Us", link: "/contact-us"},
     {label: "Create Exams", link: CREATE_EXAM_ROUTE},
