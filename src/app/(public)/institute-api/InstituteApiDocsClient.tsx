@@ -44,11 +44,11 @@ const SHOWCASE_BASE_URL = "https://www.examsnepal.com/institute";
 const SANDBOX_TEST_KEY = "en_test_sandbox_demo_key";
 
 export default function InstituteApiDocsClient() {
-  const [instituteSlug, setInstituteSlug] = useState("centuryclasses");
+  const [instituteSlug, setInstituteSlug] = useState("examsnepal");
   const [activeLang, setActiveLang] = useState<"curl" | "javascript" | "react" | "php" | "python">("javascript");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const cleanSlug = instituteSlug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "") || "your-institute";
+  const cleanSlug = instituteSlug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "") || "examsnepal";
 
   const portalLink = `${PORTAL_BASE_URL}/${cleanSlug}`;
   const registerLink = `${PORTAL_BASE_URL}/${cleanSlug}?tab=register`;
@@ -68,19 +68,19 @@ export default function InstituteApiDocsClient() {
       message: "Institute profile",
       data: {
         profile: {
-          id: 12,
-          fullname: "Century Classes",
-          org: "Century Professional Academy",
+          id: 1,
+          fullname: "ExamsNepal Academy",
+          org: "ExamsNepal Premier Institute",
           username: cleanSlug,
           slug: cleanSlug,
-          email: "contact@centuryclasses.com",
+          email: "info@examsnepal.com",
           phone: "+977 9801234567",
-          location: "Putalisadak, Kathmandu, Nepal",
-          logo: "https://api.examsnepal.dworklabs.com/storage/logos/century.png",
-          banner_image: "https://api.examsnepal.dworklabs.com/storage/banners/century_banner.png",
+          location: "Kathmandu, Nepal",
+          logo: "https://api.examsnepal.dworklabs.com/storage/logos/examsnepal.png",
+          banner_image: "https://api.examsnepal.dworklabs.com/storage/banners/examsnepal_banner.png",
           about: "Premier institute offering Lok Sewa, Banking, and Engineering competitive exam preparation with expert faculty.",
-          facebook: "https://facebook.com/centuryclasses",
-          linkedin: "https://linkedin.com/company/centuryclasses"
+          facebook: "https://facebook.com/examsnepal",
+          linkedin: "https://linkedin.com/company/examsnepal"
         },
         insights: {
           students_count: 340,
@@ -352,7 +352,7 @@ else:
                 type="text"
                 value={instituteSlug}
                 onChange={(e) => setInstituteSlug(e.target.value)}
-                placeholder="e.g. centuryclasses"
+                placeholder="e.g. examsnepal"
                 className="w-full bg-white dark:bg-zinc-900 text-slate-900 dark:text-white px-4 py-2.5 rounded-xl text-sm font-mono border-0 focus:ring-2 focus:ring-green-400 focus:outline-none placeholder:text-slate-400 shadow-inner"
               />
             </div>
@@ -510,7 +510,7 @@ else:
                     size="sm"
                     variant="outline"
                     onClick={() => copyToClipboard(portalLink, "portal-link")}
-                    className="shrink-0 h-8 px-2.5 text-xs flex items-center gap-1"
+                    className="shrink-0 h-8 px-2.5 text-xs flex items-center gap-1 font-semibold text-slate-800 dark:text-zinc-200 border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50"
                   >
                     {copiedKey === "portal-link" ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
                     <span>{copiedKey === "portal-link" ? "Copied" : "Copy"}</span>
@@ -544,7 +544,7 @@ else:
                     size="sm"
                     variant="outline"
                     onClick={() => copyToClipboard(registerLink, "reg-link")}
-                    className="shrink-0 h-8 px-2.5 text-xs flex items-center gap-1"
+                    className="shrink-0 h-8 px-2.5 text-xs flex items-center gap-1 font-semibold text-slate-800 dark:text-zinc-200 border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50"
                   >
                     {copiedKey === "reg-link" ? <Check size={14} className="text-green-600" /> : <Copy size={14} />}
                     <span>{copiedKey === "reg-link" ? "Copied" : "Copy"}</span>
@@ -776,7 +776,7 @@ else:
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Link href="/contact-us">
-                <Button className="bg-white text-green-900 hover:bg-emerald-50 font-bold text-xs h-10 px-5">
+                <Button className="bg-white hover:bg-emerald-50 text-emerald-950 font-bold text-xs h-10 px-5 shadow-sm">
                   Contact Developer Support
                 </Button>
               </Link>
@@ -785,7 +785,7 @@ else:
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 text-xs h-10 px-4">
+                <Button className="bg-emerald-800 hover:bg-emerald-700 text-white border border-white/40 font-semibold text-xs h-10 px-4 shadow-sm">
                   Open Institute Dashboard Key Settings
                 </Button>
               </a>
