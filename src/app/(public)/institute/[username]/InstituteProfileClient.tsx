@@ -3,10 +3,29 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import { formatDistanceToNow } from "date-fns"
-import { Facebook, Linkedin, LogIn, Mail, Phone, Twitter, UserPlus } from "lucide-react"
+import {
+    BookOpen,
+    CalendarClock,
+    ChevronDown,
+    ChevronUp,
+    Facebook,
+    FileText,
+    GraduationCap,
+    Linkedin,
+    LogIn,
+    Mail,
+    Phone,
+    Trophy,
+    Twitter,
+    UserPlus,
+    Users,
+    Video,
+    Wallet,
+} from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import InstituteHero from "@/components/institute/InstituteHero"
 import StarRating from "@/components/institute/StarRating"
@@ -42,6 +61,155 @@ interface Review {
     comment: string | null
     student_name: string | null
     created_at: string
+}
+
+interface ClassItem {
+    id: number
+    name: string
+    slug: string
+    target?: string | null
+    bio?: string | null
+    syllabus?: string | null
+    price?: number | null
+    duration_days?: number | null
+    exams_count?: number
+    notes_count?: number
+    meeting_links_count?: number
+    students_count?: number
+}
+
+function ClassesSection({ classes, joinUrl }: { classes: ClassItem[]; joinUrl: string }) {
+    const [expandedSyllabus, setExpandedSyllabus] = useState<Record<number, boolean>>({})
+
+    const toggleSyllabus = (id: number) => {
+        setExpandedSyllabus((prev) => ({ ...prev, [id]: !prev[id] }))
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+                <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-700">
+                        <GraduationCap size={18} />
+                    </div>
+                    <div>
+                        <CardTitle className="text-lg">Available Classes & Courses</CardTitle>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            {classes.length} {classes.length === 1 ? "class" : "classes"} offered
+                        </p>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {classes.length === 0 ? (
+                    <div className="text-center py-8 px-4 rounded-xl border border-dashed bg-slate-50/50">
+                        <GraduationCap className="mx-auto text-muted-foreground/40 mb-2" size={36} />
+                        <p className="text-sm font-medium text-slate-700">No classes published yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            This institute hasn&apos;t added any public classes yet. Check back soon!
+                        </p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {classes.map((cls) => {
+                            const isSyllabusOpen = Boolean(expandedSyllabus[cls.id])
+                            return (
+                                <div
+                                    key={cls.id}
+                                    className="rounded-xl border bg-white p-4 transition-all hover:shadow-sm hover:border-green-300"
+                                >
+                                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                                        <div>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <h3 className="font-semibold text-base text-gray-900">{cls.name}</h3>
+                                                {cls.target && (
+                                                    <Badge variant="outline" className="text-xs text-green-700 border-green-200 bg-green-50">
+                                                        {cls.target}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {cls.bio && (
+                                                <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                                                    {cls.bio}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="shrink-0 flex items-center sm:flex-col sm:items-end gap-2">
+                                            {cls.price !== undefined && cls.price !== null ? (
+                                                <span className="text-base font-bold text-green-700">
+                                                    {cls.price === 0 ? "Free" : `Rs. ${cls.price.toLocaleString()}`}
+                                                </span>
+                                            ) : (
+                                                <span className="text-sm font-medium text-muted-foreground">Free</span>
+                                            )}
+                                            {cls.duration_days && (
+                                                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                    <CalendarClock size={12} /> {cls.duration_days} days
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Features summary row */}
+                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-3 pt-3 border-t">
+                                        {(cls.exams_count ?? 0) > 0 && (
+                                            <span className="flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-md font-medium">
+                                                <Trophy size={12} /> {cls.exams_count} {cls.exams_count === 1 ? "Exam" : "Exams"}
+                                            </span>
+                                        )}
+                                        {(cls.notes_count ?? 0) > 0 && (
+                                            <span className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-medium">
+                                                <BookOpen size={12} /> {cls.notes_count} {cls.notes_count === 1 ? "Study Note" : "Study Notes"}
+                                            </span>
+                                        )}
+                                        {(cls.meeting_links_count ?? 0) > 0 && (
+                                            <span className="flex items-center gap-1 bg-purple-50 text-purple-700 px-2 py-0.5 rounded-md font-medium">
+                                                <Video size={12} /> {cls.meeting_links_count} Live Sessions
+                                            </span>
+                                        )}
+                                        {(cls.students_count ?? 0) > 0 && (
+                                            <span className="flex items-center gap-1 text-muted-foreground">
+                                                <Users size={12} /> {cls.students_count} enrolled
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Syllabus dropdown if available */}
+                                    {cls.syllabus && (
+                                        <div className="mt-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleSyllabus(cls.id)}
+                                                className="text-xs text-green-700 hover:text-green-800 font-medium flex items-center gap-1 focus:outline-none"
+                                            >
+                                                <FileText size={12} />
+                                                {isSyllabusOpen ? "Hide Syllabus" : "View Syllabus / Curriculum"}
+                                                {isSyllabusOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                                            </button>
+                                            {isSyllabusOpen && (
+                                                <div className="mt-2 p-3 rounded-lg bg-slate-50 border text-xs text-slate-700 whitespace-pre-line leading-relaxed">
+                                                    {cls.syllabus}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Action button */}
+                                    <div className="mt-3 pt-2 flex items-center justify-end">
+                                        <a href={joinUrl} target="_blank" rel="noreferrer">
+                                            <Button size="sm" variant="green" className="flex items-center gap-1.5 text-xs h-8">
+                                                <UserPlus size={13} /> Enroll in Class
+                                            </Button>
+                                        </a>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+    )
 }
 
 function ReviewsSection({ username }: { username: string }) {
@@ -132,6 +300,7 @@ export default function InstituteProfileClient() {
     const { username } = useParams<{ username: string }>()
     const [profile, setProfile] = useState<Profile | null>(null)
     const [insights, setInsights] = useState<Insights | null>(null)
+    const [classes, setClasses] = useState<ClassItem[]>([])
     const [loading, setLoading] = useState(true)
     const [notFound, setNotFound] = useState(false)
 
@@ -149,6 +318,7 @@ export default function InstituteProfileClient() {
                 }
                 setProfile(response.data.profile)
                 setInsights(response.data.insights)
+                setClasses(response.data.classes ?? [])
             })
             .catch(() => !cancelled && setNotFound(true))
             .finally(() => !cancelled && setLoading(false))
@@ -269,6 +439,10 @@ export default function InstituteProfileClient() {
                             </CardContent>
                         </Card>
 
+                        {/* Classes Section */}
+                        <ClassesSection classes={classes} joinUrl={joinUrl} />
+
+                        {/* Reviews Section */}
                         <ReviewsSection username={username} />
                     </div>
 
@@ -300,3 +474,4 @@ export default function InstituteProfileClient() {
         </main>
     )
 }
+
