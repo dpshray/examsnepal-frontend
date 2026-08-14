@@ -38,6 +38,10 @@ const CATEGORY_META: Record<string, { label: string; icon: LucideIcon }> = {
     entrance: {label: "Entrance Exams", icon: GraduationCap},
 };
 
+// Cap the per-category guide list so the mega menu stays scannable — the
+// full list is one click away via the category's own /exams/[slug] page.
+const MAX_VISIBLE_GUIDES = 6;
+
 interface NavBarProps {
     examCategories?: ExamGuideCategoryDetail[];
 }
@@ -138,21 +142,25 @@ export default function NavBar({examCategories = []}: NavBarProps) {
                                                 >
                                                     Exams in Nepal
                                                 </AccordionTrigger>
-                                                <AccordionContent className="pl-2">
-                                                    <div className="flex flex-col gap-4">
+                                                <AccordionContent>
+                                                    <div className="flex flex-col gap-5 border-l-2 border-gray-100 pl-3">
                                                         {examCategories.map((category) => {
                                                             const meta = CATEGORY_META[category.slug];
+                                                            const Icon = meta?.icon;
+                                                            const visibleGuides = category.guides.slice(0, MAX_VISIBLE_GUIDES);
+                                                            const remaining = category.guides.length - visibleGuides.length;
                                                             return (
                                                                 <div key={category.id}>
                                                                     <Link
                                                                         href={`/exams/${category.slug}`}
                                                                         onClick={() => setIsMobileMenuOpen(false)}
-                                                                        className="block px-3 py-1 text-sm font-semibold text-gray-900 hover:text-green-700"
+                                                                        className="flex items-center gap-2 px-3 py-1 text-sm font-semibold text-gray-900 hover:text-green-700"
                                                                     >
+                                                                        {Icon && <Icon className="w-4 h-4 text-green-700" aria-hidden="true"/>}
                                                                         {meta?.label ?? category.name}
                                                                     </Link>
                                                                     <div className="flex flex-col">
-                                                                        {category.guides.map((guide) => (
+                                                                        {visibleGuides.map((guide) => (
                                                                             <Link
                                                                                 key={guide.id}
                                                                                 href={`/exams/${category.slug}/${guide.slug}`}
@@ -162,6 +170,15 @@ export default function NavBar({examCategories = []}: NavBarProps) {
                                                                                 {guide.name}
                                                                             </Link>
                                                                         ))}
+                                                                        {remaining > 0 && (
+                                                                            <Link
+                                                                                href={`/exams/${category.slug}`}
+                                                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                                                className="rounded-md px-3 py-1.5 text-sm font-medium text-green-700 hover:underline"
+                                                                            >
+                                                                                +{remaining} more
+                                                                            </Link>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             );
@@ -169,7 +186,7 @@ export default function NavBar({examCategories = []}: NavBarProps) {
                                                         <Link
                                                             href="/exams"
                                                             onClick={() => setIsMobileMenuOpen(false)}
-                                                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 hover:underline"
+                                                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-semibold text-green-700 hover:underline"
                                                         >
                                                             View All Exam Categories
                                                             <ArrowRight className="w-3.5 h-3.5" aria-hidden="true"/>
@@ -256,27 +273,33 @@ export default function NavBar({examCategories = []}: NavBarProps) {
                                     Exams in Nepal
                                 </NavigationMenuTrigger>
                                 <NavigationMenuContent>
-                                    <div className="w-[min(90vw,720px)] max-h-[75vh] overflow-y-auto p-4">
-                                        <div className="grid grid-cols-3 gap-6">
+                                    <div className="w-[min(92vw,760px)] max-h-[80vh] overflow-y-auto">
+                                        <div className="grid grid-cols-3 divide-x divide-gray-100">
                                             {examCategories.map((category) => {
                                                 const meta = CATEGORY_META[category.slug];
                                                 const Icon = meta?.icon;
+                                                const visibleGuides = category.guides.slice(0, MAX_VISIBLE_GUIDES);
+                                                const remaining = category.guides.length - visibleGuides.length;
                                                 return (
-                                                    <div key={category.id}>
+                                                    <div key={category.id} className="p-5">
                                                         <Link
                                                             href={`/exams/${category.slug}`}
-                                                            className="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-900 hover:text-green-700"
+                                                            className="group flex items-center gap-2.5"
                                                         >
-                                                            {Icon && <Icon className="w-4 h-4 text-green-700" aria-hidden="true"/>}
-                                                            {meta?.label ?? category.name}
+                                                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50">
+                                                                {Icon && <Icon className="w-4 h-4 text-green-700" aria-hidden="true"/>}
+                                                            </span>
+                                                            <span className="text-sm font-semibold text-gray-900 group-hover:text-green-700">
+                                                                {meta?.label ?? category.name}
+                                                            </span>
                                                         </Link>
-                                                        <ul className="flex flex-col gap-0.5">
-                                                            {category.guides.map((guide) => (
+                                                        <ul className="mt-3 flex flex-col">
+                                                            {visibleGuides.map((guide) => (
                                                                 <li key={guide.id}>
                                                                     <NavigationMenuLink asChild>
                                                                         <Link
                                                                             href={`/exams/${category.slug}/${guide.slug}`}
-                                                                            className="block rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-black"
+                                                                            className="block truncate rounded-md px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-50 hover:text-green-700"
                                                                         >
                                                                             {guide.name}
                                                                         </Link>
@@ -284,15 +307,25 @@ export default function NavBar({examCategories = []}: NavBarProps) {
                                                                 </li>
                                                             ))}
                                                         </ul>
+                                                        {remaining > 0 && (
+                                                            <NavigationMenuLink asChild>
+                                                                <Link
+                                                                    href={`/exams/${category.slug}`}
+                                                                    className="mt-1 inline-block px-2 py-1.5 text-sm font-medium text-green-700 hover:underline"
+                                                                >
+                                                                    +{remaining} more
+                                                                </Link>
+                                                            </NavigationMenuLink>
+                                                        )}
                                                     </div>
                                                 );
                                             })}
                                         </div>
-                                        <div className="mt-4 border-t pt-3">
+                                        <div className="border-t border-gray-100 bg-gray-50 px-5 py-3">
                                             <NavigationMenuLink asChild>
                                                 <Link
                                                     href="/exams"
-                                                    className="flex items-center gap-1 text-sm font-medium text-green-700 hover:underline"
+                                                    className="flex items-center justify-center gap-1.5 text-sm font-semibold text-green-700 hover:text-green-800"
                                                 >
                                                     View All Exam Categories
                                                     <ArrowRight className="w-3.5 h-3.5" aria-hidden="true"/>
