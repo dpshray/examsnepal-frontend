@@ -10,6 +10,9 @@ const STATIC_ROUTES: {
 }[] = [
     { path: '', priority: 1, changeFrequency: 'daily' },
     { path: '/find-mcq', priority: 0.9, changeFrequency: 'daily' },
+    { path: '/free-quiz', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/sprint-quiz', priority: 0.8, changeFrequency: 'monthly' },
+    { path: '/mock-test', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/blog', priority: 0.7, changeFrequency: 'daily' },
     { path: '/lok-sewa-notices', priority: 0.7, changeFrequency: 'daily' },
     { path: '/about', priority: 0.5, changeFrequency: 'monthly' },
