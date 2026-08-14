@@ -138,7 +138,14 @@ const Footer = () => {
                     <p className="text-center text-sm text-gray-300">
                         &copy; {new Date().getFullYear()} Exams Nepal. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+                        <Link
+                            href="/institute-api"
+                            className="text-sm text-amber-300 hover:text-white transition font-medium"
+                        >
+                            Institute API Docs
+                        </Link>
+                        <span className="text-gray-500">|</span>
                         <Link
                             href="/privacy-policy"
                             className="text-sm text-gray-300 hover:text-white transition"

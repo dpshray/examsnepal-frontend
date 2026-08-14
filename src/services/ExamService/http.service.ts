@@ -25,7 +25,9 @@ class HttpServices {
     private headers: Record<string, string> = {};
 
     private setHeaders(config?: HeaderConfigProps) {
-        this.headers = {};
+        this.headers = {
+            "X-App-Client": "first-party",
+        };
         if (config?.auth) {
             const token = config.useToken || localStorage.getItem("_at");
             if (!token) {

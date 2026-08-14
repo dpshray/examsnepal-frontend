@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { AlertTriangle, Building2, Search } from 'lucide-react'
 import instituteService from '@/services/instituteService'
@@ -73,6 +74,14 @@ export default function InstitutesClient() {
                     <p className="mt-3 text-sm sm:text-lg text-green-100 max-w-xl">
                         Discover institutes and coaching centers offering classes, notes, and exams on ExamsNepal.
                     </p>
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                        <Link
+                            href="/institute-api"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-xs transition-colors"
+                        >
+                            <span>Institute API &amp; Website Integration Docs</span> →
+                        </Link>
+                    </div>
                 </div>
             </div>
 
