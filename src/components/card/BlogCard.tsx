@@ -1,4 +1,6 @@
-import { FC } from "react"
+'use client'
+
+import { FC, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -40,6 +42,7 @@ export const BlogCard: FC<BlogCardProps> = ({
     tag,
 }) => {
     const formattedDate = format(new Date(published_date), "MMM d, yyyy")
+    const [imageSrc, setImageSrc] = useState(image || "/blog-image.png")
 
     return (
         <Link href={`/blog/${slug}`} className="group block h-full">
@@ -50,11 +53,12 @@ export const BlogCard: FC<BlogCardProps> = ({
                 {/* Image */}
                 <div className="relative h-52 w-full bg-muted overflow-hidden">
                     <Image
-                        src={image || "/blog-image.png"}
+                        src={imageSrc}
                         alt={title}
                         fill
                         className="object-cover group-hover:scale-105 transition duration-300 ease-in-out"
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        onError={() => setImageSrc("/blog-image.png")}
                     />
                     {/* Category badges overlay */}
                     {categories.length > 0 && (

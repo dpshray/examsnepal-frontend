@@ -2,6 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import { useParams } from "next/navigation"
 import { User, CalendarDays, AlertCircle } from "lucide-react"
 import { FaArrowRightLong } from "react-icons/fa6"
@@ -41,15 +42,18 @@ interface BlogDetail {
 // ─── BlogHeader ───────────────────────────────────────────────────────────────
 
 function BlogHeader({ image, title }: { image: string; title: string }) {
+    const [imageSrc, setImageSrc] = useState(image || "/blog-image.png")
+
     return (
         <div className="relative w-full aspect-[16/6] overflow-hidden bg-muted">
             <Image
-                src={image || "/placeholder.svg"}
+                src={imageSrc}
                 alt={title}
                 fill
                 className="object-contain"
                 priority
                 sizes="100vw"
+                onError={() => setImageSrc("/blog-image.png")}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-primary/20 to-transparent" />
         </div>

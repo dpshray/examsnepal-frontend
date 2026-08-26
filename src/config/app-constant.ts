@@ -18,6 +18,7 @@ export const SPRINT_QUIZ_DURATION = 30
 export const CREATE_EXAM_ROUTE = 'https://create.examsnepal.com'
 export const CREATE_EXAM_LOGIN_ROUTE = 'https://create.examsnepal.com/login'
 export const CREATE_EXAM_REGISTER_ROUTE = 'https://create.examsnepal.com/register'
+export const INSTITUTE_PROFILE_BASE_URL = 'https://create.examsnepal.com/institute'
 
 export interface GetParams {
   page?: number;
