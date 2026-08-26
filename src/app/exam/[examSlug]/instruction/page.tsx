@@ -26,12 +26,22 @@ export default function InstructionsPage() {
   const examSlug = params?.examSlug as string;
 
   // Get exam type
-  const { data: examTypeData, isLoading: isLoadingType } = useGetExamType(examSlug);
+  const { data: examTypeData, isLoading: isLoadingType } =
+    useGetExamType(examSlug);
   const examType = examTypeData?.exam_type;
 
   // Get exam details
-  const { data: getExamDetails, isPending: isLoadingDetails } = useGetExamDetails({examSlug: examSlug, type: examType});
+  const {
+    data: getExamDetails,
+    isPending: isLoadingDetails,
+    error,
+  } = useGetExamDetails({ examSlug: examSlug, type: examType });
   const examData = getExamDetails?.data;
+  const errorResponseData = (error as any)?.data;
+  const isExamNotStarted =
+    errorResponseData?.status === false &&
+    errorResponseData?.message === "exam is not started";
+  // console.log("examData", examData, isExamNotStarted, errorResponseData, error);
 
   const handleStartExam = () => {
     router.push(`/exam/${examSlug}/attempt`);
@@ -40,15 +50,47 @@ export default function InstructionsPage() {
   const isLoading = isLoadingType || isLoadingDetails;
 
   if (isLoading) {
-    return <InstructionsSkeleton />
+    return <InstructionsSkeleton />;
   }
 
   if (!examData) {
+    if (isExamNotStarted) {
+      return (
+        <div className="h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center max-w-md mx-auto px-4">
+            <div className="bg-white rounded-2xl shadow-sm border p-8 space-y-4">
+              <div className="flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mx-auto">
+                <Clock className="h-8 w-8 text-amber-600" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900">
+                Exam Not Started Yet
+              </h2>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                This exam hasn&apos;t been scheduled to start yet. Please check
+                back later or contact your administrator.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-2 gap-2"
+                onClick={() => router.back()}
+              >
+                <RotateCcw className="h-4 w-4" />
+                Go Back
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Generic error fallback
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Failed to load exam details</p>
+          <p className="text-gray-600 font-medium">
+            Failed to load exam details
+          </p>
         </div>
       </div>
     );
@@ -59,24 +101,32 @@ export default function InstructionsPage() {
   };
 
   // Check if attempts limit is reached - properly handle null
-  const hasAttemptsLimit = examData.limit_attempts !== null && examData.limit_attempts !== undefined;
-  
+  const hasAttemptsLimit =
+    examData.limit_attempts !== null && examData.limit_attempts !== undefined;
+
   // Only check for limit if there actually is a limit (not null/unlimited)
   const sectionsWithLimitReached = examData.sections.filter(
-    (section: any) => hasAttemptsLimit && section.attempts_count >= examData.limit_attempts
+    (section: any) =>
+      hasAttemptsLimit && section.attempts_count >= examData.limit_attempts,
   );
-  
+
   const isAttemptLimitReached = sectionsWithLimitReached.length > 0;
 
   // Calculate completed sections
-  const completedSectionsCount = examData.sections.filter((s: any) => s.is_completed).length;
-  const allSectionsCompleted = completedSectionsCount === examData.sections.length;
-  
+  const completedSectionsCount = examData.sections.filter(
+    (s: any) => s.is_completed,
+  ).length;
+  const allSectionsCompleted =
+    completedSectionsCount === examData.sections.length;
+
   // For unlimited attempts, users can always retake. Only disable if:
   // 1. There's a limit AND all sections have reached that limit
-  const allSectionsReachedLimit = hasAttemptsLimit && 
-    examData.sections.every((section: any) => section.attempts_count >= examData.limit_attempts);
-  
+  const allSectionsReachedLimit =
+    hasAttemptsLimit &&
+    examData.sections.every(
+      (section: any) => section.attempts_count >= examData.limit_attempts,
+    );
+
   const canStartExam = !allSectionsReachedLimit;
 
   return (
@@ -88,7 +138,9 @@ export default function InstructionsPage() {
             <div className="flex items-center gap-3">
               <ClipboardList className="h-6 w-6 text-green-600" />
               <div>
-                <h1 className="text-xl font-bold text-gray-900">{examData.title}</h1>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {examData.title}
+                </h1>
                 <p className="text-sm text-gray-600">{examData.description}</p>
               </div>
             </div>
@@ -97,7 +149,10 @@ export default function InstructionsPage() {
               {examData.start_time && examData.end_time && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 bg-green-100 px-3 py-1.5 rounded-full">
                   <Clock className="h-4 w-4" />
-                  <span className="font-medium">{formatStudentExamTime(examData.start_time)} - {formatStudentExamTime(examData.end_time)}</span>
+                  <span className="font-medium">
+                    {formatStudentExamTime(examData.start_time)} -{" "}
+                    {formatStudentExamTime(examData.end_time)}
+                  </span>
                 </div>
               )}
             </div>
@@ -114,30 +169,46 @@ export default function InstructionsPage() {
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <Clock className="h-4 w-4" />
-                  <span className="text-base sm:text-2xl font-bold">{examData.duration}</span>
+                  <span className="text-base sm:text-2xl font-bold">
+                    {examData.duration}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-600 uppercase tracking-wider">Minutes</span>
+                <span className="text-xs text-gray-600 uppercase tracking-wider">
+                  Minutes
+                </span>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <RotateCcw className="h-4 w-4" />
-                  <span className="text-base sm:text-2xl font-bold">{examData.limit_attempts ?? "∞"}</span>
+                  <span className="text-base sm:text-2xl font-bold">
+                    {examData.limit_attempts ?? "∞"}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-600 uppercase tracking-wider">Attempts</span>
+                <span className="text-xs text-gray-600 uppercase tracking-wider">
+                  Attempts
+                </span>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <ShieldCheck className="h-4 w-4" />
-                  <span className="text-base sm:text-2xl font-bold capitalize">{examData.exam_type}</span>
+                  <span className="text-base sm:text-2xl font-bold capitalize">
+                    {examData.exam_type}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-600 uppercase tracking-wider">Type</span>
+                <span className="text-xs text-gray-600 uppercase tracking-wider">
+                  Type
+                </span>
               </div>
               <div className="bg-white rounded-lg p-4 shadow-sm border">
                 <div className="flex items-center gap-2 text-green-700 mb-1">
                   <Layers className="h-4 w-4" />
-                  <span className="text-base sm:text-2xl font-bold">{completedSectionsCount}/{examData.sections.length}</span>
+                  <span className="text-base sm:text-2xl font-bold">
+                    {completedSectionsCount}/{examData.sections.length}
+                  </span>
                 </div>
-                <span className="text-xs text-gray-600 uppercase tracking-wider">Completed</span>
+                <span className="text-xs text-gray-600 uppercase tracking-wider">
+                  Completed
+                </span>
               </div>
             </div>
 
@@ -165,12 +236,14 @@ export default function InstructionsPage() {
             <div className="divide-y divide-gray-200">
               {examData.sections.map((section: any, index: number) => {
                 // Only check limit if there is one (not null/unlimited)
-                const isLimitReached = hasAttemptsLimit && section.attempts_count >= examData.limit_attempts;
-                
+                const isLimitReached =
+                  hasAttemptsLimit &&
+                  section.attempts_count >= examData.limit_attempts;
+
                 return (
                   <div
                     key={section.slug}
-                    className={`flex items-start gap-4 p-5 ${section.is_completed ? 'bg-green-50/50' : ''}`}
+                    className={`flex items-start gap-4 p-5 ${section.is_completed ? "bg-green-50/50" : ""}`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-1">
@@ -200,7 +273,8 @@ export default function InstructionsPage() {
                       {/* Only show attempt count if there's a limit */}
                       {hasAttemptsLimit && (
                         <p className="text-xs text-gray-500 ml-7 mt-1">
-                          Attempts: {section.attempts_count} / {examData.limit_attempts}
+                          Attempts: {section.attempts_count} /{" "}
+                          {examData.limit_attempts}
                         </p>
                       )}
                       {/* Show retake available message for unlimited attempts */}
@@ -222,9 +296,13 @@ export default function InstructionsPage() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-semibold text-red-900">All Attempts Exhausted</h3>
+                  <h3 className="text-sm font-semibold text-red-900">
+                    All Attempts Exhausted
+                  </h3>
                   <p className="text-sm text-red-700 mt-1">
-                    You have reached the maximum number of attempts ({examData.limit_attempts}) for all sections. No further attempts are available.
+                    You have reached the maximum number of attempts (
+                    {examData.limit_attempts}) for all sections. No further
+                    attempts are available.
                   </p>
                 </div>
               </div>
@@ -236,9 +314,13 @@ export default function InstructionsPage() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-semibold text-amber-900">Some Sections Unavailable</h3>
+                  <h3 className="text-sm font-semibold text-amber-900">
+                    Some Sections Unavailable
+                  </h3>
                   <p className="text-sm text-amber-700 mt-1">
-                    {sectionsWithLimitReached.length} section(s) have reached the maximum attempts ({examData.limit_attempts}). You can still attempt the remaining sections.
+                    {sectionsWithLimitReached.length} section(s) have reached
+                    the maximum attempts ({examData.limit_attempts}). You can
+                    still attempt the remaining sections.
                   </p>
                 </div>
               </div>
@@ -250,9 +332,12 @@ export default function InstructionsPage() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="text-sm font-semibold text-green-900">All Sections Completed</h3>
+                  <h3 className="text-sm font-semibold text-green-900">
+                    All Sections Completed
+                  </h3>
                   <p className="text-sm text-green-700 mt-1">
-                    Great job! You&apos;ve completed all sections. You can retake any section as there&apos;s no attempt limit.
+                    Great job! You&apos;ve completed all sections. You can
+                    retake any section as there&apos;s no attempt limit.
                   </p>
                 </div>
               </div>
@@ -276,11 +361,13 @@ export default function InstructionsPage() {
                 </p>
               ) : isAttemptLimitReached ? (
                 <p className="text-gray-600">
-                  Some sections have reached their limit. You can still attempt others.
+                  Some sections have reached their limit. You can still attempt
+                  others.
                 </p>
               ) : (
                 <p className="text-gray-600">
-                  Click &quot;Start Exam&quot; to begin. You can select sections once inside.
+                  Click &quot;Start Exam&quot; to begin. You can select sections
+                  once inside.
                 </p>
               )}
             </div>
