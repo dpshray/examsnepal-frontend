@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import {logo} from '../../../public/assest';
-import {Button} from '@/components/ui/button';
 
 import {FaFacebookF, FaInstagram, FaLinkedinIn, FaTwitter,} from 'react-icons/fa';
 import {MdEmail, MdLocationOn, MdPhone} from 'react-icons/md';
@@ -12,7 +11,7 @@ const Footer = () => {
     const contactData = [
         {icon: MdEmail, text: 'info@examsnepal.com', href: 'mailto:info@examsnepal.com'},
         {icon: MdPhone, text: '+977 9802334171', href: 'tel:+9779802334171'},
-        {icon: MdLocationOn, text: 'New Baneshwor, Kathmandu, Nepal', href: '#'},
+        {icon: MdLocationOn, text: 'Lokanthali, Bhaktapur, Nepal', href: '#'},
     ];
 
     const socialIcons = [
@@ -173,38 +172,6 @@ const Footer = () => {
                                     );
                                 })}
                             </ul>
-                        </div>
-
-                        {/* Newsletter */}
-                        <div className="sm:col-span-2 lg:col-span-4">
-                            <h3 className="text-lg font-semibold mb-3">Newsletter</h3>
-                            <p className="text-sm text-gray-300 mb-1">Opening Days: Monday – Friday</p>
-                            <p className="text-sm text-gray-300">
-                                Stay informed with the latest updates and announcements. Subscribe to our newsletter
-                                today!
-                            </p>
-
-                            <form className="mt-4" onSubmit={(e) => e.preventDefault()}>
-                                <label htmlFor="newsletter-email" className="block text-sm text-gray-200 mb-2">
-                                    Email Address
-                                </label>
-                                <div className="flex w-full max-w-md">
-                                    <input
-                                        id="newsletter-email"
-                                        type="email"
-                                        required
-                                        placeholder="example@examsnepal.com"
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md text-gray-900 text-sm placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    />
-                                    <Button
-                                        type="submit"
-                                        variant="default"
-                                        className="px-4 py-2 bg-green-600 text-white text-sm rounded-none rounded-r-md hover:bg-green-700 transition"
-                                    >
-                                        Subscribe
-                                    </Button>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>
