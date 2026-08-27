@@ -2,31 +2,35 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
 const useAuth = () => {
-    const pathname = usePathname();
-    const router = useRouter();
-    const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    useEffect(() => {
-        let isMounted = true;
+  useEffect(() => {
+    let isMounted = true;
 
-        const checkAuth = () => {
-            const token = localStorage.getItem("_at");
+    const checkAuth = () => {
+      const token = localStorage.getItem("_at");
 
-            if (pathname.startsWith("/student") && !token) {
-                router.replace("/login");
-            }
+      if (pathname.startsWith("/student") && !token) {
+        router.replace("/login");
+      }
 
-            if (isMounted) setLoading(false);
-        };
+      if (isMounted) {
+        setIsAuthenticated(!!token);
+        setLoading(false);
+      }
+    };
 
-        checkAuth();
+    checkAuth();
 
-        return () => {
-            isMounted = false;
-        };
-    }, [pathname, router]);
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname, router]);
 
-    return { loading };
+  return { loading, isAuthenticated };
 };
 
 export default useAuth;
