@@ -1,3 +1,4 @@
+import AnnouncementPopup from "@/components/common/AnnouncementPopup";
 import Footer from "@/components/common/Footer";
 import NavBar from "@/components/header/NavBar";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -34,6 +35,7 @@ export default async function PublicLayout({
         // <ProtectedRoute>
 
             <div className="flex flex-col overflow-x-clip min-h-screen">
+                <AnnouncementPopup/>
                 <NavBar examCategories={examCategories}/>
                 <main className="flex flex-grow flex-col">
                     {children}
