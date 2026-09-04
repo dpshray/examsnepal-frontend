@@ -1,4 +1,5 @@
 import HttpServices from "@/services/ExamService/http.service";
+import { PageParams } from "./corporateExamServices";
 
 class SubscriptionService extends HttpServices {
   // Get all subscription types
@@ -89,6 +90,38 @@ class SubscriptionService extends HttpServices {
         config: {
           auth: true,
         },
+      });
+      return response?.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  async getPaymentSettings(params?: PageParams) {
+    try {
+      const response = await this.getRequest({
+        url: "/admin/payment-settings",
+        config: {
+          params,
+          auth: true,
+        },
+      });
+      return response?.data;
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+      throw error;
+    }
+  }
+
+  connectIpsTransaction = async (
+    subscription_type_id: number,
+    promo_code: string,
+  ) => {
+    try {
+      const response = await this.postRequest({
+        url: "connectips/init-transaction",
+        data: { subscription_type_id, promo_code },
+        config: { auth: true },
       });
       return response?.data;
     } catch (error) {

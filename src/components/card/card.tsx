@@ -28,8 +28,13 @@ interface FeaturedCardProps {
   linkText?: string;
 }
 import { toast } from "sonner";
-import { useEsewaTransaction } from "@/hooks/use-subscription";
+import {
+  useConnectIpsTransaction,
+  useEsewaTransaction,
+  useGetPaymentSettings,
+} from "@/hooks/use-subscription";
 import { redirectToEsewa } from "@/lib/redirectToEsewa";
+import { redirectToConnectIPS } from "@/lib/connectIps";
 
 export const FeaturedCard = ({
   imageSrc,
@@ -109,27 +114,64 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
 
   const [purchasingId, setPurchasingId] = useState<number | null>(null);
 
+  const [paymentMethod, setPaymentMethod] = useState<
+    Record<number, "connectips" | "esewa">
+  >({});
+  const getPaymentMethod = (id: number) => paymentMethod[id] || "esewa";
+
+  const { data: paymentSettings } = useGetPaymentSettings();
+  console.log("paymentSettings", paymentSettings);
+  const settings = paymentSettings?.data ?? [];
+  const isMethodEnabled = (name: string) =>
+    settings.some(
+      (s: { name: string; status: boolean }) =>
+        s.name.toLowerCase() === name.toLowerCase() && s.status,
+    );
+  const connectIpsEnabled = isMethodEnabled("connectips");
+  const esewaEnabled = isMethodEnabled("esewa");
+  const anyMethodEnabled = esewaEnabled || connectIpsEnabled;
+
   const esewaMutation = useEsewaTransaction();
+  const connectIpsMutation = useConnectIpsTransaction();
 
   const handleConfirmPurchase = (
     subscription_type_id: number,
     promo_code: string,
   ) => {
+    const method = getPaymentMethod(subscription_type_id);
     setPurchasingId(subscription_type_id);
-    esewaMutation.mutate(
-      { subscription_type_id, promo_code },
-      {
-        onSuccess: (response) => {
-          if (response?.status && response?.data) {
-            redirectToEsewa(response.data.payment_url, response.data.payload);
-          } else {
-            toast.error("Failed to generate transaction.");
-          }
+
+    if (method === "connectips") {
+      connectIpsMutation.mutate(
+        { subscription_type_id, promo_code },
+        {
+          onSuccess: (response: any) => {
+            if (response?.status && response?.data) {
+              redirectToConnectIPS(response.data);
+            } else {
+              toast.error("Failed to generate transaction.");
+            }
+          },
+          onSettled: () => setPurchasingId(null),
         },
-        onSettled: () => setPurchasingId(null),
-      },
-    );
+      );
+    } else {
+      esewaMutation.mutate(
+        { subscription_type_id, promo_code },
+        {
+          onSuccess: (response) => {
+            if (response?.status && response?.data) {
+              redirectToEsewa(response.data.payment_url, response.data.payload);
+            } else {
+              toast.error("Failed to generate transaction.");
+            }
+          },
+          onSettled: () => setPurchasingId(null),
+        },
+      );
+    }
   };
+
   const monthlyPlans = subscription?.filter((plan) => plan.duration <= 6) || [];
   const yearlyPlans = subscription?.filter((plan) => plan.duration > 6) || [];
 
@@ -310,97 +352,76 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
                       </Button>
 
                       <div className="flex gap-2">
-                        {/* {(
-                          [
-                            {
-                              key: "esewa",
-                              label: "eSewa",
-                              logo: "/images/esewa.png",
-                            },
-                            {
-                              key: "connectips",
-                              label: "ConnectIPS",
-                              logo: "/images/connectips.png",
-                            },
-                          ] as const
-                        ).map(({ key, label, logo }) => (
+                        {esewaEnabled && (
                           <Button
-                            variant={"outline"}
-                            key={key}
                             type="button"
+                            variant={"outline"}
                             aria-pressed={
-                              paymentMethod[plan.subscription_type_id] === key
+                              getPaymentMethod(plan.subscription_type_id) ===
+                              "esewa"
                             }
                             onClick={() =>
                               setPaymentMethod((prev) => ({
                                 ...prev,
-                                [plan.subscription_type_id]: key,
+                                [plan.subscription_type_id]: "esewa",
                               }))
                             }
                             className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border text-sm font-medium transition ${
-                              paymentMethod[plan.subscription_type_id] === key
+                              getPaymentMethod(plan.subscription_type_id) ===
+                              "esewa"
                                 ? "border-green-600 bg-green-50 text-green-700"
                                 : "border-gray-300 text-gray-600 hover:bg-gray-50"
                             }`}
                           >
                             <Image
-                              src={logo}
-                              alt={`${label} logo`}
+                              src="/images/esewa.png"
+                              alt="eSewa logo"
                               width={30}
                               height={30}
                               className="object-contain"
                             />
-                            <span>{label}</span>
+                            <span>eSewa</span>
                           </Button>
-                        ))} */}
+                        )}
 
-                        {/* ConnectIPS temporarily disabled — re-enable when ready
-                        <button
-                          type="button"
-                          aria-pressed={
-                            getPaymentMethod(plan.subscription_type_id) ===
-                            "connectips"
-                          }
-                          onClick={() =>
-                            setPaymentMethod((prev) => ({
-                              ...prev,
-                              [plan.subscription_type_id]: "connectips",
-                            }))
-                          }
-                          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border text-sm font-medium transition ${
-                            getPaymentMethod(plan.subscription_type_id) ===
-                            "connectips"
-                              ? "border-green-600 bg-green-50 text-green-700"
-                              : "border-gray-300 text-gray-600 hover:bg-gray-50"
-                          }`}
-                        >
-                          <Image
-                            src="/images/connectips-logo.png"
-                            alt="ConnectIPS logo"
-                            width={20}
-                            height={20}
-                            className="object-contain"
-                          />
-                          <span>ConnectIPS</span>
-                        </button>
-                        */}
+                        {connectIpsEnabled && (
+                          <Button
+                            type="button"
+                            variant={"outline"}
+                            aria-pressed={
+                              getPaymentMethod(plan.subscription_type_id) ===
+                              "connectips"
+                            }
+                            onClick={() =>
+                              setPaymentMethod((prev) => ({
+                                ...prev,
+                                [plan.subscription_type_id]: "connectips",
+                              }))
+                            }
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border text-sm font-medium transition ${
+                              getPaymentMethod(plan.subscription_type_id) ===
+                              "connectips"
+                                ? "border-green-600 bg-green-50 text-green-700"
+                                : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Image
+                              src="/images/connectips.png"
+                              alt="ConnectIPS logo"
+                              width={30}
+                              height={30}
+                              className="object-contain"
+                            />
+                            <span>ConnectIPS</span>
+                          </Button>
+                        )}
 
-                        <Button
-                          type="button"
-                          variant={"ghost"}
-                          disabled
-                          aria-pressed="true"
-                          className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border border-green-600 bg-green-50 text-green-700 text-sm font-medium cursor-default"
-                        >
-                          <Image
-                            src="/images/esewa.png"
-                            alt="eSewa logo"
-                            width={30}
-                            height={30}
-                            className="object-contain"
-                          />
-                          <span>eSewa</span>
-                        </Button>
+                        {!anyMethodEnabled && (
+                          <p className="text-xs text-gray-500">
+                            No payment methods are currently available. Please
+                            contact support.
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -430,9 +451,19 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
                 </Link> */}
                 <Link
                   href="#"
+                  aria-disabled={
+                    activePromoId === plan.subscription_type_id &&
+                    !anyMethodEnabled
+                  }
                   onClick={(e) => {
                     e.preventDefault();
                     if (activePromoId === plan.subscription_type_id) {
+                      if (!anyMethodEnabled) {
+                        toast.error(
+                          "No payment methods are currently available.",
+                        );
+                        return;
+                      }
                       handleConfirmPurchase(
                         plan.subscription_type_id,
                         promoCodes[plan.subscription_type_id] || "",
@@ -441,12 +472,19 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
                       setActivePromoId(plan.subscription_type_id);
                     }
                   }}
-                  className="mt-4 block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-green-700"
+                  className={`mt-4 block w-full rounded-lg px-4 py-2 text-center text-sm font-semibold text-white transition ${
+                    activePromoId === plan.subscription_type_id &&
+                    !anyMethodEnabled
+                      ? "bg-gray-400 cursor-not-allowed pointer-events-none"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
                 >
                   {purchasingId === plan.subscription_type_id
                     ? "Loading..."
                     : activePromoId === plan.subscription_type_id
-                      ? "Confirm Purchase"
+                      ? !anyMethodEnabled
+                        ? "Unavailable"
+                        : "Confirm Purchase"
                       : "Buy Plan"}
                 </Link>
                 {/* CTA Button */}
