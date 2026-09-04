@@ -5,7 +5,7 @@ import { ExamsDirectoryClient } from './ExamsDirectoryClient';
 
 export const revalidate = 3600;
 
-const SITE_URL = 'https://examsnepal.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.examsnepal.com').replace(/\/+$/, '');
 
 export const metadata: Metadata = {
     title: 'Exams in Nepal - License, Loksewa & Entrance Exams by Category | ExamsNepal',

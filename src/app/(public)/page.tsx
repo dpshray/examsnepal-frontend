@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import HomeClient from "./HomeClient";
 import { getExamGuideCategories } from "@/lib/examGuideApi";
 
-const SITE_URL = "https://examsnepal.com";
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.examsnepal.com").replace(/\/+$/, "");
 
 export const metadata: Metadata = {
     title: "ExamsNepal - Free Online Mock Tests for Loksewa, IOE, CEE & 30,000+ Questions",

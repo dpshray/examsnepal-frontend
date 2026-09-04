@@ -23,7 +23,7 @@ import { getExamGuide, getExamGuideCategories, getExamGuideCategory } from '@/li
 
 export const revalidate = 3600;
 
-const SITE_URL = 'https://examsnepal.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.examsnepal.com').replace(/\/+$/, '');
 
 const TYPE_LABELS: Record<string, string> = {
     license: 'License',

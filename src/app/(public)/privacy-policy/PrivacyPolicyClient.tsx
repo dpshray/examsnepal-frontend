@@ -143,7 +143,7 @@ export default function PrivacyPolicyClient() {
                       definition: "is any information that relates to an identified or identifiable individual.",
                     },
                     { term: "Service", definition: "refers to the Website." },
-                    { term: "Website", definition: "refers to examsnepal, accessible from https://examsnepal.com/" },
+                    { term: "Website", definition: "refers to examsnepal, accessible from https://www.examsnepal.com/" },
                     {
                       term: "You",
                       definition:
@@ -157,12 +157,12 @@ export default function PrivacyPolicyClient() {
                             <>
                             refers to examsnepal, accessible from{" "}
                             <Link
-                                href="https://examsnepal.com/"
+                                href="https://www.examsnepal.com/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline font-medium"
                             >
-                                https://examsnepal.com/
+                                https://www.examsnepal.com/
                             </Link>
                             </>
                         ) : (
@@ -328,7 +328,7 @@ export default function PrivacyPolicyClient() {
                     <ExternalLink className="w-8 h-8 text-purple-600 mx-auto mb-3" />
                     <h4 className="font-semibold text-purple-900 mb-2">Website</h4>
                     <Link
-                      href="https://examsnepal.com/contact-us"
+                      href="https://www.examsnepal.com/contact-us"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-purple-700 hover:text-purple-800 transition-colors"
