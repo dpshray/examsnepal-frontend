@@ -96,12 +96,12 @@ export default function TermsClient() {
                     These Terms and Conditions outline the rules and regulations for the use of Exams Nepal Pvt. Ltd&apos;s
                     Website, located at {""}
                     <Link
-                        href="https://examsnepal.com/"
+                        href="https://www.examsnepal.com/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
                     >
-                        https://examsnepal.com/
+                        https://www.examsnepal.com/
                     </Link>  
                     . By accessing this website, we assume you accept these
                     terms and conditions. Do not continue to use Exams Nepal if you do not agree to take all of the terms
@@ -163,7 +163,7 @@ export default function TermsClient() {
                     },
                     {
                       term: "Website",
-                      definition: "refers to Exams Nepal, accessible from https://examsnepal.com/",
+                      definition: "refers to Exams Nepal, accessible from https://www.examsnepal.com/",
                     },
                     {
                       term: "You",
@@ -178,12 +178,12 @@ export default function TermsClient() {
                             <>
                             refers to examsnepal, accessible from{" "}
                             <Link
-                                href="https://examsnepal.com/"
+                                href="https://www.examsnepal.com/"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-green-600 hover:underline font-medium"
                             >
-                                https://examsnepal.com/
+                                https://www.examsnepal.com/
                             </Link>
                             </>
                         ) : (
@@ -371,7 +371,7 @@ export default function TermsClient() {
                     <ExternalLink className="w-8 h-8 text-purple-600 mx-auto mb-3" />
                     <h4 className="font-semibold text-purple-900 mb-2">Website</h4>
                     <Link
-                      href="https://examsnepal.com/contact-us"
+                      href="https://www.examsnepal.com/contact-us"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-purple-700 hover:text-purple-800 transition-colors"

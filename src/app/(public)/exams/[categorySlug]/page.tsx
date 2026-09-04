@@ -18,7 +18,7 @@ import { getExamGuideCategories, getExamGuideCategory, type ExamGuideType } from
 
 export const revalidate = 3600;
 
-const SITE_URL = 'https://examsnepal.com';
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.examsnepal.com').replace(/\/+$/, '');
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
     medical: Stethoscope,
