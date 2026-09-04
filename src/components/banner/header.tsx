@@ -13,6 +13,11 @@ interface BannerHeaderProps {
     className?: string;
     showSearch?: boolean;
     onSearchAction?: (query: string) => void;
+    // Defaults to 'h1' for the common case (this banner IS the page's H1 -
+    // e.g. About, Contact). Callers that already render a more specific H1
+    // elsewhere on the page (e.g. McqBrowseLayout's category/search heading)
+    // must pass 'p' here, or the page ends up with two H1s.
+    titleAs?: 'h1' | 'p';
 }
 
 export default function BannerHeader({
@@ -23,7 +28,9 @@ export default function BannerHeader({
                                          className,
                                          showSearch = true,
                                          onSearchAction,
+                                         titleAs = 'h1',
                                      }: BannerHeaderProps) {
+    const TitleTag = titleAs;
     return (
         <div className={cn("relative w-full h-72", className)}>
             <Image
@@ -42,9 +49,9 @@ export default function BannerHeader({
                             {subtitle}
                         </p>
                     )}
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-montserrat font-bold text-white">
+                    <TitleTag className="text-4xl sm:text-5xl md:text-6xl font-montserrat font-bold text-white">
                         {title}
-                    </h1>
+                    </TitleTag>
                     {showSearch && onSearchAction && (
                         <SearchBar
                             onSearchAction={onSearchAction}

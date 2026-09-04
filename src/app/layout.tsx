@@ -17,6 +17,11 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
+    // Required for every relative URL in `alternates.canonical` / `openGraph.images`
+    // across the app to resolve to an absolute URL - without this, Next emits
+    // `<link rel="canonical" href="/">` verbatim (invalid per spec; Google can
+    // ignore or misresolve relative canonicals) instead of the full https:// URL.
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://examsnepal.com"),
     title: "Exams Nepal",
     description: "Exams Nepal is a platform for online exams and practice questions.",
 };

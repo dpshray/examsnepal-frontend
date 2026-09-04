@@ -7,6 +7,7 @@ import {
     CalendarCheck,
     ClipboardCheck,
     ClipboardList,
+    ExternalLink,
     GraduationCap,
     ListChecks,
     Target,
@@ -23,6 +24,13 @@ import { getExamGuide, getExamGuideCategories, getExamGuideCategory } from '@/li
 export const revalidate = 3600;
 
 const SITE_URL = 'https://examsnepal.com';
+
+const TYPE_LABELS: Record<string, string> = {
+    license: 'License',
+    loksewa: 'Loksewa',
+    entrance: 'Entrance',
+    job: 'Job',
+};
 
 export async function generateStaticParams() {
     const categories = await getExamGuideCategories();
@@ -221,11 +229,16 @@ export default async function ExamGuidePage({
                     {guide.syllabus && (
                         <div className="bg-white rounded-xl border border-border shadow-sm p-6">
                             <h2 className="font-bold text-gray-900 mb-3">Syllabus</h2>
-                            <div
-                                className="prose prose-sm max-w-none text-gray-700"
-                                // eslint-disable-next-line react/no-danger
-                                dangerouslySetInnerHTML={{ __html: guide.syllabus }}
-                            />
+                            {/* Several guides' syllabus content is a real marks-distribution
+                                <table> (5 columns, long cell text) from the CMS - without this
+                                wrapper it overflows a mobile viewport instead of scrolling. */}
+                            <div className="overflow-x-auto">
+                                <div
+                                    className="prose prose-sm max-w-none text-gray-700"
+                                    // eslint-disable-next-line react/no-danger
+                                    dangerouslySetInnerHTML={{ __html: guide.syllabus }}
+                                />
+                            </div>
                         </div>
                     )}
 
@@ -261,20 +274,45 @@ export default async function ExamGuidePage({
                             </div>
                         </div>
                     )}
+
+                    {guide.official_source && (
+                        <p className="text-sm text-muted-foreground">
+                            Official source:{' '}
+                            <a
+                                href={guide.official_source}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 font-medium text-green-700 hover:underline"
+                            >
+                                {guide.official_source.replace(/^https?:\/\//, '')}
+                                <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
+                            </a>
+                        </p>
+                    )}
                 </div>
 
                 <aside className="hidden lg:flex lg:flex-col gap-4 sticky top-24 self-start">
                     {ctaCard}
-                    <div className="bg-white rounded-xl border border-border shadow-sm p-5">
-                        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-                            Category
+                    <div className="bg-white rounded-xl border border-border shadow-sm p-5 flex flex-col gap-4">
+                        <div>
+                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                                Category
+                            </div>
+                            <Link
+                                href={`/exams/${guide.category.slug}`}
+                                className="text-sm font-medium text-green-700 hover:underline"
+                            >
+                                {guide.category.name} &rarr;
+                            </Link>
                         </div>
-                        <Link
-                            href={`/exams/${guide.category.slug}`}
-                            className="text-sm font-medium text-green-700 hover:underline"
-                        >
-                            {guide.category.name} &rarr;
-                        </Link>
+                        <div>
+                            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                                Type
+                            </div>
+                            <span className="text-sm text-gray-800">
+                                {TYPE_LABELS[guide.type] ?? guide.type}
+                            </span>
+                        </div>
                     </div>
                 </aside>
             </div>

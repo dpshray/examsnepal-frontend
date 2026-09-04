@@ -1,24 +1,36 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { ArrowRight, BookOpenCheck, GraduationCap, HardHat, Landmark } from 'lucide-react';
+import { BookOpenCheck } from 'lucide-react';
 import { getExamGuideCategories, getExamGuideCategory, type ExamGuideCategoryDetail } from '@/lib/examGuideApi';
+import { ExamsDirectoryClient } from './ExamsDirectoryClient';
 
 export const revalidate = 3600;
 
 const SITE_URL = 'https://examsnepal.com';
 
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-    loksewa: Landmark,
-    entrance: GraduationCap,
-    'nec-license': HardHat,
-};
-
 export const metadata: Metadata = {
-    title: 'Exam Guides - Loksewa, Entrance Exams, NEC License & More | ExamsNepal',
+    title: 'Exams in Nepal - License, Loksewa & Entrance Exams by Category | ExamsNepal',
     description:
-        'Syllabus, eligibility, exam pattern, and free mock tests for Loksewa, entrance exams, NEC license, and more — browse by category.',
+        'Browse license, Loksewa, and entrance exams in Nepal by category - Medical, Engineering, Management, Law, and more - with free mock tests.',
     alternates: { canonical: '/exams' },
 };
+
+const FAQS = [
+    {
+        question: 'What exams does the Public Service Commission (Lok Sewa Aayog) conduct?',
+        answer:
+            'The PSC conducts Loksewa exams for non-gazetted and gazetted civil service positions - including Kharidar, Nayab Subba, and Section Officer under Others, and field-specific Loksewa exams such as Engineering Service, Agriculture Service, and Nepal Health Service Staff Nurse under their respective categories.',
+    },
+    {
+        question: 'What license exams are mandatory to practice a profession in Nepal?',
+        answer:
+            'Nepal requires council-administered license exams for most regulated professions: NMCLE for doctors (Nepal Medical Council), NEC Licensing for engineers, NLEN for nurses, NHPC Licensing for allied health programs, the Nepal Pharmacy Council exam for pharmacists, NLEV for veterinarians, and the Nepal Bar Council exam for advocates, among others.',
+    },
+    {
+        question: 'What entrance exams do I need for medical, engineering, or law admission in Nepal?',
+        answer:
+            'Common entrance exams include MECEE-BL for MBBS/BDS and MECEE-PG for MD/MS (Medical), IOE Entrance and BSc CSIT for engineering and IT programs, and BALLB/LLM/KULSAT for law admission - each administered by a different authority and covered in its own exam guide here.',
+    },
+];
 
 export default async function ExamsHubPage() {
     const summaries = await getExamGuideCategories();
@@ -34,14 +46,25 @@ export default async function ExamsHubPage() {
 
     const totalGuides = summaries.reduce((sum, c) => sum + c.guide_count, 0);
 
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-            { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
-            { '@type': 'ListItem', position: 2, name: 'Exams', item: `${SITE_URL}/exams` },
-        ],
-    };
+    const jsonLd = [
+        {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+                { '@type': 'ListItem', position: 2, name: 'Exams', item: `${SITE_URL}/exams` },
+            ],
+        },
+        {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQS.map((faq) => ({
+                '@type': 'Question',
+                name: faq.question,
+                acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+            })),
+        },
+    ];
 
     return (
         <section className="min-h-screen bg-gray-50">
@@ -50,10 +73,12 @@ export default async function ExamsHubPage() {
 
             <div className="bg-gradient-to-br from-green-700 to-green-600 text-white">
                 <div className="max-w-6xl mx-auto px-4 py-16 text-center">
-                    <h1 className="text-3xl sm:text-4xl font-bold font-montserrat mb-3">Exam Guides</h1>
+                    <h1 className="text-3xl sm:text-4xl font-bold font-montserrat mb-3">
+                        Exams in Nepal - License, Loksewa & Entrance Exams by Category
+                    </h1>
                     <p className="text-green-50 max-w-2xl mx-auto mb-5">
-                        Syllabus, eligibility, exam pattern, and free mock tests for Nepal&apos;s Loksewa, entrance,
-                        and professional-license exams.
+                        Syllabus, eligibility, exam pattern, and free mock tests for Nepal&apos;s license, Loksewa,
+                        and entrance exams, organized by professional field.
                     </p>
                     {totalGuides > 0 && (
                         <div className="inline-flex items-center gap-2 bg-white/15 rounded-full px-4 py-1.5 text-sm font-medium">
@@ -65,97 +90,7 @@ export default async function ExamsHubPage() {
                 </div>
             </div>
 
-            {categories.length > 1 && (
-                <div className="sticky top-[64px] md:top-[72px] z-30 bg-white/95 backdrop-blur border-b border-border">
-                    <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mr-1">
-                            Jump to:
-                        </span>
-                        {categories.map((category) => {
-                            const Icon = CATEGORY_ICONS[category.slug] ?? BookOpenCheck;
-                            return (
-                                <a
-                                    key={category.id}
-                                    href={`#${category.slug}`}
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-800 hover:bg-green-100 hover:border-green-300 transition"
-                                >
-                                    <Icon className="w-3.5 h-3.5" aria-hidden="true" />
-                                    {category.name}
-                                    <span className="text-green-600/70">({category.guides.length})</span>
-                                </a>
-                            );
-                        })}
-                    </div>
-                </div>
-            )}
-
-            <div className="max-w-6xl mx-auto px-4 py-12">
-                {categories.length === 0 ? (
-                    <p className="text-muted-foreground text-center">No exam guides published yet.</p>
-                ) : (
-                    <div className="flex flex-col gap-14">
-                        {categories.map((category) => {
-                            const Icon = CATEGORY_ICONS[category.slug] ?? BookOpenCheck;
-
-                            return (
-                                <div key={category.id} id={category.slug} className="scroll-mt-32">
-                                    <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-11 h-11 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                                                <Icon className="w-5 h-5 text-green-700" aria-hidden="true" />
-                                            </div>
-                                            <div>
-                                                <h2 className="text-xl font-bold font-montserrat text-gray-900">
-                                                    {category.name}
-                                                </h2>
-                                                {category.description && (
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {category.description}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <Link
-                                            href={`/exams/${category.slug}`}
-                                            className="shrink-0 text-sm font-medium text-green-700 hover:text-green-800 hover:underline whitespace-nowrap"
-                                        >
-                                            View all {category.guides.length} &rarr;
-                                        </Link>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {category.guides.map((guide) => (
-                                            <Link
-                                                key={guide.id}
-                                                href={`/exams/${category.slug}/${guide.slug}`}
-                                                className="group flex flex-col justify-between p-5 bg-white rounded-xl border border-border shadow-sm hover:shadow-md hover:border-green-300 transition"
-                                            >
-                                                <div>
-                                                    <h3 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">
-                                                        {guide.name}
-                                                    </h3>
-                                                    {guide.meta_description && (
-                                                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
-                                                            {guide.meta_description}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <span className="inline-flex items-center gap-1 text-sm font-medium text-green-700 mt-4">
-                                                    View guide
-                                                    <ArrowRight
-                                                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
-                                                        aria-hidden="true"
-                                                    />
-                                                </span>
-                                            </Link>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
+            <ExamsDirectoryClient categories={categories} />
         </section>
     );
 }

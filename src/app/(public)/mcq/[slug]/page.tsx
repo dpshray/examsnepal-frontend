@@ -33,6 +33,18 @@ export const revalidate = 3600;
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 
+// Word-boundary truncation with an ellipsis, so titles/descriptions don't cut
+// mid-word (or run well past their target length - see generateMetadata: the
+// previous plain .slice(0, 65) + " | Exams Nepal MCQ" suffix produced ~83
+// character titles, well past the ~60 char guideline, across all ~194k MCQ
+// pages - the single largest URL surface on the site).
+function truncate(text: string, maxLen: number): string {
+    if (text.length <= maxLen) return text;
+    const cut = text.slice(0, maxLen);
+    const lastSpace = cut.lastIndexOf(" ");
+    return `${(lastSpace > maxLen * 0.6 ? cut.slice(0, lastSpace) : cut).trim()}…`;
+}
+
 async function getMcq(slug: string): Promise<McqDetail | null> {
     const res = await fetch(`${API_URL}/free/mcq/${slug}`, {
         next: { revalidate },
@@ -63,12 +75,13 @@ export async function generateMetadata({
     }
 
     const correct = mcq.options.find((o) => o.is_correct)?.option;
-    const description = correct
-        ? `${mcq.question} Answer: ${correct}. ${mcq.explanation}`.slice(0, 160)
-        : mcq.question.slice(0, 160);
+    const description = truncate(
+        correct ? `${mcq.question} Answer: ${correct}. ${mcq.explanation}` : mcq.question,
+        155,
+    );
 
     return {
-        title: `${mcq.question.slice(0, 65)} | Exams Nepal MCQ`,
+        title: `${truncate(mcq.question, 44)} | ExamsNepal`,
         description,
         alternates: {
             canonical: `/mcq/${mcq.slug}`,

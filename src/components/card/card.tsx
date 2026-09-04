@@ -12,7 +12,7 @@ import Link from "next/link";
 import { onlineTest } from "../../../public/assest";
 import { Button } from "@/components/ui/button";
 import { section } from "framer-motion/m";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeleteModal } from "@/components/modal/DeleteModal";
 import EditModal from "@/components/modal/EditModal";
@@ -22,6 +22,7 @@ import subscriptionService from "@/services/SubscriptionService";
 
 interface FeaturedCardProps {
   imageSrc?: string;
+  icon?: ReactNode;
   title: string;
   description: string;
   linkHref?: string;
@@ -38,15 +39,21 @@ import { redirectToConnectIPS } from "@/lib/connectIps";
 
 export const FeaturedCard = ({
   imageSrc,
+  icon,
   title,
   description,
   linkHref,
   linkText,
 }: FeaturedCardProps) => {
   return (
-    <div className="bg-[#F8F8F8] rounded-xl p-4 flex flex-col items-center justify-between text-center h-full max-w-xs">
-      <div>
-        {imageSrc && (
+    <div className="flex h-full max-w-xs flex-col items-center justify-between rounded-xl border border-gray-200 bg-white p-6 text-center transition hover:border-green-300 hover:shadow-md">
+      <div className="flex flex-col items-center">
+        {icon && (
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50 text-green-700">
+            {icon}
+          </div>
+        )}
+        {!icon && imageSrc && (
           <Image
             src={imageSrc || "placeholder.png"}
             alt={title}
@@ -120,7 +127,6 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
   const getPaymentMethod = (id: number) => paymentMethod[id] || "esewa";
 
   const { data: paymentSettings } = useGetPaymentSettings();
-  console.log("paymentSettings", paymentSettings);
   const settings = paymentSettings?.data ?? [];
   const isMethodEnabled = (name: string) =>
     settings.some(
@@ -182,12 +188,14 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
   return (
     <section className="flex flex-col items-center mt-8">
       {/* Toggle Buttons */}
-      <div className="flex overflow-hidden font-light border border-gray-300 rounded-md">
+      <div
+        className="flex overflow-hidden font-light border border-gray-300 rounded-md"
+        role="group"
+        aria-label="Billing cycle"
+      >
         <Button
           type="button"
-          aria-current="page"
-          aria-selected="true"
-          aria-checked="true"
+          aria-pressed={billingType === "monthly"}
           onClick={() => setBillingType("monthly")}
           className={`px-4 py-2 transition text-primary focus:outline-none ${
             billingType === "monthly"
@@ -199,6 +207,7 @@ export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
         </Button>
         <Button
           type="button"
+          aria-pressed={billingType === "yearly"}
           onClick={() => setBillingType("yearly")}
           className={`px-4 py-2 transition text-primary focus:outline-none ${
             billingType === "yearly"

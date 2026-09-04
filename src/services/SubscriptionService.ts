@@ -98,19 +98,15 @@ class SubscriptionService extends HttpServices {
   };
 
   async getPaymentSettings(params?: PageParams) {
-    try {
-      const response = await this.getRequest({
-        url: "/admin/payment-settings",
-        config: {
-          params,
-          auth: true,
-        },
-      });
-      return response?.data;
-    } catch (error) {
-      console.error("Error fetching payment settings:", error);
-      throw error;
-    }
+    // Public-facing data (drives which payment buttons show on the pricing
+    // card for logged-out visitors too), so no auth token is required here.
+    const response = await this.getRequest({
+      url: "/admin/payment-settings",
+      config: {
+        params,
+      },
+    });
+    return response?.data;
   }
 
   connectIpsTransaction = async (
