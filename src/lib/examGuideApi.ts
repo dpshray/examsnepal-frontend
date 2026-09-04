@@ -60,8 +60,18 @@ export const EXAM_GUIDE_REVALIDATE_SECONDS = 3600;
 
 export async function getExamGuideCategories(): Promise<ExamGuideCategorySummary[]> {
     try {
+        // cache: 'no-store' - this list drives every downstream per-category
+        // lookup (mega menu, /exams listing). A stale summary here is far
+        // worse than elsewhere: if it holds a slug that's since been renamed
+        // or deleted (exactly what happened during the Sep 2026 taxonomy
+        // migration - "loksewa"/"entrance"/"nec-license" -> the 7-field
+        // categories), every lookup for that slug fails and the whole page
+        // goes empty, not just stale. This bit us 3 times in one session
+        // (a local test build, the long-running dev server, and production
+        // via Vercel's Data Cache surviving a redeploy) before being pinned
+        // down to this fetch's `revalidate: 3600`.
         const res = await fetch(`${API_URL}/free/exam-guides/categories`, {
-            next: { revalidate: 3600 },
+            cache: 'no-store',
         });
         if (!res.ok) return [];
         const json = await res.json();
