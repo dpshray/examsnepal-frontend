@@ -28,6 +28,8 @@ interface FeaturedCardProps {
   linkText?: string;
 }
 import { toast } from "sonner";
+import { useEsewaTransaction } from "@/hooks/use-subscription";
+import { redirectToEsewa } from "@/lib/redirectToEsewa";
 
 export const FeaturedCard = ({
   imageSrc,
@@ -73,11 +75,6 @@ type PricingCardProps = {
     price: string;
   }> | null;
   loading?: boolean;
-  promoLoadingId?: number | null;
-  onAddSubscription?: (
-    subscription_type_id: number,
-    promo_code: string,
-  ) => void;
 };
 
 function PricingCardSkeleton() {
@@ -100,12 +97,7 @@ function PricingCardSkeleton() {
   );
 }
 
-export const PricingCard = ({
-  subscription,
-  loading,
-  promoLoadingId,
-  onAddSubscription,
-}: PricingCardProps) => {
+export const PricingCard = ({ subscription, loading }: PricingCardProps) => {
   const [billingType, setBillingType] = useState<"monthly" | "yearly">(
     "monthly",
   );
@@ -115,6 +107,29 @@ export const PricingCard = ({
   const [promoApplyingId, setPromoApplyingId] = useState<number | null>(null);
   const [promoData, setPromoData] = useState<Record<number, any>>({});
 
+  const [purchasingId, setPurchasingId] = useState<number | null>(null);
+
+  const esewaMutation = useEsewaTransaction();
+
+  const handleConfirmPurchase = (
+    subscription_type_id: number,
+    promo_code: string,
+  ) => {
+    setPurchasingId(subscription_type_id);
+    esewaMutation.mutate(
+      { subscription_type_id, promo_code },
+      {
+        onSuccess: (response) => {
+          if (response?.status && response?.data) {
+            redirectToEsewa(response.data.payment_url, response.data.payload);
+          } else {
+            toast.error("Failed to generate transaction.");
+          }
+        },
+        onSettled: () => setPurchasingId(null),
+      },
+    );
+  };
   const monthlyPlans = subscription?.filter((plan) => plan.duration <= 6) || [];
   const yearlyPlans = subscription?.filter((plan) => plan.duration > 6) || [];
 
@@ -293,6 +308,100 @@ export const PricingCard = ({
                           ? "Applying..."
                           : "Apply Coupon"}
                       </Button>
+
+                      <div className="flex gap-2">
+                        {/* {(
+                          [
+                            {
+                              key: "esewa",
+                              label: "eSewa",
+                              logo: "/images/esewa.png",
+                            },
+                            {
+                              key: "connectips",
+                              label: "ConnectIPS",
+                              logo: "/images/connectips.png",
+                            },
+                          ] as const
+                        ).map(({ key, label, logo }) => (
+                          <Button
+                            variant={"outline"}
+                            key={key}
+                            type="button"
+                            aria-pressed={
+                              paymentMethod[plan.subscription_type_id] === key
+                            }
+                            onClick={() =>
+                              setPaymentMethod((prev) => ({
+                                ...prev,
+                                [plan.subscription_type_id]: key,
+                              }))
+                            }
+                            className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border text-sm font-medium transition ${
+                              paymentMethod[plan.subscription_type_id] === key
+                                ? "border-green-600 bg-green-50 text-green-700"
+                                : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                            }`}
+                          >
+                            <Image
+                              src={logo}
+                              alt={`${label} logo`}
+                              width={30}
+                              height={30}
+                              className="object-contain"
+                            />
+                            <span>{label}</span>
+                          </Button>
+                        ))} */}
+
+                        {/* ConnectIPS temporarily disabled — re-enable when ready
+                        <button
+                          type="button"
+                          aria-pressed={
+                            getPaymentMethod(plan.subscription_type_id) ===
+                            "connectips"
+                          }
+                          onClick={() =>
+                            setPaymentMethod((prev) => ({
+                              ...prev,
+                              [plan.subscription_type_id]: "connectips",
+                            }))
+                          }
+                          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border text-sm font-medium transition ${
+                            getPaymentMethod(plan.subscription_type_id) ===
+                            "connectips"
+                              ? "border-green-600 bg-green-50 text-green-700"
+                              : "border-gray-300 text-gray-600 hover:bg-gray-50"
+                          }`}
+                        >
+                          <Image
+                            src="/images/connectips-logo.png"
+                            alt="ConnectIPS logo"
+                            width={20}
+                            height={20}
+                            className="object-contain"
+                          />
+                          <span>ConnectIPS</span>
+                        </button>
+                        */}
+
+                        <Button
+                          type="button"
+                          variant={"ghost"}
+                          disabled
+                          aria-pressed="true"
+                          className="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md border border-green-600 bg-green-50 text-green-700 text-sm font-medium cursor-default"
+                        >
+                          <Image
+                            src="/images/esewa.png"
+                            alt="eSewa logo"
+                            width={30}
+                            height={30}
+                            className="object-contain"
+                          />
+                          <span>eSewa</span>
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -319,13 +428,34 @@ export const PricingCard = ({
                       ? "Confirm Purchase"
                       : "Buy Plan"}
                 </Link> */}
-                {/* CTA Button */}
                 <Link
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (activePromoId === plan.subscription_type_id) {
+                      handleConfirmPurchase(
+                        plan.subscription_type_id,
+                        promoCodes[plan.subscription_type_id] || "",
+                      );
+                    } else {
+                      setActivePromoId(plan.subscription_type_id);
+                    }
+                  }}
+                  className="mt-4 block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-green-700"
+                >
+                  {purchasingId === plan.subscription_type_id
+                    ? "Loading..."
+                    : activePromoId === plan.subscription_type_id
+                      ? "Confirm Purchase"
+                      : "Buy Plan"}
+                </Link>
+                {/* CTA Button */}
+                {/* <Link
                   href="/contact-us"
                   className="mt-4 block w-full rounded-lg bg-green-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-green-700"
                 >
                   Contact Admin to Buy Plan
-                </Link>
+                </Link> */}
               </div>
             );
           })}

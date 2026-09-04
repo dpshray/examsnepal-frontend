@@ -1,40 +1,47 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { CheckCircle, Clock, CreditCard, Calendar, User, BookOpen } from "lucide-react"
-import subscriptionService from "@/services/SubscriptionService"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Calendar,
+  User,
+  BookOpen,
+} from "lucide-react";
+import subscriptionService from "@/services/SubscriptionService";
 
 export default function SubscriptionStatus() {
-  const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await subscriptionService.getUserSubscriptionStatus()
-        setData(res)
+        const res = await subscriptionService.getUserSubscriptionStatus();
+        setData(res);
       } catch (err: any) {
-        setError(err.message ?? "Something went wrong")
+        setError(err.message ?? "Something went wrong");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetch()
-  }, [])
+    };
+    fetch();
+  }, []);
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    })
+    });
 
   const formatDateTime = (dateString: string) =>
     new Date(dateString).toLocaleString("en-US", {
@@ -43,9 +50,9 @@ export default function SubscriptionStatus() {
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })
+    });
 
-  console.log("loading", loading)
+  console.log("loading", loading);
 
   if (loading) {
     return (
@@ -62,11 +69,10 @@ export default function SubscriptionStatus() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-
-  if (error) return <p className="p-6 text-destructive">{error}</p>
+  if (error) return <p className="p-6 text-destructive">{error}</p>;
 
   // if no subscription
   if (!data?.data) {
@@ -74,7 +80,8 @@ export default function SubscriptionStatus() {
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-4">
         <h2 className="text-2xl font-semibold">No Active Subscription</h2>
         <p className="text-muted-foreground">
-          You currently don&apos;t have any active subscription. Get started below.
+          You currently don&apos;t have any active subscription. Get started
+          below.
         </p>
         <Button
           onClick={() => router.push("/student/subscription")}
@@ -83,11 +90,11 @@ export default function SubscriptionStatus() {
           Get Subscription
         </Button>
       </div>
-    )
+    );
   }
 
-  const sub = data.data
-  const isActive = sub.subscription?.status === 1
+  const sub = data.data;
+  const isActive = sub.subscription?.status === 1;
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -95,7 +102,9 @@ export default function SubscriptionStatus() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-semibold text-foreground">Subscription Status</h1>
+            <h1 className="text-3xl font-semibold text-foreground">
+              Subscription Status
+            </h1>
             <p className="text-muted-foreground mt-1">
               Manage your exam preparation subscription
             </p>
@@ -103,7 +112,9 @@ export default function SubscriptionStatus() {
           <Badge
             variant={isActive ? "default" : "secondary"}
             className={`px-3 py-1 text-sm font-medium ${
-              isActive ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"
+              isActive
+                ? "bg-success text-success-foreground"
+                : "bg-muted text-muted-foreground"
             }`}
           >
             {isActive ? (
@@ -132,7 +143,9 @@ export default function SubscriptionStatus() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Subscription Period</p>
+                <p className="text-sm text-muted-foreground">
+                  Subscription Period
+                </p>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-muted-foreground" />
                   <span className="font-mono text-sm">
@@ -162,7 +175,9 @@ export default function SubscriptionStatus() {
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Amount Paid</p>
-                <p className="text-xl font-semibold text-success">Rs. {sub.paid}</p>
+                <p className="text-xl font-semibold text-success">
+                  Rs. {sub.paid}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -177,8 +192,12 @@ export default function SubscriptionStatus() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Student Profile ID</p>
-                <p className="font-mono text-lg font-semibold">#{sub.student_profile_id}</p>
+                <p className="text-sm text-muted-foreground">
+                  Student Profile ID
+                </p>
+                <p className="font-mono text-lg font-semibold">
+                  #{sub.student_profile_id}
+                </p>
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Subscription ID</p>
@@ -189,7 +208,7 @@ export default function SubscriptionStatus() {
         </div>
 
         {data.message && (
-          <Card className="border-l-4 border-l-primary">
+          <Card className="border-l-4 border-l-green-600">
             <CardContent>
               <p className="text-sm text-muted-foreground">{data.message}</p>
             </CardContent>
@@ -197,5 +216,5 @@ export default function SubscriptionStatus() {
         )}
       </div>
     </div>
-  )
+  );
 }
