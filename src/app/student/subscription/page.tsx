@@ -1,11 +1,12 @@
-'use client'
+"use client";
 
-import {StudentBannerHeader} from "@/components/banner/header";
+import { StudentBannerHeader } from "@/components/banner/header";
 import { useEffect, useState } from "react";
 import subscriptionService from "@/services/SubscriptionService";
 import { PricingCard } from "@/components/card/card";
 import { toast } from "sonner";
 import { redirectToConnectIPS } from "@/lib/connectIps";
+import { redirectToPayment } from "@/lib/redirectToPayment";
 
 // function SubscriptionClient() {
 //     return (
@@ -42,77 +43,107 @@ import { redirectToConnectIPS } from "@/lib/connectIps";
 // }
 
 export default function Subscription() {
-    const [subscription, setSubscription] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
-    
-    useEffect(() => {
-        const fetchUserSubscription = async () => {
-        try {
-            const data = await subscriptionService.getSubscriptionTypes();
-            console.log("data", data);
-            setSubscription(data);
-        } catch (err) {
-            console.error("Failed to fetch subscription status:", err);
-        } finally {
-            setLoading(false);
-        }
-        };
-        fetchUserSubscription();
-    }, []);
+  const [subscription, setSubscription] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
 
-    const onAddSubscription = async (subscription_type_id: number, promo_code: string) => {
-        try {
-            setPromoLoadingId(subscription_type_id);
-            const response = await subscriptionService.addSubscription({
-            subscription_type_id,
-            promo_code,
-            });
-
-            if (response.status) {
-                toast.success("Transaction generated. Redirecting to payment...");
-                redirectToConnectIPS(response.data);
-                console.log("try", response.data);
-            } else {
-                toast.error("Failed to generate transaction.");
-            }
-        } catch (err) {
-            toast.error("Failed to add subscription.");
-            console.error(err);
-        } finally {
-            setPromoLoadingId(null);
-        }
+  useEffect(() => {
+    const fetchUserSubscription = async () => {
+      try {
+        const data = await subscriptionService.getSubscriptionTypes();
+        console.log("data", data);
+        setSubscription(data);
+      } catch (err) {
+        console.error("Failed to fetch subscription status:", err);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchUserSubscription();
+  }, []);
 
-    return (
-        <>
-            <div className="w-full">
-                <StudentBannerHeader
-                    title="Subscription"
-                    subtitle="Manage your subscription and payment methods."
-                />
-            </div>
+  //   const onAddSubscription = async (
+  //     subscription_type_id: number,
+  //     promo_code: string,
+  //   ) => {
+  //     try {
+  //       setPromoLoadingId(subscription_type_id);
+  //       const response = await subscriptionService.addSubscription({
+  //         subscription_type_id,
+  //         promo_code,
+  //       });
 
-            <section className="px-4 py-8 max-w-7xl mx-auto">
-                <div className="text-center mt-6 mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Choose a Plan</h1>
-                <p className="text-gray-600 mt-2 text-base max-w-2xl mx-auto">
-                    Flexible pricing options tailored to your learning needs.
-                </p>
-                </div>
+  //       if (response.status) {
+  //         toast.success("Transaction generated. Redirecting to payment...");
+  //         redirectToConnectIPS(response.data);
+  //         console.log("try", response.data);
+  //       } else {
+  //         toast.error("Failed to generate transaction.");
+  //       }
+  //     } catch (err) {
+  //       toast.error("Failed to add subscription.");
+  //       console.error(err);
+  //     } finally {
+  //       setPromoLoadingId(null);
+  //     }
+  //   };
 
-                {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  //   const onAddSubscription = async (
+  //     subscription_type_id: number,
+  //     promo_code: string,
+  //     payment_method: "connectips" | "esewa",
+  //   ) => {
+  //     try {
+  //       setPromoLoadingId(subscription_type_id);
+  //       const response = await subscriptionService.addSubscription({
+  //         subscription_type_id,
+  //         promo_code,
+  //         payment_method, // backend uses this to build the right signed payload
+  //       });
+
+  //       if (response.status) {
+  //         toast.success("Transaction generated. Redirecting to payment...");
+  //         redirectToPayment(payment_method, response.data);
+  //       } else {
+  //         toast.error("Failed to generate transaction.");
+  //       }
+  //     } catch (err) {
+  //       toast.error("Failed to add subscription.");
+  //       console.error(err);
+  //     } finally {
+  //       setPromoLoadingId(null);
+  //     }
+  //   };
+
+  return (
+    <>
+      <div className="w-full">
+        <StudentBannerHeader
+          title="Subscription"
+          subtitle="Manage your subscription and payment methods."
+        />
+      </div>
+
+      <section className="px-4 py-8 max-w-7xl mx-auto">
+        <div className="text-center mt-6 mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Choose a Plan</h1>
+          <p className="text-gray-600 mt-2 text-base max-w-2xl mx-auto">
+            Flexible pricing options tailored to your learning needs.
+          </p>
+        </div>
+
+        {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {Array.from({length: 6}).map((_, index) => (
                         <SubscriptionClient key={index}/>
                     ))}
                 </div> */}
-                <PricingCard 
-                    subscription={subscription} 
-                    loading={loading} 
-                    promoLoadingId={promoLoadingId} 
-                    onAddSubscription={onAddSubscription}
-                />
-            </section>
-        </>        
-    );
+        <PricingCard
+          subscription={subscription}
+          loading={loading}
+          //   promoLoadingId={promoLoadingId}
+          //   onAddSubscription={onAddSubscription}
+        />
+      </section>
+    </>
+  );
 }

@@ -1,4 +1,5 @@
 import HttpServices from "@/services/ExamService/http.service";
+import { PageParams } from "./corporateExamServices";
 
 class SubscriptionService extends HttpServices {
   // Get all subscription types
@@ -7,10 +8,10 @@ class SubscriptionService extends HttpServices {
       const response = await this.getRequest({
         url: "subscription-type",
         config: {
-          auth: true, 
+          auth: true,
         },
       });
-      return response?.data?.data; 
+      return response?.data?.data;
     } catch (error) {
       throw error;
     }
@@ -25,7 +26,7 @@ class SubscriptionService extends HttpServices {
           auth: true,
         },
       });
-      return response?.data; 
+      return response?.data;
     } catch (error) {
       throw error;
     }
@@ -40,7 +41,7 @@ class SubscriptionService extends HttpServices {
           auth: true,
         },
       });
-      return response?.data; 
+      return response?.data;
     } catch (error) {
       throw error;
     }
@@ -55,7 +56,7 @@ class SubscriptionService extends HttpServices {
           auth: true,
         },
       });
-      return response?.data; 
+      return response?.data;
     } catch (error) {
       throw error;
     }
@@ -68,13 +69,65 @@ class SubscriptionService extends HttpServices {
         config: { auth: true },
       });
       console.log("Service response:", response?.data);
-      return response?.data; 
+      return response?.data;
     } catch (error) {
       console.error("Service error:", error);
       throw error;
     }
   };
-  
+
+  esewaTransaction = async (
+    subscription_type_id: number,
+    promo_code: string,
+  ) => {
+    try {
+      const response = await this.postRequest({
+        url: "esewa/init-transaction",
+        data: {
+          subscription_type_id,
+          promo_code,
+        },
+        config: {
+          auth: true,
+        },
+      });
+      return response?.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  async getPaymentSettings(params?: PageParams) {
+    try {
+      const response = await this.getRequest({
+        url: "/admin/payment-settings",
+        config: {
+          params,
+          auth: true,
+        },
+      });
+      return response?.data;
+    } catch (error) {
+      console.error("Error fetching payment settings:", error);
+      throw error;
+    }
+  }
+
+  connectIpsTransaction = async (
+    subscription_type_id: number,
+    promo_code: string,
+  ) => {
+    try {
+      const response = await this.postRequest({
+        url: "connectips/init-transaction",
+        data: { subscription_type_id, promo_code },
+        config: { auth: true },
+      });
+      return response?.data;
+    } catch (error) {
+      throw error;
+    }
+  };
 }
 
 const subscriptionService = new SubscriptionService();
