@@ -3,12 +3,14 @@ import AboutPage from "@/app/(public)/about/About";
 
 
 export const metadata: Metadata = {
-    title: 'About Us | Exam Nepal',
-    description: 'Learn more about Exam Nepal, our mission, and our team.',
+    title: 'About Us | ExamsNepal',
+    description:
+        'ExamsNepal is Nepal’s online exam-preparation platform for Loksewa, NEC license, and entrance exams — learn about our mission and team.',
     openGraph: {
-        title: 'About Us | Exam Nepal',
-        description: 'Learn more about Exam Nepal, our mission, and our team.',
-        url: 'https://examnepal.com/about',
+        title: 'About Us | ExamsNepal',
+        description:
+            'ExamsNepal is Nepal’s online exam-preparation platform for Loksewa, NEC license, and entrance exams — learn about our mission and team.',
+        url: '/about',
         images: [
             {
                 url: '/about-us.png',
@@ -19,17 +21,19 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        title: 'About Us | Exam Nepal',
-        description: 'Learn more about Exam Nepal, our mission, and our team.',
+        title: 'About Us | ExamsNepal',
+        description:
+            'ExamsNepal is Nepal’s online exam-preparation platform for Loksewa, NEC license, and entrance exams.',
         images: ['/about-us.png'],
     },
-    metadataBase: new URL('https://examnepal.com'),
+    // metadataBase is inherited from the root layout (examsnepal.com). This page
+    // previously hardcoded its own https://examnepal.com (missing the "s") across
+    // metadataBase/canonical/OG/hreflang, pointing Google at a domain we don't own.
+    // The hreflang `languages` entries below also targeted /en/about and /np/about,
+    // neither of which exists (this site has no locale routing) - both 404'd, so
+    // they've been dropped rather than fixed forward to fake working URLs.
     alternates: {
-        canonical: 'https://examnepal.com/about',
-        languages: {
-            'en-US': 'https://examnepal.com/en/about',
-            'np-NP': 'https://examnepal.com/np/about',
-        },
+        canonical: '/about',
     },
 };
 

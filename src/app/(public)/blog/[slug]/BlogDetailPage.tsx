@@ -126,19 +126,23 @@ function BlogContent({ content, summary }: { content: string; summary: string })
                 </div>
             )}
 
-            {/* Rich Text */}
-            <div
-                className="prose prose-lg max-w-none dark:prose-invert
-                    prose-headings:text-foreground prose-headings:font-bold
-                    prose-p:text-foreground prose-p:leading-relaxed
-                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                    prose-strong:text-foreground prose-strong:font-semibold
-                    prose-em:text-foreground prose-em:italic
-                    prose-blockquote:border-primary prose-blockquote:text-muted-foreground
-                    prose-pre:bg-muted prose-pre:text-foreground
-                    prose-code:text-primary prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded"
-                dangerouslySetInnerHTML={{ __html: content }}
-            />
+            {/* Rich Text - wrapped in overflow-x-auto since editor-authored content can
+                include tables or code blocks (see prose-pre styling below) wider than
+                a mobile viewport. */}
+            <div className="overflow-x-auto">
+                <div
+                    className="prose prose-lg max-w-none dark:prose-invert
+                        prose-headings:text-foreground prose-headings:font-bold
+                        prose-p:text-foreground prose-p:leading-relaxed
+                        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                        prose-strong:text-foreground prose-strong:font-semibold
+                        prose-em:text-foreground prose-em:italic
+                        prose-blockquote:border-primary prose-blockquote:text-muted-foreground
+                        prose-pre:bg-muted prose-pre:text-foreground
+                        prose-code:text-primary prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded"
+                    dangerouslySetInnerHTML={{ __html: content }}
+                />
+            </div>
         </div>
     )
 }

@@ -7,9 +7,13 @@ import Image from "next/image";
 import {
   AlignJustify,
   ArrowRight,
-  GraduationCap,
+  Briefcase,
   HardHat,
-  Landmark,
+  HeartPulse,
+  Layers,
+  Scale,
+  Stethoscope,
+  Wheat,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,7 +40,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import type { ExamGuideCategoryDetail } from "@/lib/examGuideApi";
+import type { ExamGuideCategoryDetail, ExamGuideType } from "@/lib/examGuideApi";
 import useAuth from "@/hooks/useAuth";
 
 const NAV_ITEMS_BEFORE_EXAMS = [
@@ -50,12 +54,28 @@ const NAV_ITEMS_AFTER_EXAMS = [
   { label: "Contact Us", link: "/contact-us" },
 ];
 
-// Display label + icon for the mega menu, keyed by the existing exam_categories slug.
+// Display label + icon for the mega menu, keyed by the exam_categories slug.
 const CATEGORY_META: Record<string, { label: string; icon: LucideIcon }> = {
-  loksewa: { label: "Lok Sewa Exams", icon: Landmark },
-  "nec-license": { label: "License Exams", icon: HardHat },
-  entrance: { label: "Entrance Exams", icon: GraduationCap },
+  medical: { label: "Medical", icon: Stethoscope },
+  paramedical: { label: "Paramedical", icon: HeartPulse },
+  engineering: { label: "Engineering", icon: HardHat },
+  management: { label: "Management", icon: Briefcase },
+  agriculture: { label: "Agriculture", icon: Wheat },
+  law: { label: "Law", icon: Scale },
+  others: { label: "Others", icon: Layers },
 };
+
+// Sub-groups within each category's dropdown - links to the anchored section
+// on that category's hub page (/exams/{category}#{id}) rather than listing
+// every individual exam (55 exams across 7 categories doesn't fit in a hover
+// menu; the hub page itself lists them, grouped the same way).
+const TYPE_META: Record<ExamGuideType, { id: string; label: string }> = {
+  license: { id: "license", label: "License Exams" },
+  loksewa: { id: "loksewa", label: "Loksewa Exams" },
+  entrance: { id: "entrance", label: "Entrance Exams" },
+  job: { id: "job", label: "Job Exams" },
+};
+const TYPE_ORDER: ExamGuideType[] = ["license", "loksewa", "entrance", "job"];
 
 interface NavBarProps {
   examCategories?: ExamGuideCategoryDetail[];
@@ -67,6 +87,9 @@ export default function NavBar({ examCategories = [] }: NavBarProps) {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Which category's exam list shows in the right pane of the desktop mega
+  // menu; null falls back to the first category (see render below).
+  const [hoveredCategorySlug, setHoveredCategorySlug] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -181,18 +204,31 @@ export default function NavBar({ examCategories = [] }: NavBarProps) {
                                     {meta?.label ?? category.name}
                                   </Link>
                                   <div className="flex flex-col">
-                                    {category.guides.map((guide) => (
-                                      <Link
-                                        key={guide.id}
-                                        href={`/exams/${category.slug}/${guide.slug}`}
-                                        onClick={() =>
-                                          setIsMobileMenuOpen(false)
-                                        }
-                                        className="rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 hover:text-black"
-                                      >
-                                        {guide.name}
-                                      </Link>
-                                    ))}
+                                    {TYPE_ORDER.map((type) => {
+                                      const guides = category.guides.filter(
+                                        (guide) => guide.type === type,
+                                      );
+                                      if (guides.length === 0) return null;
+                                      return (
+                                        <div key={type} className="mt-1">
+                                          <span className="block px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                            {TYPE_META[type].label}
+                                          </span>
+                                          {guides.map((guide) => (
+                                            <Link
+                                              key={guide.id}
+                                              href={`/exams/${category.slug}/${guide.slug}`}
+                                              onClick={() =>
+                                                setIsMobileMenuOpen(false)
+                                              }
+                                              className="block rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 hover:text-black"
+                                            >
+                                              {guide.name}
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               );
@@ -309,44 +345,77 @@ export default function NavBar({ examCategories = [] }: NavBarProps) {
                   Exams in Nepal
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="w-[min(90vw,720px)] max-h-[75vh] overflow-y-auto p-4">
-                    <div className="grid grid-cols-3 gap-6">
-                      {examCategories.map((category) => {
-                        const meta = CATEGORY_META[category.slug];
-                        const Icon = meta?.icon;
-                        return (
-                          <div key={category.id}>
-                            <Link
-                              href={`/exams/${category.slug}`}
-                              className="flex items-center gap-2 mb-2 text-sm font-semibold text-gray-900 hover:text-green-700"
-                            >
-                              {Icon && (
-                                <Icon
-                                  className="w-4 h-4 text-green-700"
-                                  aria-hidden="true"
-                                />
-                              )}
-                              {meta?.label ?? category.name}
-                            </Link>
-                            <ul className="flex flex-col gap-0.5">
-                              {category.guides.map((guide) => (
-                                <li key={guide.id}>
-                                  <NavigationMenuLink asChild>
-                                    <Link
-                                      href={`/exams/${category.slug}/${guide.slug}`}
-                                      className="block rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-black"
-                                    >
-                                      {guide.name}
-                                    </Link>
-                                  </NavigationMenuLink>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        );
-                      })}
+                  <div className="w-[min(94vw,760px)] p-3">
+                    <div className="flex max-h-[70vh]">
+                      {/* Category list - hover switches which category's exams show on the right */}
+                      <ul className="flex w-[210px] shrink-0 flex-col gap-0.5 overflow-y-auto border-r border-border pr-2">
+                        {examCategories.map((category) => {
+                          const meta = CATEGORY_META[category.slug];
+                          const Icon = meta?.icon;
+                          return (
+                            <li key={category.id}>
+                              <Link
+                                href={`/exams/${category.slug}`}
+                                onMouseEnter={() => setHoveredCategorySlug(category.slug)}
+                                onFocus={() => setHoveredCategorySlug(category.slug)}
+                                className={cn(
+                                  "flex items-center gap-2 rounded px-2.5 py-2 text-sm font-medium transition-colors",
+                                  (hoveredCategorySlug ?? examCategories[0]?.slug) === category.slug
+                                    ? "bg-green-50 text-green-800"
+                                    : "text-gray-700 hover:bg-gray-100",
+                                )}
+                              >
+                                {Icon && <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />}
+                                <span className="flex-1">{meta?.label ?? category.name}</span>
+                                <span className="text-xs text-gray-400">{category.guides.length}</span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+
+                      {/* Exam list for the active category, grouped by type */}
+                      <div className="flex-1 overflow-y-auto pl-4">
+                        {(() => {
+                          const activeCategory =
+                            examCategories.find(
+                              (c) => c.slug === (hoveredCategorySlug ?? examCategories[0]?.slug),
+                            ) ?? examCategories[0];
+                          if (!activeCategory) return null;
+
+                          return (
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                              {TYPE_ORDER.map((type) => {
+                                const guides = activeCategory.guides.filter((guide) => guide.type === type);
+                                if (guides.length === 0) return null;
+                                return (
+                                  <div key={type} className="col-span-2 sm:col-span-1">
+                                    <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                      {TYPE_META[type].label}
+                                    </div>
+                                    <ul className="flex flex-col gap-0.5">
+                                      {guides.map((guide) => (
+                                        <li key={guide.id}>
+                                          <NavigationMenuLink asChild>
+                                            <Link
+                                              href={`/exams/${activeCategory.slug}/${guide.slug}`}
+                                              className="block rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 hover:text-black"
+                                            >
+                                              {guide.name}
+                                            </Link>
+                                          </NavigationMenuLink>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()}
+                      </div>
                     </div>
-                    <div className="mt-4 border-t pt-3">
+                    <div className="mt-3 border-t pt-3">
                       <NavigationMenuLink asChild>
                         <Link
                           href="/exams"

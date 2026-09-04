@@ -2,8 +2,26 @@
 
 import Image from "next/image";
 import { HeroSection } from "@/components/common/HeroSection";
+import { AppShowcaseSection } from "@/components/common/AppShowcaseSection";
 import { FeaturedCard, PricingCard } from "@/components/card/card";
-import { Award, BarChart3, FileText, PieChart, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  BarChart3,
+  Briefcase,
+  ClipboardCheck,
+  FileText,
+  HardHat,
+  HeartPulse,
+  Layers,
+  PieChart,
+  Scale,
+  Stethoscope,
+  Target,
+  TrendingUp,
+  Users,
+  Wheat,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { questionBank } from "../../../public/assest";
@@ -11,12 +29,54 @@ import { useEffect, useState } from "react";
 import subscriptionService from "@/services/SubscriptionService";
 import { redirectToConnectIPS } from "@/lib/connectIps";
 import { toast } from "sonner";
-import { featuredSteps } from "@/lib/data";
 import Link from "next/link";
 import {
   CREATE_EXAM_LOGIN_ROUTE,
   CREATE_EXAM_REGISTER_ROUTE,
 } from "@/config/app-constant";
+import type { ExamGuideCategorySummary } from "@/lib/examGuideApi";
+
+// Matches the mega menu's CATEGORY_META (components/header/NavBar.tsx) so the
+// same 7 hub categories read consistently across nav and homepage.
+const CATEGORY_META: Record<string, { label: string; icon: typeof HardHat }> = {
+  medical: { label: "Medical", icon: Stethoscope },
+  paramedical: { label: "Paramedical", icon: HeartPulse },
+  engineering: { label: "Engineering", icon: HardHat },
+  management: { label: "Management", icon: Briefcase },
+  agriculture: { label: "Agriculture", icon: Wheat },
+  law: { label: "Law", icon: Scale },
+  others: { label: "Others", icon: Layers },
+};
+
+// Replaces the old featuredSteps (lib/data.ts, now removed) which pointed at
+// three images that don't exist in /public (download-app.png, online-test.png,
+// boost-prep.png - all 404) and two dead "#" links.
+const howItWorks = [
+  {
+    icon: <Target className="w-6 h-6" />,
+    title: "Pick Your Exam",
+    description:
+      "Browse Loksewa, PSC, entrance, and NEC license exams built for Nepal's real exam patterns.",
+    linkHref: "/exams",
+    linkText: "Browse Exams",
+  },
+  {
+    icon: <ClipboardCheck className="w-6 h-6" />,
+    title: "Take a Mock Test",
+    description:
+      "Practice with free MCQs modeled on the real syllabus and exam pattern for your post.",
+    linkHref: "/find-mcq",
+    linkText: "Start Practicing",
+  },
+  {
+    icon: <TrendingUp className="w-6 h-6" />,
+    title: "Track Your Rank",
+    description:
+      "See where you stand in real time against other candidates preparing for the same post.",
+    linkHref: "/register",
+    linkText: "Create Free Account",
+  },
+];
 
 const data = [
   {
@@ -66,7 +126,11 @@ const data = [
   },
 ];
 
-export default function HomeClient() {
+interface HomeClientProps {
+  examCategories?: ExamGuideCategorySummary[];
+}
+
+export default function HomeClient({ examCategories = [] }: HomeClientProps) {
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
@@ -120,18 +184,83 @@ export default function HomeClient() {
   return (
     <main className="font-montserrat bg-white overflow-x-hidden scroll-smooth">
       <HeroSection />
+
+      {/* Intro paragraph + real, crawlable links to the 3 exam-category hubs.
+          Previously the only path to /exams/{category} was the nav mega menu,
+          which doesn't render into the server HTML crawlers see (it only
+          mounts on hover/click) - this is the primary internal-linking fix. */}
+      {/* Full-bleed dark green section (the logo's exact green, #069C56) -
+          the section itself has no side padding/max-width so the background
+          runs edge to edge; the container inside keeps content aligned with
+          the rest of the page. Text switches to white/light green for
+          contrast against the dark background. */}
+      <section className="mt-16 w-full bg-[#069C56] py-12 sm:mt-24 sm:py-16">
+        <div className="container mx-auto px-6 sm:px-10 lg:px-20">
+          {/* Left-aligned and full width (matches the category cards below),
+              not centered: a 90-word paragraph set centered produces a
+              ragged, hard-to-scan block - this reads like a normal lead
+              paragraph instead. */}
+          <p className="text-left text-base leading-relaxed text-green-50 sm:text-lg">
+            ExamsNepal is an online exam-preparation platform built for Nepal&rsquo;s
+            exam landscape: Loksewa (Nepal Public Service Commission) positions
+            from Kharidar to Section Officer, license exams like NMC, NEC, and
+            the Nepal Bar Council, and entrance exams for IOE, CEE MBBS/BDS,
+            nursing, management, and law programs &mdash; organized by field,
+            from Medical and Engineering to Agriculture and Law. Every exam
+            page comes with a syllabus breakdown, eligibility criteria, and free
+            mock tests modeled on the real exam pattern, so you can practice
+            questions the way they&rsquo;ll actually appear and track your rank
+            in real time against other candidates preparing for the same post.
+          </p>
+
+          {examCategories.length > 0 && (
+            <div className="grid grid-cols-2 gap-4 mt-8 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
+              {examCategories.map((category) => {
+                const meta = CATEGORY_META[category.slug];
+                const Icon = meta?.icon;
+                return (
+                  <Link
+                    key={category.id}
+                    href={`/exams/${category.slug}`}
+                    className="flex flex-col items-center gap-2 rounded-xl border border-transparent bg-white p-5 text-center shadow-sm transition hover:border-white/60 hover:shadow-md sm:p-6"
+                  >
+                    {Icon && <Icon className="w-7 h-7 text-green-600 sm:w-8 sm:h-8" aria-hidden="true" />}
+                    <span className="text-base font-semibold text-gray-900 sm:text-lg">
+                      {meta?.label ?? category.name}
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {category.guide_count} exams covered
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="mt-6 text-center">
+            <Link
+              href="/exams"
+              className="inline-flex items-center gap-1 font-medium text-white hover:text-green-50 hover:underline"
+            >
+              View All Exam Categories
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="container mx-auto mt-10 px-6 text-center sm:mt-20 sm:px-10 lg:px-20">
-        <h1 className="text-3xl font-bold sm:text-4xl lg:text-5xl">
+        <h2 className="text-3xl font-bold sm:text-4xl lg:text-5xl">
           How It All Comes Together
-        </h1>
+        </h2>
         <p className="mt-2 text-sm text-gray-600 sm:text-base">
           Discover the Advantages of Seamless Online Exam Solutions
         </p>
         <div className="grid grid-cols-1 gap-6 mt-8 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredSteps.map((step, index) => (
+          {howItWorks.map((step, index) => (
             <div key={index} className="flex justify-center">
               <FeaturedCard
-                key={index}
+                icon={step.icon}
                 title={step.title}
                 description={step.description}
                 linkHref={step.linkHref}
@@ -166,6 +295,9 @@ export default function HomeClient() {
           </div>
         </div>
       </section>
+
+      <AppShowcaseSection />
+
       <section className="container mx-auto mt-16 px-6 text-center sm:mt-20 sm:px-10 lg:px-20">
         <h2 className="text-3xl font-bold text-primary sm:text-4xl lg:text-5xl">
           Offered Packages
@@ -243,7 +375,7 @@ export default function HomeClient() {
               href={CREATE_EXAM_LOGIN_ROUTE}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Teacher Login (opens in new tab)"
+              aria-label="Already a teacher? Login (opens in new tab)"
             >
               <Button className="bg-green-600 hover:bg-green-700 text-white">
                 Already a teacher? Login

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import HomeClient from "./HomeClient";
+import { getExamGuideCategories } from "@/lib/examGuideApi";
 
 const SITE_URL = "https://examsnepal.com";
 
@@ -45,7 +46,13 @@ const jsonLd = [
     },
 ];
 
-export default function Home() {
+export default async function Home() {
+    // Powers the real (crawlable, server-rendered) hub-category links section
+    // on the homepage - previously the only path to /exams/{category} was the
+    // nav mega menu, which doesn't render into the initial HTML (see
+    // HomeClient.tsx for why that matters).
+    const examCategories = await getExamGuideCategories();
+
     return (
         <>
             {/* eslint-disable-next-line react/no-danger */}
@@ -53,7 +60,7 @@ export default function Home() {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <HomeClient />
+            <HomeClient examCategories={examCategories} />
         </>
     );
 }

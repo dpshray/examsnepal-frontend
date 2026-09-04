@@ -1,18 +1,46 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowRight, BookOpenCheck, GraduationCap, HardHat, Landmark } from 'lucide-react';
-import { getExamGuideCategories, getExamGuideCategory } from '@/lib/examGuideApi';
+import {
+    ArrowRight,
+    Briefcase,
+    BookOpenCheck,
+    GraduationCap,
+    HardHat,
+    HeartPulse,
+    Landmark,
+    Layers,
+    Scale,
+    Stethoscope,
+    Wheat,
+} from 'lucide-react';
+import { getExamGuideCategories, getExamGuideCategory, type ExamGuideType } from '@/lib/examGuideApi';
 
 export const revalidate = 3600;
 
 const SITE_URL = 'https://examsnepal.com';
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
-    loksewa: Landmark,
-    entrance: GraduationCap,
-    'nec-license': HardHat,
+    medical: Stethoscope,
+    paramedical: HeartPulse,
+    engineering: HardHat,
+    management: Briefcase,
+    agriculture: Wheat,
+    law: Scale,
+    others: Layers,
 };
+
+// Sub-groups guides by type within a category (License / Loksewa / Entrance /
+// Job), matching the mega menu's "Category -> Type -> Exam" structure. Order
+// here is what's shown on the page; the mega menu links to these via anchor
+// (#license etc.).
+const TYPE_META: Record<ExamGuideType, { id: string; label: string }> = {
+    license: { id: 'license', label: 'License Exams' },
+    loksewa: { id: 'loksewa', label: 'Loksewa Exams' },
+    entrance: { id: 'entrance', label: 'Entrance Exams' },
+    job: { id: 'job', label: 'Job Exams' },
+};
+const TYPE_ORDER: ExamGuideType[] = ['license', 'loksewa', 'entrance', 'job'];
 
 export async function generateStaticParams() {
     const categories = await getExamGuideCategories();
@@ -106,32 +134,45 @@ export default async function ExamCategoryPage({
                 {category.guides.length === 0 ? (
                     <p className="text-muted-foreground text-center">No exam guides published in this category yet.</p>
                 ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {category.guides.map((guide) => (
-                            <Link
-                                key={guide.id}
-                                href={`/exams/${category.slug}/${guide.slug}`}
-                                className="group flex flex-col justify-between p-5 bg-white rounded-xl border border-border shadow-sm hover:shadow-md hover:border-green-300 transition"
-                            >
-                                <div>
-                                    <h2 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">
-                                        {guide.name}
-                                    </h2>
-                                    {guide.meta_description && (
-                                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
-                                            {guide.meta_description}
-                                        </p>
-                                    )}
+                    <div className="flex flex-col gap-12">
+                        {TYPE_ORDER.map((type) => {
+                            const guides = category.guides.filter((guide) => guide.type === type);
+                            if (guides.length === 0) return null;
+                            const { id, label } = TYPE_META[type];
+
+                            return (
+                                <div key={type} id={id} className="scroll-mt-24">
+                                    <h2 className="text-xl font-bold text-gray-900 mb-4">{label}</h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {guides.map((guide) => (
+                                            <Link
+                                                key={guide.id}
+                                                href={`/exams/${category.slug}/${guide.slug}`}
+                                                className="group flex flex-col justify-between p-5 bg-white rounded-xl border border-border shadow-sm hover:shadow-md hover:border-green-300 transition"
+                                            >
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                                                        {guide.name}
+                                                    </h3>
+                                                    {guide.meta_description && (
+                                                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                                                            {guide.meta_description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <span className="inline-flex items-center gap-1 text-sm font-medium text-green-700 mt-4">
+                                                    View guide
+                                                    <ArrowRight
+                                                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
+                                                        aria-hidden="true"
+                                                    />
+                                                </span>
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
-                                <span className="inline-flex items-center gap-1 text-sm font-medium text-green-700 mt-4">
-                                    View guide
-                                    <ArrowRight
-                                        className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform"
-                                        aria-hidden="true"
-                                    />
-                                </span>
-                            </Link>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

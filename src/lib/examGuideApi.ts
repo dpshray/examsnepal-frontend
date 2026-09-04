@@ -8,10 +8,13 @@ export interface ExamGuideCategorySummary {
     guide_count: number;
 }
 
+export type ExamGuideType = 'license' | 'loksewa' | 'entrance' | 'job';
+
 export interface ExamGuideSummary {
     id: number;
     name: string;
     slug: string;
+    type: ExamGuideType;
     meta_description: string | null;
 }
 
@@ -32,10 +35,12 @@ export interface ExamGuideDetail {
     id: number;
     name: string;
     slug: string;
+    type: ExamGuideType;
     meta_title: string | null;
     meta_description: string | null;
     intro: string | null;
     conducting_body: string | null;
+    official_source: string | null;
     eligibility: string | null;
     exam_pattern: string | null;
     passing_marks: string | null;
