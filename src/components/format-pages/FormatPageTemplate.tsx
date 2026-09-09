@@ -6,7 +6,7 @@ import AvailableExams from "./AvailableExams";
 import FormatFaq from "./FormatFaq";
 import { FORMATS, type FormatId } from "./formatData";
 
-const SITE_URL = "https://examsnepal.com";
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://www.examsnepal.com").replace(/\/+$/, "");
 
 export default function FormatPageTemplate({ formatId }: { formatId: FormatId }) {
     const format = FORMATS[formatId];

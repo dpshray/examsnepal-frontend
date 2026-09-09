@@ -21,6 +21,11 @@ export function FindMcqSearchBar({basePath = '/find-mcq'}: FindMcqSearchBarProps
             subtitle="Explore a wide range of MCQs"
             imageSrc="/banner.png"
             onSearchAction={handleSearch}
+            // McqBrowseLayout (this component's only caller) always renders its
+            // own, more specific <h1> (category name / search results) right
+            // below this banner - without this, every /find-mcq/* page shipped
+            // two H1s.
+            titleAs="p"
         />
     );
 }

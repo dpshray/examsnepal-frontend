@@ -5,10 +5,22 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import subscriptionService from "@/services/SubscriptionService"
 
+// useSearchParams() requires a Suspense boundary above it, or Next bails
+// this route out of prerendering entirely at build time (this only started
+// failing the build once StoreProvider stopped swallowing SSR for every
+// page - see that file's comment).
 export default function PaymentFailurePage() {
+    return (
+        <Suspense>
+            <PaymentFailureContent />
+        </Suspense>
+    );
+}
+
+function PaymentFailureContent() {
     const searchParams = useSearchParams();
     const txnId = searchParams.get("TXNID");
     const [loading, setLoading] = useState(false);

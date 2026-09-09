@@ -1,18 +1,24 @@
 import {Metadata} from "next";
 import ContactClient from "@/app/(public)/contact-us/ContactClient";
 
+// This metadata block was previously copy-pasted verbatim from the dev
+// agency's own site (Dwork Labs) and never adapted: title/description read as
+// agency marketing copy, and openGraph.url / og:image / metadataBase all
+// pointed at dworklabs.com - meaning this page's canonical resolved to
+// https://dworklabs.com/contact, a domain we don't own, instead of this site.
+// metadataBase is inherited from the root layout (examsnepal.com).
 export const metadata: Metadata = {
-    title: "ContactUs | Dwork Labs",
+    title: "Contact Us | ExamsNepal",
     description:
-        "Have questions or feedback? Contact Dwork Labs today. We're here to help you grow your business with smart digital solutions.",
+        "Have questions or feedback about ExamsNepal? Reach out to our team - we're here to help with your mock tests, subscriptions, and exam prep queries.",
     openGraph: {
-        title: "Contact Us | Dwork Labs",
+        title: "Contact Us | ExamsNepal",
         description:
-            "We're here to help you with your queries. Reach out to Dwork Labs anytime.",
-        url: "https://dworklabs.com/contact",
+            "Have questions or feedback about ExamsNepal? Reach out to our team - we're here to help with your mock tests, subscriptions, and exam prep queries.",
+        url: "/contact-us",
         images: [
             {
-                url: "https://dworklabs.com/contact-us.png",
+                url: "/contact-us.png",
                 width: 1200,
                 height: 630,
                 alt: "Contact Us",
@@ -21,13 +27,12 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Contact Us | Dwork Labs",
-        description: "Connect with Dwork Labs to grow your digital presence.",
-        images: ["https://dworklabs.com/contact-us.png"],
+        title: "Contact Us | ExamsNepal",
+        description: "Have questions or feedback about ExamsNepal? Reach out to our team.",
+        images: ["/contact-us.png"],
     },
-    metadataBase: new URL("https://dworklabs.com"),
     alternates: {
-        canonical: "/contact",
+        canonical: "/contact-us",
     },
 };
 
