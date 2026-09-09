@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import forumService from "@/services/ForumService";
 import { toast } from "sonner";
 import ReportModal from "@/components/modal/ReportModal";
-import { useDeleteForumReply } from "@/hooks/use-forum";
+import { useBlockUser, useDeleteForumReply } from "@/hooks/use-forum";
 import { DeleteModal } from "@/components/modal/DeleteModal";
+import { UserX } from "lucide-react";
 
 export default function ReplyPage({
   params,
@@ -66,6 +67,13 @@ export default function ReplyPage({
 
   const handleDeleteReply = (answerId: number) => {
     deleteReply(answerId, {
+      onSuccess: () => fetchReply(id),
+    });
+  };
+
+  const { mutate: blockUser } = useBlockUser();
+  const handleBlockUser = (studentId: number) => {
+    blockUser(studentId, {
       onSuccess: () => fetchReply(id),
     });
   };
@@ -133,10 +141,25 @@ export default function ReplyPage({
                         onConfirm={() => handleDeleteReply(ans.id)}
                       />
                     ) : (
-                      <ReportModal
-                        forumQuestionId={id}
-                        forumAnswerId={ans.id}
-                      />
+                      <div className="flex items-center">
+                        <ReportModal
+                          forumQuestionId={id}
+                          forumAnswerId={ans.id}
+                        />
+                        <DeleteModal
+                          title="Block this user?"
+                          description={`You won't see replies or questions from ${ans.student_profile?.name ?? "this user"} anymore. You can unblock them later from settings.`}
+                          icon={
+                            <UserX className="w-5 h-5 text-red-600 dark:text-red-200" />
+                          }
+                          triggerIcon={<UserX className="w-4 h-4" />}
+                          confirmLabel="Block"
+                          triggerClassName="text-gray-500 hover:text-red-600"
+                          onConfirm={() =>
+                            handleBlockUser(ans.student_profile?.id)
+                          }
+                        />
+                      </div>
                     )}
                   </div>
                 </div>

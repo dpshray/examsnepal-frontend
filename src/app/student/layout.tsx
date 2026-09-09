@@ -12,6 +12,7 @@ import {
   HelpCircle,
   Home,
   User,
+  UserX,
   Zap,
 } from "lucide-react";
 import { useLoggedInStudent } from "@/hooks/useLoggedInStudent";
@@ -90,6 +91,11 @@ const navData = [
         title: "My Subscription",
         url: "/student/my-subscription",
         icon: CreditCard,
+      },
+      {
+        title: "Blocked Users",
+        url: "/student/blocked-users",
+        icon: UserX,
       },
     ],
   },

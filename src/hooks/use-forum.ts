@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import forumService from "@/services/ForumService";
 
@@ -62,3 +62,59 @@ export function useDeleteForumReply() {
     },
   });
 }
+
+//block
+export const useGetBlockedUsers = () => {
+  return useQuery({
+    queryKey: ["blocked-users"],
+    queryFn: () => forumService.getBlockedUsers(),
+  });
+};
+
+export function useBlockUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => forumService.blockUser(id),
+    onSuccess: (data) => {
+      toast.success(data?.message || "User blocked successfully");
+      queryClient.invalidateQueries({ queryKey: ["blocked-users"] });
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.data?.errors ||
+        error?.message ||
+        error?.data?.message ||
+        "Failed to block user";
+      if (typeof errorMessage === "object") {
+        const firstError = Object.values(errorMessage)[0] as string[];
+        toast.error(firstError?.[0] || "Failed to block user");
+      } else {
+        toast.error(errorMessage);
+      }
+    },
+  });
+}
+
+export const useUnblockUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => forumService.unblockUser(id),
+    onSuccess: (data) => {
+      toast.success(data?.message || "User unblocked successfully");
+      queryClient.invalidateQueries({ queryKey: ["blocked-users"] });
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error?.data?.errors ||
+        error?.message ||
+        error?.data?.message ||
+        "Failed to unblock user";
+      if (typeof errorMessage === "object") {
+        const firstError = Object.values(errorMessage)[0] as string[];
+        toast.error(firstError?.[0] || "Failed to unblock user");
+      } else {
+        toast.error(errorMessage);
+      }
+    },
+  });
+};
