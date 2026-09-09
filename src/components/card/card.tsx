@@ -7,6 +7,7 @@ import {
   Eye,
   MessageSquare,
   MoveRight,
+  UserX,
 } from "lucide-react";
 import Link from "next/link";
 import { onlineTest } from "../../../public/assest";
@@ -36,6 +37,8 @@ import {
 } from "@/hooks/use-subscription";
 import { redirectToEsewa } from "@/lib/redirectToEsewa";
 import { redirectToConnectIPS } from "@/lib/connectIps";
+import ReportModal from "../modal/ReportModal";
+import { useBlockUser } from "@/hooks/use-forum";
 
 export const FeaturedCard = ({
   imageSrc,
@@ -546,6 +549,7 @@ interface RepliesCardProps {
   isSolved?: boolean;
   createdAt: string;
   viewCount: number;
+  onBlockAction?: () => void;
 }
 
 export function RepliesCard({
@@ -559,6 +563,7 @@ export function RepliesCard({
   createdAt,
   viewCount,
   isSolved,
+  onBlockAction,
 }: RepliesCardProps) {
   const [loggedInId, setLoggedInId] = useState<number | null>(null);
 
@@ -571,6 +576,13 @@ export function RepliesCard({
 
   const isOwner = loggedInId === studentId;
   const router = useRouter();
+
+  const { mutate: blockUser } = useBlockUser();
+  const handleBlockUser = () => {
+    blockUser(studentId, {
+      onSuccess: () => onBlockAction?.(),
+    });
+  };
 
   return (
     <div className="w-full">
@@ -591,7 +603,7 @@ export function RepliesCard({
         />
 
         {/* Header Section */}
-        <div className="flex justify-between items-start gap-2">
+        <div className="flex justify-between items-center gap-2">
           <div className="w-full flex items-center justify-between">
             <h3 className="text-lg font-semibold font-poppins text-black break-words line-clamp-3">
               {name}
@@ -599,13 +611,29 @@ export function RepliesCard({
             <span>{createdAt}</span>
           </div>
           {isOwner && (
-            <div className="flex gap-2">
+            <div className="flex">
               <EditModal
                 id={replyId}
                 question={question}
                 onEditAction={onEditAction}
               />
               <DeleteModal onConfirm={() => onDeleteAction(replyId)} />
+            </div>
+          )}
+          {!isOwner && (
+            <div className="flex">
+              <ReportModal forumQuestionId={replyId} />
+              <DeleteModal
+                title="Block this user?"
+                description={`You won't see replies or questions from ${name} anymore. You can unblock them later from settings.`}
+                icon={
+                  <UserX className="w-5 h-5 text-red-600 dark:text-red-200" />
+                }
+                triggerIcon={<UserX className="w-4 h-4" />}
+                confirmLabel="Block"
+                triggerClassName="text-gray-500 hover:text-red-600"
+                onConfirm={handleBlockUser}
+              />
             </div>
           )}
         </div>
