@@ -36,6 +36,7 @@ import {
 } from "@/hooks/use-subscription";
 import { redirectToEsewa } from "@/lib/redirectToEsewa";
 import { redirectToConnectIPS } from "@/lib/connectIps";
+import ReportModal from "../modal/ReportModal";
 
 export const FeaturedCard = ({
   imageSrc,
@@ -591,7 +592,7 @@ export function RepliesCard({
         />
 
         {/* Header Section */}
-        <div className="flex justify-between items-start gap-2">
+        <div className="flex justify-between items-center gap-2">
           <div className="w-full flex items-center justify-between">
             <h3 className="text-lg font-semibold font-poppins text-black break-words line-clamp-3">
               {name}
@@ -599,7 +600,7 @@ export function RepliesCard({
             <span>{createdAt}</span>
           </div>
           {isOwner && (
-            <div className="flex gap-2">
+            <div className="flex">
               <EditModal
                 id={replyId}
                 question={question}
@@ -608,6 +609,7 @@ export function RepliesCard({
               <DeleteModal onConfirm={() => onDeleteAction(replyId)} />
             </div>
           )}
+          {!isOwner && <ReportModal forumQuestionId={replyId} />}
         </div>
 
         {/* Question */}

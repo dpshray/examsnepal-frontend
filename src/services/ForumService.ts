@@ -107,6 +107,49 @@ class ForumService extends HttpService {
     });
     return response?.data;
   };
+
+  deleteFormReply = async (id: number) => {
+    const response = await this.deleteRequest({
+      url: `/forum-answer-delete/${id}`,
+      config: {
+        auth: true,
+      },
+    });
+    return response?.data;
+  };
+
+  getBlockedUsers = async () => {
+    const response = await this.getRequest({
+      url: "/user/blocked",
+      config: {
+        auth: true,
+      },
+    });
+    return response?.data;
+  };
+
+  blockUser = async (id: number) => {
+    const response = await this.postRequest({
+      url: "/user/block",
+      data: {
+        blocked_id: id,
+      },
+      config: {
+        auth: true,
+      },
+    });
+    return response?.data;
+  };
+
+  unblockUser = async (id: number) => {
+    const response = await this.deleteRequest({
+      url: `/user/unblock/${id}`,
+      config: {
+        auth: true,
+      },
+    });
+    return response?.data;
+  };
 }
 
 const forumService = new ForumService();
