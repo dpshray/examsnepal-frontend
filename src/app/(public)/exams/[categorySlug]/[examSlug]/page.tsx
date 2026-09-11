@@ -58,7 +58,7 @@ export async function generateMetadata({
         return { title: 'Exam Not Found | ExamsNepal' };
     }
 
-    const title = guide.meta_title || `${guide.name} Mock Test - Free Practice | ExamsNepal`;
+    const title = guide.meta_title || `${guide.name} Online Preparation & Mock Tests | ExamsNepal`;
     const description =
         guide.meta_description ||
         `Free ${guide.name} mock tests, syllabus, and eligibility on ExamsNepal.`;
