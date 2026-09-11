@@ -3,6 +3,7 @@ import Link from "next/link";
 
 const PLAY_STORE_URL =
     "https://play.google.com/store/apps/details?id=com.dwork.examsnepal&pcampaignid=web_share";
+const APP_STORE_URL = "https://apps.apple.com/np/app/exams-nepal/id6799850029";
 
 function GooglePlayIcon() {
     return (
@@ -17,7 +18,7 @@ function GooglePlayIcon() {
 
 function AppleIcon() {
     return (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="#94a3b8" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
             <path d="M16.5 2c.1 1.1-.3 2.2-1 3-.7.8-1.9 1.5-3 1.4-.1-1.1.4-2.2 1-3 .8-.8 2-1.4 3-1.4ZM20 17.3c-.6 1.3-.9 1.9-1.6 3-1 1.5-2.5 3.4-4.3 3.4-1.6 0-2-1-4.1-1-2.2 0-2.6 1-4.2 1-1.8 0-3.2-1.7-4.2-3.2C-.8 16.8-.4 11 3 8.3c1.3-1 2.7-1.6 4-1.6 1.5 0 2.6 1 4 1 1.3 0 2.2-1 4-1 1.2 0 3.2.5 4.5 2.3-3.9 2.2-3.3 7.6.5 8.3Z" />
         </svg>
     );
@@ -52,7 +53,7 @@ export function AppShowcaseSection() {
 
                 <div className="relative flex max-w-md flex-col items-center gap-5 text-center md:items-start md:text-left">
                     <span className="inline-flex w-fit rounded-full border border-green-200 bg-white px-4 py-1.5 text-sm font-semibold text-green-700">
-                        Now on Android
+                        Now on Android &amp; iOS
                     </span>
                     <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
                         Take ExamsNepal with you
@@ -76,16 +77,19 @@ export function AppShowcaseSection() {
                                 <span className="block text-sm font-semibold">Google Play</span>
                             </span>
                         </Link>
-                        <span
-                            className="flex items-center gap-2.5 rounded-xl bg-gray-200 px-5 py-3 text-gray-400"
-                            aria-label="ExamsNepal on the App Store: coming soon"
+                        <Link
+                            href={APP_STORE_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Download ExamsNepal on the App Store (opens in new tab)"
+                            className="flex items-center gap-2.5 rounded-xl bg-gray-900 px-5 py-3 text-white transition hover:bg-gray-800"
                         >
                             <AppleIcon />
                             <span className="leading-tight">
-                                <span className="block text-[10px]">COMING SOON ON</span>
+                                <span className="block text-[10px] text-white/70">Download on the</span>
                                 <span className="block text-sm font-semibold">App Store</span>
                             </span>
-                        </span>
+                        </Link>
                     </div>
                 </div>
 
