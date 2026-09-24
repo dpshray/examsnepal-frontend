@@ -58,6 +58,8 @@ const nextConfig: NextConfig = {
             // Old category hubs: loksewa/entrance guides scattered across
             // several new categories, so there's no single correct
             // destination - send visitors to the full directory instead.
+            // The old placeholder notices page became the Loksewa tab of /notices.
+            { source: '/lok-sewa-notices', destination: '/notices/loksewa', permanent: true },
             { source: '/exams/loksewa', destination: '/exams', permanent: true },
             { source: '/exams/entrance', destination: '/exams', permanent: true },
         ]
