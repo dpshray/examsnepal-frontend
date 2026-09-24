@@ -38,7 +38,11 @@ export const revalidate = 3600;
 
 export async function GET() {
     const chunks = await getShardCount();
-    const shardUrls = [`${SITE_URL}/sitemap/0.xml`, ...Array.from({ length: chunks }, (_, i) => `${SITE_URL}/sitemap/${i + 1}.xml`)];
+    const shardUrls = [
+        `${SITE_URL}/sitemap/0.xml`,
+        `${SITE_URL}/sitemap-notices.xml`,
+        ...Array.from({ length: chunks }, (_, i) => `${SITE_URL}/sitemap/${i + 1}.xml`),
+    ];
 
     const body = [
         '<?xml version="1.0" encoding="UTF-8"?>',
