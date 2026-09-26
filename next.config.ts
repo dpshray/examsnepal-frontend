@@ -92,6 +92,12 @@ const nextConfig: NextConfig = {
             },
             {
                 protocol: 'https',
+                hostname: 'api.examsnepal.com',
+                port: '',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
                 hostname: 'api.examsnepal.dworklabs.com',
                 port: '',
                 pathname: '/**',
