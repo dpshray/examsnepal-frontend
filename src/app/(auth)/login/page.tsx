@@ -37,7 +37,8 @@ export default function LoginForm() {
         toast.success("Login successful");
         localStorage.setItem("_id", response.student?.id || "");
         localStorage.setItem("_at", response.access_token || "");
-        router.push("/student/dashboard");
+        // New students answer 2 quick questions first, then go to their first free quiz.
+        router.push(response.student?.needs_onboarding ? "/student/onboarding" : "/student/dashboard");
       }
     } catch (error: any) {
       toast.error(error?.data?.message || "Login failed ");
