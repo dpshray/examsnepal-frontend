@@ -102,45 +102,56 @@ const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 // Cache) layer only adds staleness: it can pin an empty/failed response for
 // its whole revalidate window and survives redeploys on Vercel (the same
 // problem documented in examGuideApi.ts / sitemap.ts).
-async function get<T>(path: string, fallback: T): Promise<T> {
+//
+// Returns null only for a 404. Any other failure (5xx, network, bad JSON) is
+// retried once and then thrown, so the page renders its error boundary with a
+// 5xx status - not a 404 or an empty list that search engines would index as
+// "this notice / these notices no longer exist".
+async function request<T>(path: string, attempt = 1): Promise<T | null> {
     try {
         const res = await fetch(`${API_URL}${path}`, { cache: 'no-store' });
-        if (!res.ok) return fallback;
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        return (json?.data as T) ?? fallback;
-    } catch {
-        return fallback;
+        return (json?.data as T) ?? null;
+    } catch (error) {
+        if (attempt < 2) return request<T>(path, attempt + 1);
+        throw new Error(`Notice API GET ${path} failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 
-export function getNotices(filters: NoticeFilters, perPage = 20): Promise<NoticePage> {
+/** For optional page parts (filter options, home sections): render without them on failure. */
+async function optional<T>(path: string): Promise<T | null> {
+    try {
+        return await request<T>(path);
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+export async function getNotices(filters: NoticeFilters, perPage = 20): Promise<NoticePage> {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
     });
     params.set('per_page', String(perPage));
-    return get(`/free/notices?${params}`, { data: [], current_page: 1, last_page: 1, total: 0 });
+    return (await request<NoticePage>(`/free/notices?${params}`)) ?? { data: [], current_page: 1, last_page: 1, total: 0 };
 }
 
 export function getNoticeHome(category?: NoticeCategory): Promise<NoticeHome | null> {
-    return get(`/free/notices/home${category ? `?category=${category}` : ''}`, null);
+    return optional(`/free/notices/home${category ? `?category=${category}` : ''}`);
 }
 
 export function getNoticeMeta(): Promise<NoticeMeta | null> {
-    return get('/free/notices/meta', null);
+    return optional('/free/notices/meta');
 }
 
-export async function getNotice(slug: string): Promise<NoticeDetail | null> {
+/** null means the notice does not exist (404); API failures throw. */
+export function getNotice(slug: string): Promise<NoticeDetail | null> {
     // Not cached by Next: every hit counts a view on the backend, and the
     // backend caches the payload itself.
-    try {
-        const res = await fetch(`${API_URL}/free/notices/${encodeURIComponent(slug)}`, { cache: 'no-store' });
-        if (!res.ok) return null;
-        const json = await res.json();
-        return (json?.data as NoticeDetail) ?? null;
-    } catch {
-        return null;
-    }
+    return request(`/free/notices/${encodeURIComponent(slug)}`);
 }
 
 export interface NoticeFeedItem {
