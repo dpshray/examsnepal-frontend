@@ -14,7 +14,6 @@ const STATIC_ROUTES: {
     { path: '/sprint-quiz', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/mock-test', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/blog', priority: 0.7, changeFrequency: 'daily' },
-    { path: '/lok-sewa-notices', priority: 0.7, changeFrequency: 'daily' },
     { path: '/about', priority: 0.5, changeFrequency: 'monthly' },
     { path: '/contact-us', priority: 0.4, changeFrequency: 'yearly' },
     { path: '/privacy-policy', priority: 0.2, changeFrequency: 'yearly' },

@@ -154,6 +154,20 @@ export default async function ExamGuidePage({
         </div>
     );
 
+    // Internal link to the matching /notices tab (job guides -> Loksewa notices).
+    const noticesCategory = guide.type === 'job' ? 'loksewa' : guide.type;
+    const noticesCard = (
+        <Link
+            href={`/notices/${noticesCategory}`}
+            className="block bg-white rounded-xl border border-border shadow-sm p-5 hover:border-green-300"
+        >
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">Official notices</div>
+            <div className="text-sm font-medium text-green-700">
+                Latest {TYPE_LABELS[noticesCategory] ?? noticesCategory} vacancies, forms &amp; exam dates &rarr;
+            </div>
+        </Link>
+    );
+
     return (
         <section className="min-h-screen bg-gray-50">
             {/* eslint-disable-next-line react/no-danger */}
@@ -224,7 +238,10 @@ export default async function ExamGuidePage({
                     )}
 
                     {/* CTA appears early on mobile since the sidebar is hidden until lg */}
-                    <div className="lg:hidden">{ctaCard}</div>
+                    <div className="lg:hidden space-y-4">
+                        {ctaCard}
+                        {noticesCard}
+                    </div>
 
                     {guide.syllabus && (
                         <div className="bg-white rounded-xl border border-border shadow-sm p-6">
@@ -314,6 +331,7 @@ export default async function ExamGuidePage({
                             </span>
                         </div>
                     </div>
+                    {noticesCard}
                 </aside>
             </div>
         </section>

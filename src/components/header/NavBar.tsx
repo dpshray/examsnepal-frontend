@@ -50,6 +50,7 @@ const NAV_ITEMS_BEFORE_EXAMS = [
 
 const NAV_ITEMS_AFTER_EXAMS = [
   { label: "Find MCQs", link: "/find-mcq" },
+  { label: "Notices", link: "/notices" },
   { label: "Classes", link: "/institutes" },
   { label: "Contact Us", link: "/contact-us" },
 ];

@@ -119,17 +119,17 @@ function ClassesSection({ classes, joinUrl }: { classes: ClassItem[]; joinUrl: s
                                     className="rounded-xl border bg-white p-4 transition-all hover:shadow-sm hover:border-green-300"
                                 >
                                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                                        <div>
+                                        <div className="min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <h3 className="font-semibold text-base text-gray-900">{cls.name}</h3>
+                                                <h3 className="font-semibold text-base text-gray-900 break-words">{cls.name}</h3>
                                                 {cls.target && (
-                                                    <Badge variant="outline" className="text-xs text-green-700 border-green-200 bg-green-50">
+                                                    <Badge variant="outline" className="text-xs text-green-700 border-green-200 bg-green-50 max-w-full whitespace-normal break-words text-left">
                                                         {cls.target}
                                                     </Badge>
                                                 )}
                                             </div>
                                             {cls.bio && (
-                                                <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                                                <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 break-words">
                                                     {cls.bio}
                                                 </p>
                                             )}

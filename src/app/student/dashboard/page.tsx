@@ -23,6 +23,7 @@ import RepliesCardSkeleton, {
   RepliesCard,
 } from "@/components/card/card";
 import { StudentBannerHeader } from "@/components/banner/header";
+import LifecycleBanner from "@/components/banner/LifecycleBanner";
 import studentService from "@/services/StudentService";
 import pinsService from "@/services/pinsService";
 import mockTestService from "@/services/ExamService/MockTest";
@@ -400,6 +401,8 @@ export default function StudentDashboard() {
         title="Student Dashboard"
         subtitle="This is the student dashboard where you can ask questions and get answers from the community."
       />
+
+      <LifecycleBanner />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
