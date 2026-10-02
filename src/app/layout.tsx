@@ -6,6 +6,7 @@ import React from "react";
 import StoreProvider from "@/redux/StoreProvider";
 import { Toaster } from "@/components/ui/sonner";
 import TanstackProvider from "@/lib/TanstackProvider";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const poppins = Poppins({
     variable: "--font-poppins",
@@ -40,6 +41,7 @@ export default function RootLayout({
                         {children}
                     </StoreProvider>
                 </TanstackProvider>
+                <GoogleAnalytics/>
             </body>
         </html>
     );
