@@ -22,7 +22,7 @@ interface Tag {
     slug: string
 }
 
-interface BlogItem {
+export interface BlogItem {
     id: number
     title: string
     slug: string
@@ -38,11 +38,17 @@ interface BlogItem {
     tag: Tag[]
 }
 
-export default function BlogClient() {
-    const [blogs, setBlogs] = useState<BlogItem[]>([])
-    const [totalPages, setTotalPages] = useState(0)
+interface BlogClientProps {
+    // Page 1, fetched server-side so the post links are in the initial HTML
+    // crawlers see. null when that fetch failed - the client then loads it.
+    initialPage: { items: BlogItem[]; total_page: number } | null
+}
+
+export default function BlogClient({ initialPage }: BlogClientProps) {
+    const [blogs, setBlogs] = useState<BlogItem[]>(initialPage?.items ?? [])
+    const [totalPages, setTotalPages] = useState(initialPage?.total_page ?? 0)
     const [currentPage, setCurrentPage] = useState(1)
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(!initialPage)
     const [error, setError] = useState<string | null>(null)
 
     const fetchAllBlogs = async (page: number = 1) => {
@@ -60,7 +66,9 @@ export default function BlogClient() {
     }
 
     useEffect(() => {
+        if (currentPage === 1 && initialPage) return
         fetchAllBlogs(currentPage)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentPage])
 
     const handlePageChange = (page: number) => {

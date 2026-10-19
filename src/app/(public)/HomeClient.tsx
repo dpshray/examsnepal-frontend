@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { HeroSection } from "@/components/common/HeroSection";
+import { PlatformStatsSection } from "@/components/common/PlatformStatsSection";
+import type { SiteStats } from "@/lib/statsApi";
 import { AppShowcaseSection } from "@/components/common/AppShowcaseSection";
 import { FeaturedCard, PricingCard } from "@/components/card/card";
 import {
@@ -87,7 +89,7 @@ const data = [
   {
     icon: <PieChart className="w-10 h-10" />,
     title: "Expert Analysis",
-    desc: "We have a team of experts who have cracked each exams in their categories to guide you better.",
+    desc: "We have a team of experts who have cleared the exams in their categories to guide your preparation.",
   },
   {
     icon: (
@@ -128,9 +130,10 @@ const data = [
 
 interface HomeClientProps {
   examCategories?: ExamGuideCategorySummary[];
+  stats?: SiteStats | null;
 }
 
-export default function HomeClient({ examCategories = [] }: HomeClientProps) {
+export default function HomeClient({ examCategories = [], stats = null }: HomeClientProps) {
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [promoLoadingId, setPromoLoadingId] = useState<number | null>(null);
@@ -183,7 +186,9 @@ export default function HomeClient({ examCategories = [] }: HomeClientProps) {
 
   return (
     <main className="font-montserrat bg-white overflow-x-hidden scroll-smooth">
-      <HeroSection />
+      <HeroSection stats={stats} />
+
+      {stats && <PlatformStatsSection stats={stats} />}
 
       {/* Intro paragraph + real, crawlable links to the 3 exam-category hubs.
           Previously the only path to /exams/{category} was the nav mega menu,

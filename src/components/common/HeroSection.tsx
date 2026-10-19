@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Check, Circle } from "lucide-react";
+import { formatCount, formatCountShort, type SiteStats } from "@/lib/statsApi";
 
 // Illustrated mock-test preview replacing the old static hero image - shows
 // what taking a test on the platform actually looks like (progress bar,
@@ -44,7 +45,13 @@ function MockTestPreviewCard() {
     );
 }
 
-export const HeroSection = () => {
+// Counts come from the live stats endpoint; the fallbacks are the figures
+// that were hardcoded here before, used only if the stats fetch fails.
+export const HeroSection = ({ stats }: { stats?: SiteStats | null }) => {
+    const questions = stats ? formatCount(stats.questions) : "194,000+";
+    const questionsShort = stats ? formatCountShort(stats.questions) : "194K+";
+    const examsCovered = stats ? `${stats.exam_guides}` : "30+";
+
     return (
         <section className="py-16 sm:py-20 lg:py-28 flex items-center justify-center">
             <div
@@ -54,7 +61,7 @@ export const HeroSection = () => {
                 <div className="w-full lg:w-1/2 text-center font-montserrat lg:text-left">
                     <span className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
                         <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        194,000+ practice questions, always free
+                        {questions} practice questions, always free
                     </span>
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mt-4 ">
                         Online&nbsp;<span className="text-green-600">Loksewa</span>, PSC &amp; Entrance
@@ -90,11 +97,11 @@ export const HeroSection = () => {
 
                     <div className="mt-7 flex items-center justify-center gap-8 border-t border-gray-100 pt-5 lg:justify-start">
                         <div>
-                            <div className="text-xl font-bold text-gray-900">30+</div>
+                            <div className="text-xl font-bold text-gray-900">{examsCovered}</div>
                             <div className="text-xs text-gray-500">exams covered</div>
                         </div>
                         <div>
-                            <div className="text-xl font-bold text-gray-900">194K+</div>
+                            <div className="text-xl font-bold text-gray-900">{questionsShort}</div>
                             <div className="text-xs text-gray-500">MCQs</div>
                         </div>
                         <div>

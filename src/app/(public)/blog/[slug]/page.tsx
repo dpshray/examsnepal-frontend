@@ -2,6 +2,14 @@ import type { Metadata } from "next"
 import blogService from "@/services/blogService"
 import BlogDetailPage from "./BlogDetailPage"
 
+// On-demand ISR: each post is rendered on first request, then cached for an
+// hour (an empty generateStaticParams is what enables this for a dynamic segment).
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+    return [];
+}
+
 interface PageProps {
     params: Promise<{ slug: string }>
 }

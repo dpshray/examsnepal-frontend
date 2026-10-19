@@ -1,67 +1,41 @@
 
 import type { Metadata } from "next";
-import BlogClient from "@/app/(public)/blog/Blogclient";
+import BlogClient, { type BlogItem } from "@/app/(public)/blog/Blogclient";
+import { publicDataFetchOptions } from "@/lib/publicDataCache";
 
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
+
+// metadataBase is inherited from the root layout (examsnepal.com). This page
+// previously shipped template placeholders (yourdomain.com canonical/OG,
+// "Your Company Name") that pointed Google's canonical at a domain we don't own.
 export const metadata: Metadata = {
-    title: "Our Blog | Insights, Updates & Stories",
+    title: "Exam Guidebook - Loksewa, Entrance & License Exam Tips | ExamsNepal",
     description:
-        "Explore our latest blog posts featuring news, insights, and stories from our team. Stay updated with industry trends and company updates.",
-    keywords: [
-        "blog",
-        "company news",
-        "industry insights",
-        "tech updates",
-        "team stories",
-        "business blog",
-        "latest articles"
-    ],
-    authors: [
-        {
-            name: "Your Company Name",
-            url: "https://yourdomain.com",
-        },
-    ],
-    creator: "Your Company Name",
-    publisher: "Your Company Name",
+        "Exam notices, preparation strategies and study guides for Loksewa, IOE, CEE, Nursing and license exams in Nepal, from the ExamsNepal team.",
     openGraph: {
-        title: "Our Blog | Insights, Updates & Stories",
-        description: "Read our blog for the latest news and insights.",
-        url: "https://yourdomain.com/blog",
-        siteName: "Your Site Name",
-        type: "website",
-        images: [
-            {
-                url: "https://yourdomain.com/og-image.jpg",
-                width: 1200,
-                height: 630,
-                alt: "Open graph image showing blog and company branding",
-            },
-        ],
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Our Blog | Insights, Updates & Stories",
+        title: "Exam Guidebook | ExamsNepal",
         description:
-            "Explore our latest blog posts featuring news, insights, and stories from our team.",
-        images: ["https://yourdomain.com/og-image.jpg"],
-        creator: "@your_twitter_handle",
+            "Exam notices, preparation strategies and study guides for Loksewa, entrance and license exams in Nepal.",
+        url: "/blog",
+        siteName: "ExamsNepal",
+        type: "website",
     },
-    robots: {
-        index: true,
-        follow: true,
-        nocache: false,
-        googleBot: {
-            index: true,
-            follow: true,
-            noimageindex: false,
-        },
-    },
-    metadataBase: new URL("https://yourdomain.com"),
     alternates: {
         canonical: "/blog",
     },
 };
 
-export default function Blog() {
-    return <BlogClient />;
+async function getFirstPage(): Promise<{ items: BlogItem[]; total_page: number } | null> {
+    try {
+        const res = await fetch(`${API_URL}/user/blogs?page=1`, publicDataFetchOptions);
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json?.data?.items ? { items: json.data.items, total_page: json.data.total_page ?? 1 } : null;
+    } catch {
+        return null;
+    }
+}
+
+export default async function Blog() {
+    return <BlogClient initialPage={await getFirstPage()} />;
 }

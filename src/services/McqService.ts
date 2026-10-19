@@ -40,6 +40,13 @@ class McqService extends HttpServices {
             throw error;
         }
     }
+
+    recordView = async (slug: string) => {
+        await this.postRequest({
+            url: `/free/mcq/${slug}/view`,
+            data: {},
+        });
+    }
 }
 
 const mcqService = new McqService();

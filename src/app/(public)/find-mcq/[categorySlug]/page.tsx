@@ -1,7 +1,7 @@
 import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import {McqBrowseLayout} from '@/components/mcq/McqBrowseLayout';
-import {getCategoryQuestions, getExamCategories} from '@/lib/mcqApi';
+import {getCategoryQuestions, getExamCategories, getMcqTopics} from '@/lib/mcqApi';
 
 export const revalidate = 3600;
 
@@ -57,7 +57,10 @@ export default async function FindMcqCategoryPage({
         notFound();
     }
 
-    const {data: mcqs, last_page: totalPages} = await getCategoryQuestions(categorySlug, page);
+    const [{data: mcqs, last_page: totalPages}, topics] = await Promise.all([
+        getCategoryQuestions(categorySlug, page),
+        getMcqTopics(),
+    ]);
 
     return (
         <McqBrowseLayout
@@ -70,6 +73,7 @@ export default async function FindMcqCategoryPage({
             pagerBasePath={`/find-mcq/${category.slug}`}
             searchBasePath="/find-mcq"
             emptyMessage="No MCQs found in this category."
+            topics={topics.filter((t) => t.category_slug === category.slug)}
         />
     );
 }

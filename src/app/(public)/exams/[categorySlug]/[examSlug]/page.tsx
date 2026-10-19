@@ -20,6 +20,8 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { getExamGuide, getExamGuideCategories, getExamGuideCategory } from '@/lib/examGuideApi';
+import { ExamPerformanceSection } from '@/components/Exams/ExamPerformanceSection';
+import { getMcqTopics, mcqTopicPath } from '@/lib/mcqApi';
 
 export const revalidate = 3600;
 
@@ -58,7 +60,9 @@ export async function generateMetadata({
         return { title: 'Exam Not Found | ExamsNepal' };
     }
 
-    const title = guide.meta_title || `${guide.name} Online Preparation & Mock Tests | ExamsNepal`;
+    // Google cuts titles at ~60 chars; past that, the brand suffix is the part to give up.
+    const fullTitle = guide.meta_title || `${guide.name} Mock Test & Preparation | ExamsNepal`;
+    const title = fullTitle.length > 60 ? fullTitle.replace(/\s*\|\s*ExamsNepal$/, '') : fullTitle;
     const description =
         guide.meta_description ||
         `Free ${guide.name} mock tests, syllabus, and eligibility on ExamsNepal.`;
@@ -77,11 +81,15 @@ export default async function ExamGuidePage({
     params: Promise<{ categorySlug: string; examSlug: string }>;
 }) {
     const { categorySlug, examSlug } = await params;
-    const guide = await getExamGuide(categorySlug, examSlug);
+    const [guide, allTopics] = await Promise.all([getExamGuide(categorySlug, examSlug), getMcqTopics()]);
 
     if (!guide) {
         notFound();
     }
+
+    // Subject topic pages for this exam's question bank (mock_test_url is /find-mcq/{category}).
+    const mcqCategory = guide.mock_test_url?.match(/^\/find-mcq\/([^/?#]+)/)?.[1];
+    const topics = mcqCategory ? allTopics.filter((t) => t.category_slug === mcqCategory) : [];
 
     const pageUrl = `${SITE_URL}/exams/${guide.category.slug}/${guide.slug}`;
 
@@ -237,6 +245,8 @@ export default async function ExamGuidePage({
                         </div>
                     )}
 
+                    {guide.stats && <ExamPerformanceSection examName={guide.name} stats={guide.stats} />}
+
                     {/* CTA appears early on mobile since the sidebar is hidden until lg */}
                     <div className="lg:hidden space-y-4">
                         {ctaCard}
@@ -255,6 +265,24 @@ export default async function ExamGuidePage({
                                     // eslint-disable-next-line react/no-danger
                                     dangerouslySetInnerHTML={{ __html: guide.syllabus }}
                                 />
+                            </div>
+                        </div>
+                    )}
+
+                    {topics.length > 0 && (
+                        <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+                            <h2 className="font-bold text-gray-900 mb-1">Practice {guide.name} MCQs by Subject</h2>
+                            <p className="text-sm text-muted-foreground mb-3">Free questions with answers and explanations.</p>
+                            <div className="flex flex-wrap gap-2">
+                                {topics.map((t) => (
+                                    <Link
+                                        key={t.subject_slug}
+                                        href={mcqTopicPath(t.category_slug, t.subject_slug)}
+                                        className="text-sm px-3 py-1.5 rounded-full border border-green-300 text-green-700 hover:bg-green-50 transition"
+                                    >
+                                        {t.subject_name} ({t.question_count.toLocaleString()})
+                                    </Link>
+                                ))}
                             </div>
                         </div>
                     )}
