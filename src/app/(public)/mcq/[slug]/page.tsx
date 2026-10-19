@@ -5,7 +5,8 @@ import { CheckCircle2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommentSection, type QuestionComment } from "@/components/mcq/CommentSection";
 import { CategorySidebar } from "@/components/mcq/CategorySidebar";
-import { getExamCategories } from "@/lib/mcqApi";
+import { McqViewBeacon } from "@/components/mcq/McqViewBeacon";
+import { getExamCategories, mcqTopicPath } from "@/lib/mcqApi";
 
 interface McqOption {
     id: number;
@@ -22,6 +23,10 @@ interface McqDetail {
     image_url: string | null;
     explanation_image_url: string | null;
     view_count: number;
+    // From the backend's `mcq:score-seo`: thin/broken pages aren't indexed,
+    // exact duplicates point their canonical at one copy.
+    seo?: { indexable: boolean; canonical_slug: string | null };
+    topic?: { category_slug: string; category_name: string; subject_slug: string; subject_name: string } | null;
     options: McqOption[];
     comments: QuestionComment[];
 }
@@ -30,6 +35,12 @@ interface McqDetail {
 // cached and revalidated in the background. With ~194k questions, pre-building
 // all of them at deploy time isn't practical.
 export const revalidate = 3600;
+
+// An empty list is what turns on that on-demand ISR for a dynamic segment -
+// without generateStaticParams, Next renders every /mcq page per request.
+export async function generateStaticParams() {
+    return [];
+}
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 
@@ -80,12 +91,19 @@ export async function generateMetadata({
         155,
     );
 
+    const canonicalSlug = mcq.seo?.canonical_slug ?? mcq.slug;
+
     return {
         title: `${truncate(mcq.question, 44)} | ExamsNepal`,
         description,
         alternates: {
-            canonical: `/mcq/${mcq.slug}`,
+            canonical: `/mcq/${canonicalSlug}`,
         },
+        // A duplicate relies on its canonical alone - noindex alongside a
+        // cross-page canonical sends Google conflicting signals.
+        ...(mcq.seo && !mcq.seo.indexable && !mcq.seo.canonical_slug
+            ? { robots: { index: false, follow: true } }
+            : {}),
         openGraph: {
             title: mcq.question,
             description,
@@ -106,25 +124,42 @@ export default async function McqDetailPage({
         notFound();
     }
 
+    const stripTags = (html: string | null | undefined) => (html ?? "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+    const correct = mcq.options.find((o) => o.is_correct);
+
+    // Quiz (Google's education Q&A markup) rather than QAPage, which is meant
+    // for forum-style pages where users post the answers.
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "QAPage",
-        mainEntity: {
-            "@type": "Question",
-            name: mcq.question,
-            text: mcq.question,
-            answerCount: 1,
-            acceptedAnswer: {
-                "@type": "Answer",
-                text:
-                    mcq.options.find((o) => o.is_correct)?.option +
-                    (mcq.explanation ? `. ${mcq.explanation.replace(/<[^>]*>/g, "")}` : ""),
+        "@type": "Quiz",
+        about: { "@type": "Thing", name: stripTags(mcq.question).slice(0, 110) },
+        hasPart: [
+            {
+                "@type": "Question",
+                eduQuestionType: "Multiple choice",
+                learningResourceType: "Practice problem",
+                text: stripTags(mcq.question),
+                ...(correct
+                    ? {
+                          acceptedAnswer: {
+                              "@type": "Answer",
+                              text: stripTags(correct.option),
+                              ...(mcq.explanation
+                                  ? { answerExplanation: { "@type": "Comment", text: stripTags(mcq.explanation) } }
+                                  : {}),
+                          },
+                      }
+                    : {}),
+                suggestedAnswer: mcq.options
+                    .filter((o) => !o.is_correct)
+                    .map((o) => ({ "@type": "Answer", text: stripTags(o.option) })),
             },
-        },
+        ],
     };
 
     return (
         <section className="min-h-screen bg-gray-50">
+            <McqViewBeacon slug={mcq.slug} />
             {/* eslint-disable-next-line react/no-danger */}
             <script
                 type="application/ld+json"
@@ -140,7 +175,22 @@ export default async function McqDetailPage({
                         Find MCQs
                     </Link>
                     <span className="mx-2">/</span>
-                    <span className="text-gray-700">Question</span>
+                    {mcq.topic ? (
+                        <>
+                            <Link href={`/find-mcq/${mcq.topic.category_slug}`} className="hover:text-green-600 hover:underline">
+                                {mcq.topic.category_name}
+                            </Link>
+                            <span className="mx-2">/</span>
+                            <Link
+                                href={mcqTopicPath(mcq.topic.category_slug, mcq.topic.subject_slug)}
+                                className="hover:text-green-600 hover:underline"
+                            >
+                                {mcq.topic.subject_name}
+                            </Link>
+                        </>
+                    ) : (
+                        <span className="text-gray-700">Question</span>
+                    )}
                 </nav>
 
                 <article className="bg-white rounded-lg shadow-sm border border-border p-6 sm:p-8">

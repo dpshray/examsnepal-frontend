@@ -1,6 +1,9 @@
 
 import type { Metadata } from "next";
-import BlogClient from "@/app/(public)/blog/Blogclient";
+import BlogClient, { type BlogItem } from "@/app/(public)/blog/Blogclient";
+import { publicDataFetchOptions } from "@/lib/publicDataCache";
+
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/+$/, "");
 
 // metadataBase is inherited from the root layout (examsnepal.com). This page
 // previously shipped template placeholders (yourdomain.com canonical/OG,
@@ -22,6 +25,17 @@ export const metadata: Metadata = {
     },
 };
 
-export default function Blog() {
-    return <BlogClient />;
+async function getFirstPage(): Promise<{ items: BlogItem[]; total_page: number } | null> {
+    try {
+        const res = await fetch(`${API_URL}/user/blogs?page=1`, publicDataFetchOptions);
+        if (!res.ok) return null;
+        const json = await res.json();
+        return json?.data?.items ? { items: json.data.items, total_page: json.data.total_page ?? 1 } : null;
+    } catch {
+        return null;
+    }
+}
+
+export default async function Blog() {
+    return <BlogClient initialPage={await getFirstPage()} />;
 }

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { PUBLIC_DATA_TAG } from '@/lib/publicDataCache';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.examsnepal.com').replace(/\/+$/, '');
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api').replace(/\/+$/, '');
@@ -23,7 +24,7 @@ const STATIC_ROUTES: {
 // fetched from the backend (see FrontendController::sitemapMcqMeta/sitemapMcqs).
 export async function generateSitemaps() {
     try {
-        const res = await fetch(`${API_URL}/sitemap/mcq-meta`, { next: { revalidate: 3600 } });
+        const res = await fetch(`${API_URL}/sitemap/mcq-meta`, { next: { revalidate: 3600, tags: [PUBLIC_DATA_TAG] } });
         if (!res.ok) return [{ id: 0 }];
 
         const json = await res.json();
@@ -131,6 +132,28 @@ async function getBlogRoutes(): Promise<MetadataRoute.Sitemap> {
     }
 }
 
+// MCQ topic pages (/find-mcq/{category}/{subject}[/{page}]) - every page,
+// since each carries 20 different questions.
+async function getTopicRoutes(): Promise<MetadataRoute.Sitemap> {
+    try {
+        const res = await fetch(`${API_URL}/free/mcq-topics`, { next: { revalidate: 3600, tags: [PUBLIC_DATA_TAG] } });
+        if (!res.ok) return [];
+
+        const json = await res.json();
+        const topics: { category_slug: string; subject_slug: string; question_count: number }[] = json?.data ?? [];
+
+        return topics.flatMap(({ category_slug, subject_slug, question_count }) =>
+            Array.from({ length: Math.ceil(question_count / 20) }, (_, i) => ({
+                url: `${SITE_URL}/find-mcq/${category_slug}/${subject_slug}${i > 0 ? `/${i + 1}` : ''}`,
+                changeFrequency: 'weekly' as const,
+                priority: i === 0 ? 0.8 : 0.5,
+            })),
+        );
+    } catch {
+        return [];
+    }
+}
+
 export default async function sitemap({ id }: { id: Promise<string> | number }): Promise<MetadataRoute.Sitemap> {
     const numericId = Number(await id);
 
@@ -143,15 +166,16 @@ export default async function sitemap({ id }: { id: Promise<string> | number }):
         const categoryRoutes = await getCategoryRoutes();
         const examGuideRoutes = await getExamGuideRoutes();
         const blogRoutes = await getBlogRoutes();
+        const topicRoutes = await getTopicRoutes();
 
-        return [...staticRoutes, ...categoryRoutes, ...examGuideRoutes, ...blogRoutes];
+        return [...staticRoutes, ...categoryRoutes, ...examGuideRoutes, ...blogRoutes, ...topicRoutes];
     }
 
     const page = numericId - 1;
 
     try {
         const res = await fetch(`${API_URL}/sitemap/mcqs?page=${page}`, {
-            next: { revalidate: 3600 },
+            next: { revalidate: 3600, tags: [PUBLIC_DATA_TAG] },
         });
         if (!res.ok) return [];
 

@@ -1,5 +1,8 @@
 // Server-side fetch helpers for the /exams hub-and-spoke SEO pages.
 
+import type { ExamStats } from '@/lib/statsApi';
+import { publicDataFetchOptions } from '@/lib/publicDataCache';
+
 export interface ExamGuideCategorySummary {
     id: number;
     name: string;
@@ -52,6 +55,8 @@ export interface ExamGuideDetail {
     last_verified_at: string | null;
     category: { name: string; slug: string };
     related_guides: { name: string; slug: string }[];
+    // Real performance of ExamsNepal students on this exam; null when too little data.
+    stats?: ExamStats | null;
 }
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
@@ -60,19 +65,8 @@ export const EXAM_GUIDE_REVALIDATE_SECONDS = 3600;
 
 export async function getExamGuideCategories(): Promise<ExamGuideCategorySummary[]> {
     try {
-        // cache: 'no-store' - this list drives every downstream per-category
-        // lookup (mega menu, /exams listing). A stale summary here is far
-        // worse than elsewhere: if it holds a slug that's since been renamed
-        // or deleted (exactly what happened during the Sep 2026 taxonomy
-        // migration - "loksewa"/"entrance"/"nec-license" -> the 7-field
-        // categories), every lookup for that slug fails and the whole page
-        // goes empty, not just stale. This bit us 3 times in one session
-        // (a local test build, the long-running dev server, and production
-        // via Vercel's Data Cache surviving a redeploy) before being pinned
-        // down to this fetch's `revalidate: 3600`.
-        const res = await fetch(`${API_URL}/free/exam-guides/categories`, {
-            cache: 'no-store',
-        });
+        // Short TTL + tag instead of no-store - see publicDataCache.ts.
+        const res = await fetch(`${API_URL}/free/exam-guides/categories`, publicDataFetchOptions);
         if (!res.ok) return [];
         const json = await res.json();
         return (json.data as ExamGuideCategorySummary[]) || [];
@@ -81,10 +75,20 @@ export async function getExamGuideCategories(): Promise<ExamGuideCategorySummary
     }
 }
 
+// Every category with its published guides in one request (nav mega menu).
+export async function getExamGuideMenu(): Promise<ExamGuideCategoryDetail[]> {
+    try {
+        const res = await fetch(`${API_URL}/free/exam-guides/menu`, publicDataFetchOptions);
+        if (!res.ok) return [];
+        const json = await res.json();
+        return (json.data as ExamGuideCategoryDetail[]) || [];
+    } catch {
+        return [];
+    }
+}
+
 export async function getExamGuideCategory(categorySlug: string): Promise<ExamGuideCategoryDetail | null> {
-    const res = await fetch(`${API_URL}/free/exam-guides/categories/${categorySlug}`, {
-        cache: 'no-store',
-    });
+    const res = await fetch(`${API_URL}/free/exam-guides/categories/${categorySlug}`, publicDataFetchOptions);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Failed to load exam category (status ${res.status})`);
     const json = await res.json();
@@ -92,9 +96,7 @@ export async function getExamGuideCategory(categorySlug: string): Promise<ExamGu
 }
 
 export async function getExamGuide(categorySlug: string, examSlug: string): Promise<ExamGuideDetail | null> {
-    const res = await fetch(`${API_URL}/free/exam-guides/${categorySlug}/${examSlug}`, {
-        next: { revalidate: 3600 },
-    });
+    const res = await fetch(`${API_URL}/free/exam-guides/${categorySlug}/${examSlug}`, publicDataFetchOptions);
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Failed to load exam guide (status ${res.status})`);
     const json = await res.json();

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { PUBLIC_DATA_TAG } from '@/lib/publicDataCache';
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.examsnepal.com').replace(/\/+$/, '');
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api').replace(/\/+$/, '');
@@ -25,7 +26,7 @@ const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api')
 // crawlers/tools still see /sitemap.xml - only the internal file path differs.
 async function getShardCount(): Promise<number> {
     try {
-        const res = await fetch(`${API_URL}/sitemap/mcq-meta`, { next: { revalidate: 3600 } });
+        const res = await fetch(`${API_URL}/sitemap/mcq-meta`, { next: { revalidate: 3600, tags: [PUBLIC_DATA_TAG] } });
         if (!res.ok) return 0;
         const json = await res.json();
         return json?.data?.chunks ?? 0;
