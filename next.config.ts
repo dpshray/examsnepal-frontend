@@ -65,6 +65,22 @@ const nextConfig: NextConfig = {
         ]
     },
 
+    // Logged-in / transactional routes. robots.txt already disallows these, but
+    // that only stops crawling - a disallowed URL linked from elsewhere can
+    // still be indexed. Their layouts are "use client" so they can't export
+    // `metadata.robots`; a response header covers them instead.
+    async headers() {
+        const noindex = [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }];
+        return [
+            '/student/:path*',
+            '/exam/:path*',
+            '/payment/:path*',
+            '/login',
+            '/register',
+            '/forgot-password/:path*',
+        ].map((source) => ({ source, headers: noindex }));
+    },
+
     async rewrites() {
         return [
             // /sitemap.xml lives internally at /sitemap-index.xml (see that

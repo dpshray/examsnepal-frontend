@@ -87,7 +87,7 @@ const data = [
   {
     icon: <PieChart className="w-10 h-10" />,
     title: "Expert Analysis",
-    desc: "We have a team of experts who have cracked each exams in their categories to guide you better.",
+    desc: "We have a team of experts who have cleared the exams in their categories to guide your preparation.",
   },
   {
     icon: (

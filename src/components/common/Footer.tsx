@@ -34,13 +34,13 @@ const Footer = () => {
     // [PLACEHOLDER — CONFIRM WITH OWNER] picked as a reasonable spread across all 3 exam
     // categories in the absence of traffic analytics; swap in real high-traffic pages once available.
     const popularExams = [
-        {label: 'Kharidar', href: '/exams/loksewa/kharidar'},
-        {label: 'Section Officer', href: '/exams/loksewa/section-officer'},
-        {label: 'Nepal Police', href: '/exams/loksewa/nepal-police'},
-        {label: 'Banking Loksewa', href: '/exams/loksewa/banking-loksewa'},
-        {label: 'IOE Entrance Exam', href: '/exams/entrance/ioe-entrance'},
-        {label: 'Staff Nurse Licensing', href: '/exams/entrance/staff-nurse-licensing'},
-        {label: 'NEC Civil Engineering', href: '/exams/nec-license/civil-engineering'},
+        {label: 'Kharidar', href: '/exams/others/kharidar'},
+        {label: 'Section Officer', href: '/exams/others/section-officer'},
+        {label: 'Nepal Police', href: '/exams/others/nepal-police'},
+        {label: 'Banking Loksewa', href: '/exams/others/banking-loksewa'},
+        {label: 'IOE Entrance Exam', href: '/exams/engineering/ioe-entrance'},
+        {label: 'Staff Nurse Licensing', href: '/exams/medical/staff-nurse-licensing'},
+        {label: 'NEC Civil Engineering', href: '/exams/engineering/civil-engineering'},
     ];
 
     // Privacy Policy / Terms / Sitemap already live in the bottom links row below —

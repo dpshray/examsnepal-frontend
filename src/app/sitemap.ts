@@ -9,7 +9,6 @@ const STATIC_ROUTES: {
     changeFrequency: NonNullable<MetadataRoute.Sitemap[number]['changeFrequency']>;
 }[] = [
     { path: '', priority: 1, changeFrequency: 'daily' },
-    { path: '/find-mcq', priority: 0.9, changeFrequency: 'daily' },
     { path: '/free-quiz', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/sprint-quiz', priority: 0.8, changeFrequency: 'monthly' },
     { path: '/mock-test', priority: 0.8, changeFrequency: 'monthly' },
@@ -108,6 +107,30 @@ async function getExamGuideRoutes(): Promise<MetadataRoute.Sitemap> {
     }
 }
 
+// Blog posts - /blog renders its post list client-side, so without these
+// entries crawlers have no path to individual posts at all.
+async function getBlogRoutes(): Promise<MetadataRoute.Sitemap> {
+    try {
+        // cache: 'no-store' - same Data Cache persistence risk as getCategoryRoutes above.
+        const res = await fetch(`${API_URL}/user/blogs?per_page=500`, { cache: 'no-store' });
+        if (!res.ok) return [];
+
+        const json = await res.json();
+        const posts: { slug: string; published_date?: string | null }[] = json?.data?.items ?? [];
+
+        return posts
+            .filter(({ slug }) => Boolean(slug))
+            .map(({ slug, published_date }) => ({
+                url: `${SITE_URL}/blog/${slug}`,
+                lastModified: published_date ? new Date(published_date) : undefined,
+                changeFrequency: 'monthly' as const,
+                priority: 0.6,
+            }));
+    } catch {
+        return [];
+    }
+}
+
 export default async function sitemap({ id }: { id: Promise<string> | number }): Promise<MetadataRoute.Sitemap> {
     const numericId = Number(await id);
 
@@ -119,8 +142,9 @@ export default async function sitemap({ id }: { id: Promise<string> | number }):
         }));
         const categoryRoutes = await getCategoryRoutes();
         const examGuideRoutes = await getExamGuideRoutes();
+        const blogRoutes = await getBlogRoutes();
 
-        return [...staticRoutes, ...categoryRoutes, ...examGuideRoutes];
+        return [...staticRoutes, ...categoryRoutes, ...examGuideRoutes, ...blogRoutes];
     }
 
     const page = numericId - 1;
