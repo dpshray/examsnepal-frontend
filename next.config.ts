@@ -118,45 +118,16 @@ const nextConfig: NextConfig = {
                 port: '',
                 pathname: '/**',
             },
-            {
-                protocol: 'https',
-                hostname: 'images.unsplash.com',
-                port: '',
-                pathname: '/**',
-            },
-            {
-                protocol: "https",
-                hostname: "flowbite.com",
-                pathname: "/**",
-            },
-            {
-                protocol: "https",
-                hostname: "flowbite.s3.amazonaws.com",
-                pathname: "/**",
-            },
-            {
-                protocol: "https",
-                hostname: "cdn.dummyjson.com",
-                pathname: "/**",
-            },
-            {
-                protocol: 'http',
-                hostname: 'localhost',
-                port: '8000',
-                pathname: '/**',
-            },
-            {
-                protocol: 'http',
-                hostname: '192.168.100.18',
-                port: '8000',
-                pathname: '/**',
-            },
-            {
-                protocol: 'http',
-                hostname: '192.168.1.68',
-                port: '8001',
-                pathname: '/**',
-            },
+            // Every allowed host can be pushed through Vercel's paid image optimizer
+            // by anyone, so only hosts the site really serves images from are listed
+            // (unsplash, flowbite and dummyjson template hosts were unused).
+            ...(isDev
+                ? [
+                    { protocol: 'http' as const, hostname: 'localhost', port: '8000', pathname: '/**' },
+                    { protocol: 'http' as const, hostname: '192.168.100.18', port: '8000', pathname: '/**' },
+                    { protocol: 'http' as const, hostname: '192.168.1.68', port: '8001', pathname: '/**' },
+                ]
+                : []),
         ]
     },
 };

@@ -15,7 +15,6 @@ const useMockCompletedQuizzes = (initialPage: number = 1) => {
             const response = await mockTestService.getCompletedMockTests(page);
             setCompletedMockQuizzes(response.data?.data || []);
             setCompletedMockTotalPages(response.data?.last_page || 1);
-            console.log(`Completed Mock Tests`, response.data?.data);
             setCurrentPage(page);
         } catch (err) {
             console.error("Error fetching completed mock tests:", err);

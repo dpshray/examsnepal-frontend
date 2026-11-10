@@ -38,7 +38,6 @@ export default function RegistrationForm() {
                 router.push("/login")
             }
         } catch (error: any) {
-            console.log(error)
             toast.error(error?.response?.data?.message || "Registration failed")
         }
     }

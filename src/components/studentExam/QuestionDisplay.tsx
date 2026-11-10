@@ -6,6 +6,7 @@ import { Question } from "@/types/CorporateExamTypes"
 import Image from "next/image"
 import TextInputField from "../fields/TextInputField"
 import Link from "next/link"
+import DOMPurify from "dompurify"
 
 interface QuestionDisplayProps {
   question: Question
@@ -37,7 +38,7 @@ export function QuestionDisplay({
 
             <div
               className="prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: question.question }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.question ?? "") }}
             />
           </div>
 

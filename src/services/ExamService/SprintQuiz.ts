@@ -43,7 +43,6 @@ class SprintQuizServices extends HttpService {
             });
             return response?.data;
         } catch (error:any) {
-            console.log("getSprintQuizById",error)
             throw error?.data
         }
     };

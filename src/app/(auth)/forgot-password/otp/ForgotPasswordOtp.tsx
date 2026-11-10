@@ -33,7 +33,6 @@ export default function VerifyForgotPasswordOtpClient() {
 
         try {
             const response = await authService.verifyForgotPasswordOtp({token: otp})
-            console.log(`Response from verifyForgotPasswordOtp:`, response)
             if (response) {
                 toast.success("OTP verified. Redirecting...")
                 router.push(`/forgot-password/reset?email=${encodeURIComponent(email)}&token=${otp}`)

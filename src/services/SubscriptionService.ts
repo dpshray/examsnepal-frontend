@@ -68,7 +68,6 @@ class SubscriptionService extends HttpServices {
         url: `connectips/transaction-successfull/${txnId}`,
         config: { auth: true },
       });
-      console.log("Service response:", response?.data);
       return response?.data;
     } catch (error) {
       console.error("Service error:", error);

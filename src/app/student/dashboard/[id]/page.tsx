@@ -53,9 +53,7 @@ export default function ReplyPage({
         question_id: id,
         answer: data.reply,
       };
-      console.log(payload);
       const response = await forumService.addReply(payload);
-      console.log(`Reply`, response);
       if (response) {
         toast.success(response?.message || "Reply submitted successfully");
         fetchReply(id);

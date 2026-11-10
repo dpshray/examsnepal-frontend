@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 import {
     Building2,
     CalendarClock,
@@ -263,7 +264,7 @@ export default async function ExamGuidePage({
                                 <div
                                     className="prose prose-sm max-w-none text-gray-700"
                                     // eslint-disable-next-line react/no-danger
-                                    dangerouslySetInnerHTML={{ __html: guide.syllabus }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(guide.syllabus) }}
                                 />
                             </div>
                         </div>

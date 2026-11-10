@@ -97,7 +97,6 @@ export const redirectToConnectIPS = (txn: Record<string, any>) => {
   token.value = String(mappedTxn.TOKEN);
   form.appendChild(token);
 
-  console.log("Submitting ConnectIPS form with:", mappedTxn);
 
   // Submit form
   document.body.appendChild(form);

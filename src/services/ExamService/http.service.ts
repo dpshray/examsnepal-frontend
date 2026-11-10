@@ -68,7 +68,7 @@ class HttpServices {
         try {
             this.setHeaders(config);
             const axiosConfig = this.buildAxiosConfig(config);
-            return await axiosInstance.post(url, data, axiosConfig);
+            return (await axiosInstance.post(url, data, axiosConfig)) as TResponse;
         } catch (error) {
             console.error(`POST request failed for ${url}:`, error);
             throw error;
@@ -82,7 +82,7 @@ class HttpServices {
         try {
             this.setHeaders(config);
             const axiosConfig = this.buildAxiosConfig(config);
-            return await axiosInstance.get(url, axiosConfig);
+            return (await axiosInstance.get(url, axiosConfig)) as TResponse;
         } catch (error) {
             console.error(`GET request failed for ${url}:`, error);
             throw error;
@@ -97,7 +97,7 @@ class HttpServices {
         try {
             this.setHeaders(config);
             const axiosConfig = this.buildAxiosConfig(config);
-            return await axiosInstance.put(url, data, axiosConfig);
+            return (await axiosInstance.put(url, data, axiosConfig)) as TResponse;
         } catch (error) {
             console.error(`PUT request failed for ${url}:`, error);
             throw error;
@@ -112,7 +112,7 @@ class HttpServices {
         try {
             this.setHeaders(config);
             const axiosConfig = this.buildAxiosConfig(config);
-            return await axiosInstance.patch(url, data, axiosConfig);
+            return (await axiosInstance.patch(url, data, axiosConfig)) as TResponse;
         } catch (error) {
             console.error(`PATCH request failed for ${url}:`, error);
             throw error;
@@ -126,7 +126,7 @@ class HttpServices {
         try {
             this.setHeaders(config);
             const axiosConfig = this.buildAxiosConfig(config);
-            return await axiosInstance.delete(url, axiosConfig);
+            return (await axiosInstance.delete(url, axiosConfig)) as TResponse;
         } catch (error) {
             console.error(`DELETE request failed for ${url}:`, error);
             throw error;
