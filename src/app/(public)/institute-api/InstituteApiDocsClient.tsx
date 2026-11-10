@@ -161,9 +161,6 @@ async function loadInstituteData() {
     
     const { profile, insights, classes, sandbox_mode } = result.data;
     
-    console.log('Institute Name:', profile.org || profile.fullname);
-    console.log('Total Enrolled Students:', insights.students_count);
-    console.log('Available Classes:', classes);
     
     // Example: Render classes into an HTML element
     const listHtml = classes.map(c => \`

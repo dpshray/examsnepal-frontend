@@ -48,7 +48,6 @@ export const usePublicExamLogin = (
              * Usually backend returns an attempt/session token.
              */
             const token = response.data[0]?.token;
-            console.log("data", token);
             if (token) {
                 localStorage.setItem("_public_exam_attempt", token);
             }

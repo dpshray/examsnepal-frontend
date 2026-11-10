@@ -7,6 +7,7 @@ import { CommentSection, type QuestionComment } from "@/components/mcq/CommentSe
 import { CategorySidebar } from "@/components/mcq/CategorySidebar";
 import { McqViewBeacon } from "@/components/mcq/McqViewBeacon";
 import { getExamCategories, mcqTopicPath } from "@/lib/mcqApi";
+import { sanitizeHtml } from "@/lib/sanitizeHtml";
 
 interface McqOption {
     id: number;
@@ -33,8 +34,10 @@ interface McqDetail {
 
 // On-demand ISR: pages are generated the first time they're requested, then
 // cached and revalidated in the background. With ~194k questions, pre-building
-// all of them at deploy time isn't practical.
-export const revalidate = 3600;
+// all of them at deploy time isn't practical. Crawlers revisit these pages days
+// apart, so any shorter TTL means nearly every crawl re-renders the page; edits
+// flush the page's "mcq:{slug}" tag through /api/revalidate instead.
+export const revalidate = 604800; // 7 days
 
 // An empty list is what turns on that on-demand ISR for a dynamic segment -
 // without generateStaticParams, Next renders every /mcq page per request.
@@ -58,7 +61,7 @@ function truncate(text: string, maxLen: number): string {
 
 async function getMcq(slug: string): Promise<McqDetail | null> {
     const res = await fetch(`${API_URL}/free/mcq/${slug}`, {
-        next: { revalidate },
+        next: { revalidate, tags: ['mcq', `mcq:${slug}`] },
     });
 
     if (res.status === 404) {
@@ -238,7 +241,7 @@ export default async function McqDetailPage({
                             <h2 className="font-bold text-gray-900 mb-2">Explanation</h2>
                             <p
                                 className="text-base text-muted-foreground font-poppins leading-relaxed"
-                                dangerouslySetInnerHTML={{ __html: mcq.explanation }}
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(mcq.explanation) }}
                             />
                         </div>
                     )}

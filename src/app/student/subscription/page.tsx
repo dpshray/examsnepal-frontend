@@ -51,7 +51,6 @@ export default function Subscription() {
     const fetchUserSubscription = async () => {
       try {
         const data = await subscriptionService.getSubscriptionTypes();
-        console.log("data", data);
         setSubscription(data);
       } catch (err) {
         console.error("Failed to fetch subscription status:", err);

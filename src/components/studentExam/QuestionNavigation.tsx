@@ -32,7 +32,6 @@ export function QuestionNavigation({
   selectedSection,
   onSectionChange,
 }: QuestionNavigationProps) {
-  console.log("sections", sections)
   return (
     <div className="space-y-4">
       {/* Section Selector */}

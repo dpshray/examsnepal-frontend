@@ -44,7 +44,6 @@ class MockTest extends HttpService {
             });
             return response?.data;
         } catch (error:any) {
-            console.log('getMockTestById',error)
             throw error?.data;
         }
     };

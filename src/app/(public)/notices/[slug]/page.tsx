@@ -13,6 +13,15 @@ const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.examsnepal.co
 
 type Params = Promise<{ slug: string }>;
 
+// ISR: each notice renders once, then is served from cache and refreshed every
+// 5 minutes (or when the backend flushes the "notices" tag). The empty list
+// turns on on-demand generation for unknown slugs.
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+    return [];
+}
+
 function metaTitle(n: NoticeDetail): string {
     const base = noticeTitle(n);
     const deadline = n.application_deadline_bs ? ` - Apply by ${formatBs(n.application_deadline_bs)}` : '';

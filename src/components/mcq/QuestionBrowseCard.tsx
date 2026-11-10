@@ -23,6 +23,8 @@ export function QuestionBrowseCard({mcq, index}: {mcq: Mcq; index: number}) {
             {mcq.slug ? (
                 <Link
                     href={`/mcq/${mcq.slug}`}
+                    // Shown in long lists: preloading every card multiplied Vercel requests per view.
+                    prefetch={false}
                     className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-green-700 hover:text-green-800 hover:underline"
                 >
                     View Answer

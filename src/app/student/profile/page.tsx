@@ -136,7 +136,6 @@ export default function ProfilePage() {
         setScoreLoading(true);
         setScoreError(null);
         const response = await scoreService.getProfileScore();
-        console.log("Exam Score", response);
         setExamScores(response?.data || []);
       } catch (err: any) {
         console.error("Score fetch error:", err);

@@ -2,7 +2,7 @@
 // Plain fetch (not the axios-based McqService) since these run in Server
 // Components and benefit from Next's fetch data cache / ISR revalidation.
 
-import { publicDataFetchOptions } from '@/lib/publicDataCache';
+import { PUBLIC_DATA_TAG, publicDataFetchOptions } from '@/lib/publicDataCache';
 
 export interface McqOption {
     option: string;
@@ -131,7 +131,9 @@ export async function getMcqTopics(): Promise<McqTopicSummary[]> {
 export async function getMcqTopic(categorySlug: string, subjectSlug: string, page: number): Promise<McqTopicPage | null> {
     const res = await fetch(
         `${API_URL}/free/mcq-topics/${categorySlug}/${subjectSlug}?page=${page}`,
-        publicDataFetchOptions,
+        // Daily, not the 7-day public TTL: topic pages list questions, and single
+        // question edits only flush that question's own page.
+        { next: { revalidate: 86400, tags: [PUBLIC_DATA_TAG] } },
     );
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Failed to load MCQ topic (status ${res.status})`);

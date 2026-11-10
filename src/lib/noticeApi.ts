@@ -97,11 +97,13 @@ export interface NoticeFilters {
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 
-// cache: 'no-store' - the backend caches these responses for 10 minutes and
-// invalidates them the moment a notice is published, so a second (Next Data
-// Cache) layer only adds staleness: it can pin an empty/failed response for
-// its whole revalidate window and survives redeploys on Vercel (the same
-// problem documented in examGuideApi.ts / sitemap.ts).
+export const NOTICES_TAG = 'notices';
+export const NOTICES_REVALIDATE_SECONDS = 300;
+
+// Cached for 5 minutes under the "notices" tag. These used `cache: 'no-store'`,
+// which made every notice page render on Vercel for every visitor and crawler.
+// Staleness is bounded by the short TTL, and the backend flushes the tag when a
+// notice changes (`frontend:flush-cache`), so new notices still appear quickly.
 //
 // Returns null only for a 404. Any other failure (5xx, network, bad JSON) is
 // retried once and then thrown, so the page renders its error boundary with a
@@ -109,7 +111,7 @@ const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/+$/, '');
 // "this notice / these notices no longer exist".
 async function request<T>(path: string, attempt = 1): Promise<T | null> {
     try {
-        const res = await fetch(`${API_URL}${path}`, { cache: 'no-store' });
+        const res = await fetch(`${API_URL}${path}`, { next: { revalidate: NOTICES_REVALIDATE_SECONDS, tags: [NOTICES_TAG] } });
         if (res.status === 404) return null;
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();

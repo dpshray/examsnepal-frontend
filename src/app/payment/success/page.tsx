@@ -30,7 +30,6 @@ function PaymentSuccessContent() {
             setLoading(true);
             subscriptionService.transactionStatus(txnId)
                 .then((res) => {
-                    console.log("Transaction confirmed:", res.data);
                 })
                 .catch((err) => {
                     console.error("Error confirming transaction", err);

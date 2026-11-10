@@ -4,12 +4,14 @@ import { notFound } from 'next/navigation';
 import { ArrowRight, BarChart3, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CategorySidebar } from '@/components/mcq/CategorySidebar';
 import { getExamCategories, getMcqTopic, mcqTopicPath, type McqTopicPage } from '@/lib/mcqApi';
+import { sanitizeHtml } from '@/lib/sanitizeHtml';
 
 // Topic pages: one exam category + one subject, 20 questions a page with
 // answers and explanations in the HTML (behind <details> so students can
 // still try first). Paginated by path (/2, /3) rather than ?page= so every
-// page is ISR-cached and the pager is plain crawlable links.
-export const revalidate = 3600;
+// page is ISR-cached and the pager is plain crawlable links. Refreshed daily
+// (see getMcqTopic) so new and edited questions show up without a full flush.
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
     return [];
@@ -192,13 +194,15 @@ export default async function McqTopicRoute({ params }: { params: Params }) {
                                                 <div
                                                     className="mt-2 text-sm text-gray-700 leading-relaxed"
                                                     // eslint-disable-next-line react/no-danger
-                                                    dangerouslySetInnerHTML={{ __html: q.explanation }}
+                                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(q.explanation) }}
                                                 />
                                             )}
                                         </div>
                                     </details>
                                     <Link
                                         href={`/mcq/${q.slug}`}
+                                        // 20 links a page: preloading each one multiplied Vercel requests per view.
+                                        prefetch={false}
                                         className="mt-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-green-700 hover:underline"
                                     >
                                         Discuss this question <ArrowRight className="w-3 h-3" aria-hidden="true" />

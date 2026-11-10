@@ -172,7 +172,6 @@ export default function HomeClient({ examCategories = [], stats = null }: HomeCl
       if (response.status) {
         toast.success("Transaction generated. Redirecting to payment...");
         redirectToConnectIPS(response.data);
-        console.log("try", response.data);
       } else {
         toast.error("Failed to generate transaction.");
       }

@@ -3,6 +3,7 @@ import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {Label} from "@/components/ui/label";
 import {Button} from "@/components/ui/button";
 import {useEffect, useState} from "react";
+import DOMPurify from "dompurify";
 import {
     Dialog,
     DialogContent,
@@ -165,7 +166,7 @@ export const QuestionSolutionCard = ({
                     <div className={' flex flex-col gap-2'}>
                         <div className="mt-2 text-base text-muted-foreground italic font-poppins">
                             <span className="font-bold text-muted-900">Explanation:</span>
-                            <p dangerouslySetInnerHTML={{__html: explanation}}/>
+                            <p dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(explanation ?? "")}}/>
                         </div>
                         {raiseDoubt && <RaiseDoubtModal questionId={id}/>}
                     </div>

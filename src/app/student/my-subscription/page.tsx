@@ -52,7 +52,6 @@ export default function SubscriptionStatus() {
       minute: "2-digit",
     });
 
-  console.log("loading", loading);
 
   if (loading) {
     return (

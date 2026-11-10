@@ -47,7 +47,6 @@ class FreeQuizServices extends HttpService {
 
             return response?.data;
         } catch (error: any) {
-            console.log('getFreeQuizById', error?.data)
             throw error?.data;
         }
     };

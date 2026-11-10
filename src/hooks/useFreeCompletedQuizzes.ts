@@ -15,7 +15,6 @@ const useFreeCompletedQuizzes = (initialPage: number = 1) => {
             const response = await freeQuizServices.getCompleteFreeQuizzes(page);
             setCompletedQuizzes(response.data?.data || []);
             setCompletedTotalPages(response.data?.last_page || 1);
-            console.log(`Completed Quizzes`, response?.data?.data);
             setCurrentPage(page);
         } catch (err) {
             console.error("Error fetching completed quizzes:", err);

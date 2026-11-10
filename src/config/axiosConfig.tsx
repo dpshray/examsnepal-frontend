@@ -13,7 +13,6 @@ axiosInstance.interceptors.request.use(
   (config: any) => {
     const params = config.params;
     const query = params ? `?${new URLSearchParams(params).toString()}` : "";
-    console.log("➡️ FULL REQUEST URL:", config.baseURL + config.url + query);
     return config;
   },
   (error: AxiosError) => {

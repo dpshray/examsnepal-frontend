@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useGetClientBlogBySlug } from "@/hooks/useBlog"
+import DOMPurify from "dompurify"
 
 interface Category {
     id: number
@@ -140,7 +141,7 @@ function BlogContent({ content, summary }: { content: string; summary: string })
                         prose-blockquote:border-primary prose-blockquote:text-muted-foreground
                         prose-pre:bg-muted prose-pre:text-foreground
                         prose-code:text-primary prose-code:bg-muted prose-code:px-2 prose-code:py-1 prose-code:rounded"
-                    dangerouslySetInnerHTML={{ __html: content }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content ?? "") }}
                 />
             </div>
         </div>

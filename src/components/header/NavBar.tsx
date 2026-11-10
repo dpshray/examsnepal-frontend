@@ -84,7 +84,6 @@ interface NavBarProps {
 
 export default function NavBar({ examCategories = [] }: NavBarProps) {
   const { isAuthenticated } = useAuth();
-  console.log("user");
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
